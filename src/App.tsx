@@ -1,12 +1,15 @@
 import { Routes, Route } from 'react-router-dom';
+import AppShell from '@/layouts/AppShell';
 import ImageGenerationPage from '@/pages/ImageGenerationPage';
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<ImageGenerationPage />} />
-      <Route path="/image" element={<ImageGenerationPage />} />
-    </Routes>
+    <AppShell>
+      <Routes>
+        <Route path="/" element={<ImageGenerationPage />} />
+        <Route path="/image" element={<ImageGenerationPage />} />
+      </Routes>
+    </AppShell>
   );
 }
 
