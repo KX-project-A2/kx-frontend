@@ -14,7 +14,7 @@ export default function LoadingSpinner({ size = 'md', className = '' }: LoadingS
     <div
       role="status"
       aria-label="Loading"
-      className={`inline-block animate-spin rounded-full border-solid border-gray-300 border-t-gray-600 ${SIZE_CLASSES[size]} ${className}`}
+      className={`inline-block animate-spin rounded-full border-solid border-stroke-soft border-t-brand ${SIZE_CLASSES[size]} ${className}`}
     />
   );
 }

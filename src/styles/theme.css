@@ -1,0 +1,271 @@
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * ============================================================
+ *  DESIGN SYSTEM TOKENS  (dark / purple)
+ *  Edit values here to re-theme the entire application.
+ * ============================================================
+ */
+:root {
+  /* Surfaces — never pure black, always a purple tint */
+  --canvas: #0b0912;
+  --surface-1: #12101c;
+  --surface-2: #1a1726;
+  --surface-3: #221d33;
+
+  /* Primary — purple / magenta scale (imported design system) */
+  --primary-50: #fcefff;
+  --primary-100: #f8d6ff;
+  --primary-200: #f5c0ff;
+  --primary-300: #f0a5ff;
+  --primary-400: #e36eff;
+  --primary-500: #c255ff;
+  --primary-600: #a54bd7;
+  --primary-700: #8d4db6;
+  --primary-800: #7a449d;
+  --primary-900: #5f3c8c;
+
+  /* Accent — lime scale (imported design system) */
+  --accent-50: #fffffa;
+  --accent-100: #feffe4;
+  --accent-200: #fdffc1;
+  --accent-300: #fcff9b;
+  --accent-400: #f5ff59;
+  --accent-500: #eafb2f;
+  --accent-600: #c8f000;
+  --accent-700: #b9de00;
+  --accent-800: #a2c00c;
+  --accent-900: #8ea619;
+
+  /* Brand semantic (mapped to primary scale) + gradient */
+  --brand-light: var(--primary-400);
+  --brand: var(--primary-500);
+  --brand-dark: var(--primary-700);
+  --gradient-primary: linear-gradient(135deg, var(--primary-400) 0%, var(--primary-500) 50%, var(--primary-700) 100%);
+
+  /* Secondary accent — lime, points/badges only */
+  --accent-yellow: var(--accent-500);
+
+  /* Semantic */
+  --success: #34d399;
+  --warning: #fbbf24;
+  --danger: #f87171;
+  --info: #60a5fa;
+
+  /* Text */
+  --content: #f4f2fb;
+  --content-secondary: #b4acd0;
+  --content-muted: #7b7397;
+
+  /* Strokes & states */
+  --stroke-soft: rgba(255, 255, 255, 0.08);
+  --stroke-strong: rgba(255, 255, 255, 0.12);
+  --selected-bg: rgba(194, 85, 255, 0.22);
+  --selected-border: var(--primary-500);
+  --overlay: rgba(6, 4, 12, 0.72);
+
+  /* Radii */
+  --radius-btn: 12px;
+  --radius-card: 16px;
+  --radius-chip: 999px;
+
+  /* Elevation / glow */
+  --shadow-glow: 0 8px 28px -6px rgba(194, 85, 255, 0.55);
+  --shadow-card: 0 12px 40px -12px rgba(0, 0, 0, 0.6);
+
+  /* Typography */
+  --font-sans: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-num: 'Inter', 'Pretendard', sans-serif;
+  --font-size: 14px;
+
+  /* shadcn compatibility layer (so base utilities resolve to the dark theme) */
+  --background: var(--canvas);
+  --foreground: var(--content);
+  --border: var(--stroke-soft);
+  --ring: var(--brand);
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+
+  --color-brand: var(--brand);
+  --color-brand-light: var(--brand-light);
+  --color-brand-dark: var(--brand-dark);
+  --color-accent-yellow: var(--accent-yellow);
+
+  /* Full primary (magenta) scale */
+  --color-primary-50: var(--primary-50);
+  --color-primary-100: var(--primary-100);
+  --color-primary-200: var(--primary-200);
+  --color-primary-300: var(--primary-300);
+  --color-primary-400: var(--primary-400);
+  --color-primary-500: var(--primary-500);
+  --color-primary-600: var(--primary-600);
+  --color-primary-700: var(--primary-700);
+  --color-primary-800: var(--primary-800);
+  --color-primary-900: var(--primary-900);
+
+  /* Full accent (lime) scale */
+  --color-accent-50: var(--accent-50);
+  --color-accent-100: var(--accent-100);
+  --color-accent-200: var(--accent-200);
+  --color-accent-300: var(--accent-300);
+  --color-accent-400: var(--accent-400);
+  --color-accent-500: var(--accent-500);
+  --color-accent-600: var(--accent-600);
+  --color-accent-700: var(--accent-700);
+  --color-accent-800: var(--accent-800);
+  --color-accent-900: var(--accent-900);
+
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-info: var(--info);
+
+  --color-content: var(--content);
+  --color-content-secondary: var(--content-secondary);
+  --color-content-muted: var(--content-muted);
+
+  --color-stroke-soft: var(--stroke-soft);
+  --color-stroke-strong: var(--stroke-strong);
+  --color-selected: var(--selected-bg);
+  --color-selected-border: var(--selected-border);
+
+  --color-background: var(--canvas);
+  --color-foreground: var(--content);
+  --color-border: var(--stroke-soft);
+  --color-ring: var(--brand);
+
+  --radius-btn: var(--radius-btn);
+  --radius-card: var(--radius-card);
+  --radius-chip: var(--radius-chip);
+
+  --font-sans: var(--font-sans);
+  --font-num: var(--font-num);
+}
+
+@layer base {
+  * {
+    border-color: var(--stroke-soft);
+  }
+
+  html {
+    font-size: var(--font-size);
+  }
+
+  body {
+    background-color: var(--canvas);
+    color: var(--content);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Numeric / english data uses Inter */
+  .font-num {
+    font-family: var(--font-num);
+    font-feature-settings: 'tnum' 1;
+  }
+}
+
+/*
+ * ============================================================
+ *  TYPOGRAPHY SCALE  (Pretendard)
+ *  Display 48/800 · H1 34/800 · H2 24/700 · Body 14/400
+ * ============================================================
+ */
+@layer components {
+  .text-display {
+    font-family: var(--font-sans);
+    font-size: 48px;
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+  .text-h1 {
+    font-family: var(--font-sans);
+    font-size: 34px;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+  }
+  .text-h2 {
+    font-family: var(--font-sans);
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+  }
+  .text-h3 {
+    font-family: var(--font-sans);
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.4;
+  }
+  .text-title {
+    font-family: var(--font-sans);
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+  .text-body {
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.6;
+  }
+  .text-body-medium {
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+  .text-caption {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.4;
+  }
+  .text-label {
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: 0.01em;
+  }
+}
+
+/* Gradient helpers */
+.bg-gradient-primary {
+  background-image: var(--gradient-primary);
+}
+.text-gradient-primary {
+  background-image: var(--gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--surface-3);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--brand-dark);
+  background-clip: padding-box;
+}

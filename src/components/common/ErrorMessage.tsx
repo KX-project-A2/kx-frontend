@@ -10,15 +10,15 @@ export default function ErrorMessage({ message, onRetry, className = '' }: Error
   return (
     <div
       role="alert"
-      className={`flex flex-col items-center gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-6 text-center ${className}`}
+      className={`flex flex-col items-center gap-3 rounded-[var(--radius-card)] border border-danger/30 bg-danger/10 px-4 py-6 text-center ${className}`}
     >
-      <AlertCircle className="h-6 w-6 text-red-500" />
-      <p className="text-sm text-red-600">{message}</p>
+      <AlertCircle className="h-6 w-6 text-danger" />
+      <p className="text-sm text-danger">{message}</p>
       {onRetry && (
         <button
           type="button"
           onClick={onRetry}
-          className="rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700"
+          className="rounded-[var(--radius-btn)] bg-danger px-3 py-1.5 text-sm font-medium text-white hover:opacity-90"
         >
           다시 시도
         </button>
