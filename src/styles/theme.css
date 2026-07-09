@@ -41,6 +41,7 @@
   --brand-light: var(--primary-400);
   --brand: var(--primary-500);
   --brand-dark: var(--primary-700);
+  --brand-on: #ffffff;
   --gradient-primary: linear-gradient(135deg, var(--primary-400) 0%, var(--primary-500) 50%, var(--primary-700) 100%);
 
   /* Secondary accent — lime, points/badges only */
@@ -143,6 +144,7 @@
   --color-ring: var(--brand);
 
   --radius-btn: var(--radius-btn);
+  --radius-field: 12px;
   --radius-card: var(--radius-card);
   --radius-chip: var(--radius-chip);
 
