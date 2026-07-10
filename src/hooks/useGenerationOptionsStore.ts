@@ -9,7 +9,7 @@ interface GenerationOptionsStore extends GenerationOptions {
 }
 
 export const useGenerationOptionsStore = create<GenerationOptionsStore>((set) => ({
-  model: '나노바나나 프로',
+  model: '제미나이',
   ratio: '1:1',
   quality: '4K',
   quantity: 1,

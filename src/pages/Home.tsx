@@ -53,7 +53,7 @@ export default function Home() {
               placeholder="예: 노을 지는 사막을 걷는 우주비행사, 시네마틱 영화 스틸컷"
               className="flex-1 resize-none bg-transparent px-2 py-2 text-body text-content placeholder:text-content-muted outline-none"
             />
-            <Button size="md" className="shrink-0" rightIcon={<ArrowUp size={16} />} onClick={() => navigate('/create/image')}>
+            <Button size="md" className="shrink-0" rightIcon={<ArrowUp size={16} />} onClick={() => navigate('/image')}>
               생성
             </Button>
           </div>

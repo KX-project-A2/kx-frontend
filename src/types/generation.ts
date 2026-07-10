@@ -11,3 +11,18 @@ export interface GenerationResult {
   images: { url: string }[];
   createdAt: string;
 }
+
+export interface VideoGenerationOptions {
+  model: string;
+  length: string;
+  ratio: string;
+  quality: string;
+}
+
+export interface VideoGenerationResult {
+  id: string;
+  prompt: string;
+  videoUrl: string;
+  duration: string;
+  createdAt: string;
+}

@@ -166,16 +166,6 @@ export interface GenGroup {
   items: Artwork[];
 }
 
-export const VIDEO_GEN_GROUPS: GenGroup[] = [
-  {
-    prompt: '초원 위를 걷는 캐릭터, 부드러운 트래킹 샷, 시네마틱',
-    items: [
-      make('vg1', 'video', 'l4', '초원 트래킹', ME, 0, 1.77, { duration: '8초' }),
-      make('vg2', 'video', 'l6', '초원 트래킹', ME, 0, 1.77, { duration: '8초' }),
-    ],
-  },
-];
-
 export const LIBRARY_ITEMS: Artwork[] = [
   ...RECENT_WORKS,
   make('lb1', 'image', 'p5', '사이버펑크 여전사, 네온 라이팅', ME, 3, 0.8),
