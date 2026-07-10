@@ -78,7 +78,7 @@ export default function ImageGenerationPage() {
         <PromptComposer
           value={prompt}
           onChange={setPrompt}
-          chips={[ratio, quality]}
+          chips={[model, quality, ratio.split(' · ')[0], `× ${quantity}장`]}
           correction={correction}
           onCorrectionChange={setCorrection}
           onGenerate={handleGenerate}

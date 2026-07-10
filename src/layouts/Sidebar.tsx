@@ -5,7 +5,7 @@ import Logo from '@/components/common/Logo';
 const NAV = [
   { to: '/home', label: '홈', icon: Home },
   { to: '/image', label: '이미지', icon: ImageIcon },
-  { to: '/create/video', label: '영상', icon: Video },
+  { to: '/video', label: '영상', icon: Video },
   { to: '/library', label: '라이브러리', icon: Library },
 ];
 
