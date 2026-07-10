@@ -242,6 +242,28 @@
   }
 }
 
+/* Glass surfaces — frosted, near-opaque panels (used by Panel/level, sidebars, modals) */
+.glass-1 {
+  background: color-mix(in srgb, var(--surface-1) 96%, transparent);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--stroke-soft);
+}
+.glass-2 {
+  background: color-mix(in srgb, var(--surface-2) 35%, transparent);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--stroke-soft);
+  box-shadow: var(--shadow-card);
+}
+.glass-3 {
+  background: color-mix(in srgb, var(--surface-3) 98%, transparent);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--stroke-strong);
+  box-shadow: var(--shadow-card);
+}
+
 /* Gradient helpers */
 .bg-gradient-primary {
   background-image: var(--gradient-primary);
