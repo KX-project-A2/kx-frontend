@@ -1,5 +1,6 @@
 import { Sparkles } from 'lucide-react';
 
+// TODO: 실제 로고 에셋으로 교체
 export default function Logo() {
   return (
     <div className="flex items-center gap-2">
