@@ -70,7 +70,7 @@ function make(
   creator: Creator,
   likes: number,
   aspect: number,
-  opts: Partial<Artwork> = {},
+  opts: Partial<Artwork> = {}
 ): Artwork {
   return {
     id,
@@ -91,10 +91,26 @@ function make(
 }
 
 export const GALLERY_IMAGES: Artwork[] = [
-  make('g1', 'image', 'p1', '에메랄드빛 숲의 여신, 부드러운 역광, 초현실적 포트레이트', CREATORS[0], 1284, 0.66),
+  make(
+    'g1',
+    'image',
+    'p1',
+    '에메랄드빛 숲의 여신, 부드러운 역광, 초현실적 포트레이트',
+    CREATORS[0],
+    1284,
+    0.66
+  ),
   make('g2', 'image', 'l1', '광활한 초원과 뭉게구름, 시네마틱 와이드샷', CREATORS[1], 842, 1.5),
   make('g3', 'image', 'p4', '거울에 비친 두 얼굴, 추상적 빛의 회화', CREATORS[2], 2103, 0.66),
-  make('g4', 'image', 'l3', '안개 낀 마법의 숲, 흐르는 시냇물, 판타지 콘셉트 아트', CREATORS[3], 671, 1.77),
+  make(
+    'g4',
+    'image',
+    'l3',
+    '안개 낀 마법의 숲, 흐르는 시냇물, 판타지 콘셉트 아트',
+    CREATORS[3],
+    671,
+    1.77
+  ),
   make('g5', 'image', 'p6', '수평선으로 왜곡된 인물, 실험적 글리치 아트', CREATORS[0], 455, 1.84),
   make('g6', 'image', 'p7', '수련 사이 물 위에 누운 노란 드레스의 여인', CREATORS[1], 1567, 0.76),
   make('g7', 'image', 'l5', '녹음의 산과 숲, 세밀한 일러스트레이션', CREATORS[2], 389, 0.7),
@@ -102,12 +118,39 @@ export const GALLERY_IMAGES: Artwork[] = [
 ];
 
 export const GALLERY_VIDEOS: Artwork[] = [
-  make('v1', 'video', 'l4', '흐린 하늘 아래 흔들리는 초원, 느린 카메라 무빙', CREATORS[1], 743, 1.77, { duration: '8초' }),
-  make('v2', 'video', 'p5', '사이버네틱 팔을 가진 미래의 여인, 글리치 트랜지션', CREATORS[0], 1521, 0.8, { duration: '5초', model: 'Kling 3.0' }),
-  make('v3', 'video', 'l6', '안개 낀 들판에 서 있는 사람, 드리프트 샷', CREATORS[3], 512, 1.77, { duration: '10초' }),
-  make('v4', 'video', 'l7', '파노라마 초원 위 구름의 흐름, 타임랩스', CREATORS[2], 634, 1.77, { duration: '12초', model: 'Kling 3.0' }),
-  make('v5', 'video', 'l8', '구름에 뒤덮인 산맥, 서사적 항공 촬영', CREATORS[1], 897, 1.77, { duration: '15초' }),
-  make('v6', 'video', 'l2', '강이 흐르는 산악 풍경 회화, 부드러운 패닝', CREATORS[0], 421, 1.66, { duration: '6초' }),
+  make(
+    'v1',
+    'video',
+    'l4',
+    '흐린 하늘 아래 흔들리는 초원, 느린 카메라 무빙',
+    CREATORS[1],
+    743,
+    1.77,
+    { duration: '8초' }
+  ),
+  make(
+    'v2',
+    'video',
+    'p5',
+    '사이버네틱 팔을 가진 미래의 여인, 글리치 트랜지션',
+    CREATORS[0],
+    1521,
+    0.8,
+    { duration: '5초', model: 'Kling 3.0' }
+  ),
+  make('v3', 'video', 'l6', '안개 낀 들판에 서 있는 사람, 드리프트 샷', CREATORS[3], 512, 1.77, {
+    duration: '10초',
+  }),
+  make('v4', 'video', 'l7', '파노라마 초원 위 구름의 흐름, 타임랩스', CREATORS[2], 634, 1.77, {
+    duration: '12초',
+    model: 'Kling 3.0',
+  }),
+  make('v5', 'video', 'l8', '구름에 뒤덮인 산맥, 서사적 항공 촬영', CREATORS[1], 897, 1.77, {
+    duration: '15초',
+  }),
+  make('v6', 'video', 'l2', '강이 흐르는 산악 풍경 회화, 부드러운 패닝', CREATORS[0], 421, 1.66, {
+    duration: '6초',
+  }),
 ];
 
 export const RECENT_WORKS: Artwork[] = [
@@ -122,25 +165,6 @@ export interface GenGroup {
   prompt: string;
   items: Artwork[];
 }
-
-export const IMAGE_GEN_GROUPS: GenGroup[] = [
-  {
-    prompt: '에메랄드빛 숲 속 은빛 갑옷을 입은 캐릭터, 키 이미지 캐릭터 시트',
-    items: [
-      make('ig1', 'image', 'p1', '캐릭터 시트', ME, 0, 1),
-      make('ig2', 'image', 'p3', '캐릭터 시트', ME, 0, 1),
-      make('ig3', 'image', 'p6', '캐릭터 시트', ME, 0, 1),
-      make('ig4', 'image', 'p8', '캐릭터 시트', ME, 0, 1),
-    ],
-  },
-  {
-    prompt: '노을 지는 판타지 성채와 협곡, 배경 콘셉트',
-    items: [
-      make('ig5', 'image', 'l1', '배경 콘셉트', ME, 0, 1),
-      make('ig6', 'image', 'l3', '배경 콘셉트', ME, 0, 1),
-    ],
-  },
-];
 
 export const VIDEO_GEN_GROUPS: GenGroup[] = [
   {
@@ -172,7 +196,12 @@ export const PROMPT_SUGGESTIONS = [
 export const IMAGE_MODELS = ['제미나이'];
 export const VIDEO_MODELS = ['seedance 2.0', 'Kling 3.0'];
 export const PURPOSES = ['캐릭터', '배경', '키이미지 캐릭터시트', '키이미지 배경시트'];
-export const IMAGE_RATIOS = ['1:1 · 1024×1024', '4:3 · 1152×896', '16:9 · 1376×768', '9:16 · 768×1376'];
+export const IMAGE_RATIOS = [
+  '1:1 · 1024×1024',
+  '4:3 · 1152×896',
+  '16:9 · 1376×768',
+  '9:16 · 768×1376',
+];
 export const VIDEO_RATIOS = ['16:9 · 1376×768', '9:16 · 768×1376', '1:1 · 1024×1024'];
 export const IMAGE_QUALITIES = ['2K', '4K'];
 export const VIDEO_LENGTHS = ['3초', '5초', '8초', '10초', '15초'];
