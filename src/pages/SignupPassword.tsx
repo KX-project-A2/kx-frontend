@@ -32,11 +32,7 @@ export default function SignupPassword() {
   };
 
   return (
-    <div
-      className="relative flex h-screen w-full items-center justify-center p-6"
-      style={{ background: 'var(--canvas)' }}
-    >
-      <div className="app-backdrop" />
+    <div className="relative flex h-screen w-full items-center justify-center p-6">
       <div className="glass-2 relative z-10 flex w-full max-w-[400px] flex-col gap-8 rounded-card p-8">
         <Logo />
 

@@ -10,25 +10,28 @@ import SignupPassword from '@/pages/SignupPassword';
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Navigate to="/login" replace />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<SignupEmail />} />
-      <Route path="/signup/password" element={<SignupPassword />} />
+    <>
+      <div className="app-backdrop" />
+      <Routes>
+        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<SignupEmail />} />
+        <Route path="/signup/password" element={<SignupPassword />} />
 
-      <Route
-        element={
-          <AppShell>
-            <Outlet />
-          </AppShell>
-        }
-      >
-        <Route path="/home" element={<Home />} />
-        <Route path="/image" element={<ImageGenerationPage />} />
-        <Route path="/video" element={<VideoGenerationPage />} />
-        <Route path="/library" element={<Library />} />
-      </Route>
-    </Routes>
+        <Route
+          element={
+            <AppShell>
+              <Outlet />
+            </AppShell>
+          }
+        >
+          <Route path="/home" element={<Home />} />
+          <Route path="/image" element={<ImageGenerationPage />} />
+          <Route path="/video" element={<VideoGenerationPage />} />
+          <Route path="/library" element={<Library />} />
+        </Route>
+      </Routes>
+    </>
   );
 }
 
