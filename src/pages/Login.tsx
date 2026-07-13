@@ -34,8 +34,7 @@ export default function Login() {
   };
 
   return (
-    <div className="relative flex h-screen w-full" style={{ background: 'var(--canvas)' }}>
-      <div className="app-backdrop" />
+    <div className="relative flex h-screen w-full">
       {/* left form */}
       <div className="relative z-10 flex w-full flex-col justify-between p-10 lg:w-[400px] lg:shrink-0">
         <Logo />

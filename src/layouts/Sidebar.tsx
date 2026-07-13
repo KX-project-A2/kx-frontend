@@ -18,7 +18,7 @@ export default function Sidebar() {
   const navigate = useNavigate();
 
   return (
-    <aside className="flex h-screen w-[240px] shrink-0 flex-col justify-between border-r border-stroke-soft bg-surface-1 px-4 py-6">
+    <aside className="glass-2 flex h-screen w-[240px] shrink-0 flex-col justify-between border-r border-stroke-soft px-4 py-6">
       <div className="flex flex-col gap-8">
         <div className="px-1.5">
           <Logo />
@@ -29,9 +29,9 @@ export default function Sidebar() {
               key={to}
               to={to}
               className={({ isActive }) =>
-                `flex h-11 items-center gap-3 rounded-[var(--radius-btn)] border px-3 text-body-medium transition-colors ${
+                `flex h-11 items-center gap-3 rounded-full border px-3 text-body-medium transition-colors ${
                   isActive
-                    ? 'border-[var(--selected-border)] bg-[var(--selected-bg)] text-content'
+                    ? 'glass-1 border-[rgba(231,180,255,0.7)] bg-[var(--selected-bg)] text-content'
                     : 'border-transparent text-content-secondary hover:bg-surface-2 hover:text-content'
                 }`
               }

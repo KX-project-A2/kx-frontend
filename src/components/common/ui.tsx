@@ -50,9 +50,9 @@ export function Button({
     variant === 'primary'
       ? { background: 'var(--brand)', color: 'var(--brand-on)' }
       : variant === 'secondary'
-        ? { borderColor: 'var(--md-outline)', color: 'var(--md-primary)', background: 'transparent' }
+        ? { borderColor: 'var(--stroke-strong)', color: 'var(--brand)', background: 'transparent' }
         : variant === 'tertiary'
-          ? { color: 'var(--md-primary)' }
+          ? { color: 'var(--brand)' }
           : { color: 'var(--content-secondary)' };
 
   return (

@@ -7,12 +7,6 @@
  * ============================================================
  */
 :root {
-  /* Surfaces — never pure black, always a purple tint */
-  --canvas: #0b0912;
-  --surface-1: #12101c;
-  --surface-2: #1a1726;
-  --surface-3: #221d33;
-
   /* Primary — purple / magenta scale (imported design system) */
   --primary-50: #fcefff;
   --primary-100: #f8d6ff;
@@ -37,12 +31,63 @@
   --accent-800: #a2c00c;
   --accent-900: #8ea619;
 
-  /* Brand semantic (mapped to primary scale) + gradient */
-  --brand-light: var(--primary-400);
-  --brand: var(--primary-500);
-  --brand-dark: var(--primary-700);
-  --brand-on: #ffffff;
-  --gradient-primary: linear-gradient(135deg, var(--primary-400) 0%, var(--primary-500) 50%, var(--primary-700) 100%);
+  /*
+   * ------------------------------------------------------------
+   *  MATERIAL 3 ROLES (dark scheme)
+   * ------------------------------------------------------------
+   */
+  --md-primary: #e7b4ff;
+  --md-on-primary: #4d0071;
+  --md-primary-container: #6c1e94;
+  --md-on-primary-container: #f6d9ff;
+  --md-secondary: #d6c0db;
+  --md-on-secondary: #3b2941;
+  --md-secondary-container: #524058;
+  --md-on-secondary-container: #f2dcf7;
+  --md-tertiary: #f6b7bd;
+  --md-on-tertiary: #4c2529;
+  --md-tertiary-container: #663a3f;
+  --md-on-tertiary-container: #ffd9dc;
+  --md-error: #ffb4ab;
+  --md-on-error: #690005;
+  --md-error-container: #93000a;
+  --md-on-error-container: #ffdad6;
+  --md-surface: #151218;
+  --md-surface-dim: #151218;
+  --md-surface-bright: #3c383f;
+  --md-surface-container-lowest: #100d13;
+  --md-surface-container-low: #1d1a21;
+  --md-surface-container: #211e25;
+  --md-surface-container-high: #2c2830;
+  --md-surface-container-highest: #37333b;
+  --md-on-surface: #e9e0e9;
+  --md-on-surface-variant: #cfc3cf;
+  --md-outline: #988e99;
+  --md-outline-variant: #4c444d;
+  --md-inverse-surface: #e9e0e9;
+  --md-inverse-on-surface: #322f35;
+  --md-scrim: #000000;
+  --md-elevation-1: 0 1px 2px 0 rgba(0,0,0,0.3), 0 1px 3px 1px rgba(0,0,0,0.15);
+  --md-elevation-2: 0 1px 2px 0 rgba(0,0,0,0.3), 0 2px 6px 2px rgba(0,0,0,0.15);
+  --md-elevation-3: 0 1px 3px 0 rgba(0,0,0,0.3), 0 4px 8px 3px rgba(0,0,0,0.15);
+
+  /*
+   * ------------------------------------------------------------
+   *  SEMANTIC TOKENS — mapped to M3 roles
+   * ------------------------------------------------------------
+   */
+  /* Surfaces — never pure black, always a purple tint */
+  --canvas: var(--md-surface-dim);
+  --surface-1: var(--md-surface-container-low);
+  --surface-2: var(--md-surface-container);
+  --surface-3: var(--md-surface-container-high);
+
+  /* Brand semantic (mapped to M3 primary role) + gradient */
+  --brand-light: var(--md-primary);
+  --brand: var(--md-primary);
+  --brand-dark: var(--md-primary-container);
+  --brand-on: var(--md-on-primary);
+  --gradient-primary: linear-gradient(135deg, var(--md-primary) 0%, #d98cff 50%, var(--md-primary-container) 100%);
 
   /* Secondary accent — lime, points/badges only */
   --accent-yellow: var(--accent-500);
@@ -54,15 +99,15 @@
   --info: #60a5fa;
 
   /* Text */
-  --content: #f4f2fb;
-  --content-secondary: #b4acd0;
-  --content-muted: #7b7397;
+  --content: var(--md-on-surface);
+  --content-secondary: var(--md-on-surface-variant);
+  --content-muted: var(--md-outline);
 
   /* Strokes & states */
-  --stroke-soft: rgba(255, 255, 255, 0.08);
-  --stroke-strong: rgba(255, 255, 255, 0.12);
-  --selected-bg: rgba(194, 85, 255, 0.22);
-  --selected-border: var(--primary-500);
+  --stroke-soft: var(--md-outline-variant);
+  --stroke-strong: var(--md-outline);
+  --selected-bg: rgba(231, 180, 255, 0.16);
+  --selected-border: var(--md-primary);
   --overlay: rgba(6, 4, 12, 0.72);
 
   /* Radii */
@@ -240,28 +285,28 @@
     line-height: 1.4;
     letter-spacing: 0.01em;
   }
-}
 
-/* Glass surfaces — frosted, near-opaque panels (used by Panel/level, sidebars, modals) */
-.glass-1 {
-  background: color-mix(in srgb, var(--surface-1) 96%, transparent);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--stroke-soft);
-}
-.glass-2 {
-  background: color-mix(in srgb, var(--surface-2) 35%, transparent);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--stroke-soft);
-  box-shadow: var(--shadow-card);
-}
-.glass-3 {
-  background: color-mix(in srgb, var(--surface-3) 98%, transparent);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid var(--stroke-strong);
-  box-shadow: var(--shadow-card);
+  /* Glass surfaces — frosted, near-opaque panels (used by Panel/level, sidebars, modals) */
+  .glass-1 {
+    background: color-mix(in srgb, var(--surface-1) 96%, transparent);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--stroke-soft);
+  }
+  .glass-2 {
+    background: color-mix(in srgb, var(--surface-2) 35%, transparent);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--stroke-soft);
+    box-shadow: var(--shadow-card);
+  }
+  .glass-3 {
+    background: color-mix(in srgb, var(--surface-3) 98%, transparent);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--stroke-strong);
+    box-shadow: var(--shadow-card);
+  }
 }
 
 /* Gradient helpers */
@@ -273,6 +318,19 @@
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+}
+
+/* Global backdrop — fixed, behind all routed content */
+.app-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(620px circle at 12% 18%, rgba(199, 101, 240, 0.22), transparent 60%),
+    radial-gradient(680px circle at 88% 12%, rgba(246, 183, 189, 0.14), transparent 55%),
+    radial-gradient(760px circle at 78% 88%, rgba(108, 30, 148, 0.26), transparent 60%),
+    radial-gradient(520px circle at 30% 95%, rgba(158, 202, 255, 0.10), transparent 55%);
 }
 
 /* Scrollbar */
