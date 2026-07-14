@@ -288,7 +288,7 @@
 
   /* Glass surfaces — frosted, near-opaque panels (used by Panel/level, sidebars, modals) */
   .glass-1 {
-    background: color-mix(in srgb, var(--surface-1) 96%, transparent);
+    background: color-mix(in srgb, var(--surface-1) 50%, transparent);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid var(--stroke-soft);

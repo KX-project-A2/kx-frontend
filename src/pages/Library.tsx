@@ -57,6 +57,8 @@ export default function Library() {
                 art={art}
                 onOpen={() => setSelected(art)}
                 showToVideo={art.type === 'image'}
+                onCopyPrompt={() => navigator.clipboard.writeText(art.prompt)}
+                onReedit={() => navigate(art.type === 'video' ? '/video' : '/image')}
               />
             </div>
           ))}
