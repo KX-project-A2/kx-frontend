@@ -3,9 +3,15 @@ import { Copy, Download, Heart, MoreHorizontal, Pencil, Play, RefreshCw, Trash2,
 import type { Artwork } from '@/constants/mockData';
 import { Avatar, Badge, IconButton, LikePill, cn } from '@/components/common/ui';
 import ImageWithFallback from '@/components/common/ImageWithFallback';
+import { useLikesStore } from '@/stores/useLikesStore';
 
 /* --- Explore gallery card (author + likes on hover, click opens detail) --- */
-export function GalleryCard({ art, onOpen, onLike }: { art: Artwork; onOpen?: () => void; onLike?: () => void }) {
+export function GalleryCard({ art, onOpen }: { art: Artwork; onOpen?: () => void }) {
+  const overrides = useLikesStore((s) => s.overrides);
+  const toggleLike = useLikesStore((s) => s.toggleLike);
+  const liked = overrides[art.id]?.liked ?? art.liked ?? false;
+  const likes = overrides[art.id]?.likes ?? art.likes ?? 0;
+
   return (
     <div
       role="button"
@@ -47,10 +53,10 @@ export function GalleryCard({ art, onOpen, onLike }: { art: Artwork; onOpen?: ()
         className="absolute right-2.5 top-2.5 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
         onClick={(e) => {
           e.stopPropagation();
-          onLike?.();
+          toggleLike(art.id, liked, likes);
         }}
       >
-        <LikePill count={art.likes} liked={art.liked} size="sm" />
+        <LikePill count={likes} liked={liked} size="sm" />
       </div>
     </div>
   );

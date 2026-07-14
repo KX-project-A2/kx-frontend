@@ -5,11 +5,12 @@ import { Panel, Select } from '@/components/common/ui';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import EmptyState from '@/components/common/EmptyState';
+import { DetailModal } from '@/components/common/DetailModal';
 import { useVideoGenerationOptionsStore } from '@/hooks/useVideoGenerationOptionsStore';
 import { generateVideo } from '@/services/videoGeneration';
 import type { VideoGenerationResult } from '@/types/generation';
 import { toVideoGenGroup } from '@/utils/generationAdapter';
-import { VIDEO_LENGTHS, VIDEO_MODELS, VIDEO_QUALITIES, VIDEO_RATIOS } from '@/constants/mockData';
+import { VIDEO_LENGTHS, VIDEO_MODELS, VIDEO_QUALITIES, VIDEO_RATIOS, type Artwork } from '@/constants/mockData';
 
 export default function VideoGenerationPage() {
   const { model, length, ratio, quality, setModel, setLength, setRatio, setQuality } =
@@ -19,6 +20,7 @@ export default function VideoGenerationPage() {
   const [results, setResults] = useState<VideoGenerationResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedArt, setSelectedArt] = useState<Artwork | null>(null);
 
   const handleGenerate = async () => {
     if (!prompt.trim() || isLoading) return;
@@ -36,8 +38,8 @@ export default function VideoGenerationPage() {
     }
   };
 
-  const handleOpen = (_id: string) => {
-    console.log('상세보기는 추후 구현');
+  const handleOpen = (art: Artwork) => {
+    setSelectedArt(art);
   };
 
   return (
@@ -90,6 +92,8 @@ export default function VideoGenerationPage() {
           <ResultGroup key={result.id} group={toVideoGenGroup(result, { model, length, ratio, quality })} onOpen={handleOpen} />
         ))}
       </div>
+
+      <DetailModal art={selectedArt} onClose={() => setSelectedArt(null)} />
     </div>
   );
 }

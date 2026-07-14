@@ -1,5 +1,6 @@
 import { ImagePlus, Sparkles, Wand2 } from 'lucide-react';
-import type { GenGroup } from '@/constants/mockData';
+import { useNavigate } from 'react-router-dom';
+import type { Artwork, GenGroup } from '@/constants/mockData';
 import { Badge, Button, Chip, Panel, Toggle, cn } from '@/components/common/ui';
 import { ResultCard } from '@/components/domain/library/ResultCard';
 
@@ -113,9 +114,10 @@ export function ResultGroup({
   showToVideo,
 }: {
   group: GenGroup;
-  onOpen: (id: string) => void;
+  onOpen: (art: Artwork) => void;
   showToVideo?: boolean;
 }) {
+  const navigate = useNavigate();
   const isVideo = group.items[0]?.type === 'video';
   return (
     <div className="flex flex-col gap-3">
@@ -125,7 +127,14 @@ export function ResultGroup({
       </div>
       <div className={cn('grid gap-4', isVideo ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-2 md:grid-cols-4')}>
         {group.items.map((art) => (
-          <ResultCard key={art.id} art={art} onOpen={() => onOpen(art.id)} showToVideo={showToVideo && art.type === 'image'} />
+          <ResultCard
+            key={art.id}
+            art={art}
+            onOpen={() => onOpen(art)}
+            showToVideo={showToVideo && art.type === 'image'}
+            onCopyPrompt={() => navigator.clipboard.writeText(art.prompt)}
+            onReedit={() => navigate(art.type === 'video' ? '/video' : '/image')}
+          />
         ))}
       </div>
     </div>

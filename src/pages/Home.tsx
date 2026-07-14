@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button, Chip, Panel, Tabs } from '@/components/common/ui';
 import { GalleryCard, ResultCard } from '@/components/domain/home/MediaCard';
 import ImageWithFallback from '@/components/common/ImageWithFallback';
+import { DetailModal } from '@/components/common/DetailModal';
 import { GALLERY_IMAGES, GALLERY_VIDEOS, PROMPT_SUGGESTIONS, RECENT_WORKS, type Artwork } from '@/constants/mockData';
 
 const INTRO_POSTER =
@@ -16,9 +17,10 @@ export default function Home() {
   const [prompt, setPrompt] = useState('');
 
   const items = tab === 'image' ? GALLERY_IMAGES : GALLERY_VIDEOS;
+  const [selectedArt, setSelectedArt] = useState<Artwork | null>(null);
 
-  const handleOpen = (_art: Artwork) => {
-    console.log('상세보기는 추후 구현');
+  const handleOpen = (art: Artwork) => {
+    setSelectedArt(art);
   };
 
   return (
@@ -122,6 +124,8 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+      <DetailModal art={selectedArt} onClose={() => setSelectedArt(null)} />
     </div>
   );
 }

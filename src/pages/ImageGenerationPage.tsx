@@ -10,11 +10,12 @@ import { Panel, Select, Stepper } from '@/components/common/ui';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import EmptyState from '@/components/common/EmptyState';
+import { DetailModal } from '@/components/common/DetailModal';
 import { useGenerationOptionsStore } from '@/hooks/useGenerationOptionsStore';
 import { generateImage } from '@/services/imageGeneration';
 import type { GenerationResult } from '@/types/generation';
 import { toGenGroup } from '@/utils/generationAdapter';
-import { IMAGE_QUALITIES, PURPOSES } from '@/constants/mockData';
+import { IMAGE_QUALITIES, PURPOSES, type Artwork } from '@/constants/mockData';
 
 const RATIO_OPTIONS = ['1:1', '4:3', '3:4', '16:9', '9:16'];
 const MIN_QUANTITY = 1;
@@ -30,6 +31,7 @@ export default function ImageGenerationPage() {
   const [results, setResults] = useState<GenerationResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedArt, setSelectedArt] = useState<Artwork | null>(null);
 
   const handleGenerate = async () => {
     if (!prompt.trim() || isLoading) return;
@@ -47,8 +49,8 @@ export default function ImageGenerationPage() {
     }
   };
 
-  const handleOpen = (_id: string) => {
-    console.log('상세보기는 추후 구현');
+  const handleOpen = (art: Artwork) => {
+    setSelectedArt(art);
   };
 
   return (
@@ -108,6 +110,8 @@ export default function ImageGenerationPage() {
           />
         ))}
       </div>
+
+      <DetailModal art={selectedArt} onClose={() => setSelectedArt(null)} />
     </div>
   );
 }
