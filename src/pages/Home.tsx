@@ -7,6 +7,7 @@ import { GalleryCard, ResultCard } from '@/components/domain/home/MediaCard';
 import ImageWithFallback from '@/components/common/ImageWithFallback';
 import { DetailModal } from '@/components/common/DetailModal';
 import { GALLERY_IMAGES, GALLERY_VIDEOS, PROMPT_SUGGESTIONS, RECENT_WORKS, type Artwork } from '@/constants/mockData';
+import { downloadFile } from '@/utils/downloadFile';
 
 const INTRO_POSTER =
   'https://images.unsplash.com/photo-1530318893805-e7e1d466bd40?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1600';
@@ -120,7 +121,15 @@ export default function Home() {
         </div>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           {RECENT_WORKS.map((art) => (
-            <ResultCard key={art.id} art={art} onOpen={() => handleOpen(art)} showToVideo={art.type === 'image'} />
+            <ResultCard
+              key={art.id}
+              art={art}
+              onOpen={() => handleOpen(art)}
+              showToVideo={art.type === 'image'}
+              onDownload={
+                art.type === 'image' ? () => downloadFile(art.url, `${art.id}.jpg`) : undefined
+              }
+            />
           ))}
         </div>
       </section>

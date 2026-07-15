@@ -142,7 +142,12 @@ export function ResultCard({
         <IconButton active={fav} onClick={() => { setFav((f) => !f); onFavorite?.(); }} aria-label="찜">
           <Heart size={14} strokeWidth={2} fill={fav ? 'currentColor' : 'transparent'} />
         </IconButton>
-        <IconButton onClick={onDownload} aria-label="다운로드">
+        <IconButton
+          onClick={onDownload}
+          disabled={!onDownload}
+          className={!onDownload ? 'cursor-not-allowed opacity-40' : undefined}
+          aria-label="다운로드"
+        >
           <Download size={14} strokeWidth={2} />
         </IconButton>
         <IconButton tone="danger" onClick={onDelete} aria-label="삭제">

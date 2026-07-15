@@ -5,6 +5,7 @@ import type { Artwork } from '../../constants/mockData';
 import { Avatar, Button, IconButton, LikePill } from './ui';
 import ImageWithFallback from './ImageWithFallback';
 import { useLikesStore } from '../../stores/useLikesStore';
+import { downloadFile } from '../../utils/downloadFile';
 
 export function DetailModal({ art, onClose }: { art: Artwork | null; onClose: () => void }) {
   const navigate = useNavigate();
@@ -111,7 +112,15 @@ export function DetailModal({ art, onClose }: { art: Artwork | null; onClose: ()
             >
               재편집
             </Button>
-            <Button variant="secondary" block leftIcon={<Download size={16} />}>
+            <Button
+              variant="secondary"
+              block
+              leftIcon={<Download size={16} />}
+              disabled={art.type === 'video'}
+              onClick={
+                art.type === 'image' ? () => downloadFile(art.url, `${art.id}.jpg`) : undefined
+              }
+            >
               다운로드
             </Button>
           </div>
