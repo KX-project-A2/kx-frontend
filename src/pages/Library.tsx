@@ -59,6 +59,7 @@ export default function Library() {
                 showToVideo={art.type === 'image'}
                 onCopyPrompt={() => navigator.clipboard.writeText(art.prompt)}
                 onReedit={() => navigate(art.type === 'video' ? '/video' : '/image')}
+                onToVideo={() => navigate('/video', { state: { referenceArt: art } })}
               />
             </div>
           ))}
@@ -120,14 +121,20 @@ export default function Library() {
             재편집
           </Button>
           <div className="grid grid-cols-2 gap-2">
+            {selected.type === 'image' && (
+              <Button
+                variant="secondary"
+                leftIcon={<VideoIcon size={16} />}
+                onClick={() => navigate('/video', { state: { referenceArt: selected } })}
+              >
+                동영상 만들기
+              </Button>
+            )}
             <Button
               variant="secondary"
-              leftIcon={<VideoIcon size={16} />}
-              onClick={() => console.log('영상 생성은 추후 구현')}
+              leftIcon={<Download size={16} />}
+              className={selected.type === 'video' ? 'col-span-2' : undefined}
             >
-              동영상 만들기
-            </Button>
-            <Button variant="secondary" leftIcon={<Download size={16} />}>
               다운로드
             </Button>
           </div>
