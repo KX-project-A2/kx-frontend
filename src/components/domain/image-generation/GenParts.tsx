@@ -28,7 +28,15 @@ export function ModelField({ name }: { name: string }) {
 }
 
 /* 2×2 reference upload grid with a x/8 counter */
-export function ReferenceGrid({ slots, used = 2 }: { slots: string[]; used?: number }) {
+export function ReferenceGrid({
+  slots,
+  used = 2,
+  images = [],
+}: {
+  slots: string[];
+  used?: number;
+  images?: (string | undefined)[];
+}) {
   return (
     <div className="flex flex-col gap-2.5">
       <div className="flex items-center justify-between">
@@ -38,19 +46,26 @@ export function ReferenceGrid({ slots, used = 2 }: { slots: string[]; used?: num
       <div className="grid grid-cols-2 gap-2">
         {slots.map((label, i) => {
           const filled = i < used;
+          const image = images[i];
           return (
             <button
               key={label}
-              className={cn('flex aspect-square flex-col items-center justify-center gap-1.5 rounded-field p-2 text-center transition-colors hover:border-selected-border')}
+              className={cn('flex aspect-square flex-col items-center justify-center gap-1.5 overflow-hidden rounded-field p-2 text-center transition-colors hover:border-selected-border')}
               style={{
                 background: filled ? 'var(--selected-bg)' : 'var(--surface-2)',
                 border: `1px dashed ${filled ? 'var(--selected-border)' : 'var(--stroke-strong)'}`,
               }}
             >
-              <ImagePlus size={16} className={filled ? 'text-brand-light' : 'text-content-muted'} />
-              <span className="text-label leading-tight" style={{ color: filled ? 'var(--content)' : 'var(--content-muted)' }}>
-                {label}
-              </span>
+              {image ? (
+                <img src={image} alt={label} className="h-full w-full object-cover" />
+              ) : (
+                <>
+                  <ImagePlus size={16} className={filled ? 'text-brand-light' : 'text-content-muted'} />
+                  <span className="text-label leading-tight" style={{ color: filled ? 'var(--content)' : 'var(--content-muted)' }}>
+                    {label}
+                  </span>
+                </>
+              )}
             </button>
           );
         })}

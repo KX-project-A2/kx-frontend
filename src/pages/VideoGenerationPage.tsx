@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { PromptComposer, ResultGroup, SettingSection } from '@/components/domain/image-generation/GenParts';
+import { useLocation } from 'react-router-dom';
+import { PromptComposer, ReferenceGrid, ResultGroup, SettingSection } from '@/components/domain/image-generation/GenParts';
 import { StoryboardUpload } from '@/components/domain/video-generation/StoryboardUpload';
 import { Panel, Select } from '@/components/common/ui';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
@@ -12,10 +13,16 @@ import type { VideoGenerationResult } from '@/types/generation';
 import { toVideoGenGroup } from '@/utils/generationAdapter';
 import { VIDEO_LENGTHS, VIDEO_MODELS, VIDEO_QUALITIES, VIDEO_RATIOS, type Artwork } from '@/constants/mockData';
 
+const REFERENCE_SLOTS = ['레퍼런스 추가'];
+
 export default function VideoGenerationPage() {
+  const location = useLocation();
+  const referenceArt = (location.state as { referenceArt?: Artwork } | null)?.referenceArt;
+
   const { model, length, ratio, quality, setModel, setLength, setRatio, setQuality } =
     useVideoGenerationOptionsStore();
-  const [prompt, setPrompt] = useState('');
+  const [prompt, setPrompt] = useState(referenceArt?.prompt ?? '');
+  const [referenceImage] = useState<string | undefined>(referenceArt?.thumb);
   const [correction, setCorrection] = useState(false);
   const [results, setResults] = useState<VideoGenerationResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -59,6 +66,11 @@ export default function VideoGenerationPage() {
           <Select value={quality} options={VIDEO_QUALITIES} onChange={setQuality} />
         </SettingSection>
         <StoryboardUpload />
+        <ReferenceGrid
+          slots={REFERENCE_SLOTS}
+          used={referenceImage ? 1 : 0}
+          images={[referenceImage]}
+        />
       </Panel>
 
       {/* main area */}
