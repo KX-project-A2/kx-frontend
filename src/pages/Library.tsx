@@ -7,6 +7,7 @@ import ImageWithFallback from '@/components/common/ImageWithFallback';
 import { LIBRARY_ITEMS, type Artwork } from '@/constants/mockData';
 import { generateImage } from '@/services/imageGeneration';
 import { generateVideo } from '@/services/videoGeneration';
+import { downloadFile } from '@/utils/downloadFile';
 import { toGenGroup, toVideoGenGroup } from '@/utils/generationAdapter';
 
 const SORTS = ['최신순', '오래된순', '좋아요순'];
@@ -92,6 +93,9 @@ export default function Library() {
                 onToVideo={() => navigate('/video', { state: { referenceArt: art } })}
                 onRegenerate={() => handleRegenerate(art)}
                 isRegenerating={regeneratingId === art.id}
+                onDownload={
+                  art.type === 'image' ? () => downloadFile(art.url, `${art.id}.jpg`) : undefined
+                }
               />
             </div>
           ))}
@@ -166,6 +170,12 @@ export default function Library() {
               variant="secondary"
               leftIcon={<Download size={16} />}
               className={selected.type === 'video' ? 'col-span-2' : undefined}
+              disabled={selected.type === 'video'}
+              onClick={
+                selected.type === 'image'
+                  ? () => downloadFile(selected.url, `${selected.id}.jpg`)
+                  : undefined
+              }
             >
               다운로드
             </Button>
