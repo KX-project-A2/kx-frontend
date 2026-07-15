@@ -13,6 +13,7 @@ import {
 import type { Artwork } from '@/constants/mockData';
 import { Badge, IconButton, cn } from '@/components/common/ui';
 import ImageWithFallback from '@/components/common/ImageWithFallback';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 /* --- Result / library card with hover actions + more menu --- */
 interface ResultCardProps {
@@ -27,6 +28,7 @@ interface ResultCardProps {
   onOpen?: () => void;
   selected?: boolean;
   showToVideo?: boolean;
+  isRegenerating?: boolean;
 }
 
 export function ResultCard({
@@ -41,6 +43,7 @@ export function ResultCard({
   onOpen,
   selected,
   showToVideo,
+  isRegenerating,
 }: ResultCardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [fav, setFav] = useState(false);
@@ -56,10 +59,17 @@ export function ResultCard({
   }, [menuOpen]);
 
   const menuItems = [
-    { icon: Copy, label: '프롬프트 복사', fn: onCopyPrompt },
-    { icon: Pencil, label: '재편집', fn: onReedit },
-    { icon: RefreshCw, label: '다시 생성', fn: onRegenerate },
-    ...(showToVideo ? [{ icon: VideoIcon, label: '동영상으로 만들기', fn: onToVideo }] : []),
+    { icon: Copy, label: '프롬프트 복사', fn: onCopyPrompt, loading: false },
+    { icon: Pencil, label: '재편집', fn: onReedit, loading: false },
+    {
+      icon: RefreshCw,
+      label: isRegenerating ? '생성 중...' : '다시 생성',
+      fn: onRegenerate,
+      loading: isRegenerating ?? false,
+    },
+    ...(showToVideo
+      ? [{ icon: VideoIcon, label: '동영상으로 만들기', fn: onToVideo, loading: false }]
+      : []),
   ];
 
   return (
@@ -117,18 +127,21 @@ export function ResultCard({
           className="absolute bottom-12 right-2.5 z-20 w-44 overflow-hidden rounded-field p-1 shadow-xl"
           style={{ background: 'var(--surface-3)', border: '1px solid var(--stroke-strong)' }}
         >
-          {menuItems.map(({ icon: Icon, label, fn }) => (
+          {menuItems.map(({ icon: Icon, label, fn, loading }) => (
             <button
               key={label}
               onClick={() => {
+                if (loading) return;
                 fn?.();
                 setMenuOpen(false);
               }}
+              disabled={loading}
               className={cn(
-                'flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-caption text-content-secondary hover:bg-surface-2 hover:text-content'
+                'flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-caption text-content-secondary hover:bg-surface-2 hover:text-content',
+                loading && 'cursor-not-allowed opacity-60'
               )}
             >
-              <Icon size={15} strokeWidth={2} />
+              {loading ? <LoadingSpinner size="sm" /> : <Icon size={15} strokeWidth={2} />}
               {label}
             </button>
           ))}

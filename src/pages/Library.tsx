@@ -5,6 +5,9 @@ import { Badge, Button, Select, Tabs } from '@/components/common/ui';
 import { ResultCard } from '@/components/domain/library/ResultCard';
 import ImageWithFallback from '@/components/common/ImageWithFallback';
 import { LIBRARY_ITEMS, type Artwork } from '@/constants/mockData';
+import { generateImage } from '@/services/imageGeneration';
+import { generateVideo } from '@/services/videoGeneration';
+import { toGenGroup, toVideoGenGroup } from '@/utils/generationAdapter';
 
 const SORTS = ['최신순', '오래된순', '좋아요순'];
 
@@ -13,8 +16,10 @@ export default function Library() {
   const [tab, setTab] = useState('all');
   const [sort, setSort] = useState(SORTS[0]);
   const [selected, setSelected] = useState<Artwork>(LIBRARY_ITEMS[0]);
+  const [items, setItems] = useState<Artwork[]>(LIBRARY_ITEMS);
+  const [regeneratingId, setRegeneratingId] = useState<string | null>(null);
 
-  const items = LIBRARY_ITEMS.filter((a) => tab === 'all' || a.type === tab);
+  const visibleItems = items.filter((a) => tab === 'all' || a.type === tab);
 
   const meta: [string, string][] = [
     ['모델', selected.model],
@@ -22,6 +27,31 @@ export default function Library() {
     ['비율', selected.ratio],
     ['생성 일자', selected.createdAt],
   ];
+
+  const handleRegenerate = async (art: Artwork) => {
+    if (regeneratingId) return;
+    setRegeneratingId(art.id);
+    try {
+      if (art.type === 'image') {
+        const options = { model: art.model, ratio: art.ratio, quality: art.quality, quantity: 1 };
+        const result = await generateImage(art.prompt, options);
+        const { items: newItems } = toGenGroup(result, options);
+        setItems((prev) => [newItems[0], ...prev]);
+      } else {
+        const options = {
+          model: art.model,
+          length: art.duration ?? '8초',
+          ratio: art.ratio,
+          quality: art.quality,
+        };
+        const result = await generateVideo(art.prompt, options);
+        const { items: newItems } = toVideoGenGroup(result, options);
+        setItems((prev) => [newItems[0], ...prev]);
+      }
+    } finally {
+      setRegeneratingId(null);
+    }
+  };
 
   return (
     <div className="flex h-full">
@@ -43,7 +73,7 @@ export default function Library() {
         />
 
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-          {items.map((art) => (
+          {visibleItems.map((art) => (
             <div
               key={art.id}
               className="rounded-card"
@@ -60,6 +90,8 @@ export default function Library() {
                 onCopyPrompt={() => navigator.clipboard.writeText(art.prompt)}
                 onReedit={() => navigate(art.type === 'video' ? '/video' : '/image')}
                 onToVideo={() => navigate('/video', { state: { referenceArt: art } })}
+                onRegenerate={() => handleRegenerate(art)}
+                isRegenerating={regeneratingId === art.id}
               />
             </div>
           ))}
