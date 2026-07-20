@@ -6,7 +6,7 @@ import ImageWithFallback from '../components/common/ImageWithFallback';
 import ErrorMessage from '../components/common/ErrorMessage';
 import LegalModal, { type LegalKind } from '../components/common/LegalModal';
 import GoogleIcon from '../components/common/icons/GoogleIcon';
-import { loginMock } from '../services/auth';
+import { login } from '../services/auth';
 import { useAuthStore } from '../hooks/useAuthStore';
 
 const HERO =
@@ -27,7 +27,7 @@ export default function Login() {
     setLoading(true);
 
     try {
-      await loginMock(email, password);
+      await login(email, password);
       setAuthenticated(true);
       navigate('/home');
     } catch (err) {

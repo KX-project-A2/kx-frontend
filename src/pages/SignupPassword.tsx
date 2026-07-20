@@ -4,11 +4,13 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import Logo from '../components/common/Logo';
 import { Button, Checkbox, TextField } from '../components/common/ui';
 import ErrorMessage from '../components/common/ErrorMessage';
-import { signupPasswordMock } from '../services/auth';
+import { signup } from '../services/auth';
+import { useAuthStore } from '../hooks/useAuthStore';
 
 export default function SignupPassword() {
   const navigate = useNavigate();
   const location = useLocation();
+  const setAuthenticated = useAuthStore((state) => state.setAuthenticated);
   const email = (location.state as { email?: string } | null)?.email || 'you@example.com';
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
@@ -19,10 +21,17 @@ export default function SignupPassword() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    if (password.length < 8) {
+      setError('비밀번호는 8자 이상이어야 합니다.');
+      return;
+    }
+
     setLoading(true);
 
     try {
-      await signupPasswordMock(email, password);
+      await signup(email, password);
+      setAuthenticated(true);
       navigate('/home');
     } catch (err) {
       setError((err as Error).message);
