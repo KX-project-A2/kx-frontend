@@ -5,13 +5,16 @@ import { Button, TextField } from '../components/common/ui';
 import ImageWithFallback from '../components/common/ImageWithFallback';
 import ErrorMessage from '../components/common/ErrorMessage';
 import LegalModal, { type LegalKind } from '../components/common/LegalModal';
+import GoogleIcon from '../components/common/icons/GoogleIcon';
 import { loginMock } from '../services/auth';
+import { useAuthStore } from '../hooks/useAuthStore';
 
 const HERO =
   'https://images.unsplash.com/photo-1779399153789-74d266fda6a4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1400';
 
 export default function Login() {
   const navigate = useNavigate();
+  const setAuthenticated = useAuthStore((state) => state.setAuthenticated);
   const [legal, setLegal] = useState<LegalKind | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -25,6 +28,7 @@ export default function Login() {
 
     try {
       await loginMock(email, password);
+      setAuthenticated(true);
       navigate('/home');
     } catch (err) {
       setError((err as Error).message);
@@ -44,6 +48,26 @@ export default function Login() {
             <h1 className="text-h1 text-content">다시 오신 걸 환영해요</h1>
             <p className="text-body text-content-secondary">상상하는 모든 것을 이미지와 영상으로.</p>
           </div>
+
+          <Button
+            type="button"
+            variant="secondary"
+            size="lg"
+            block
+            leftIcon={<GoogleIcon width={20} height={20} />}
+            className="rounded-full"
+            style={{
+              borderRadius: '9999px',
+              background: 'var(--md-surface-container-high)',
+              borderColor: 'var(--md-outline-variant)',
+              color: '#ffffff',
+            }}
+            onClick={() =>
+              (window.location.href = `${import.meta.env.VITE_API_BASE_URL}/oauth2/authorization/google`)
+            }
+          >
+            구글 계정으로 시작하기
+          </Button>
 
           <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
             <TextField

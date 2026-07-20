@@ -1,5 +1,6 @@
 import { Routes, Route, Outlet, Navigate } from 'react-router-dom';
 import AppShell from '@/layouts/AppShell';
+import ProtectedRoute from '@/components/common/ProtectedRoute';
 import Home from '@/pages/Home';
 import ImageGenerationPage from '@/pages/ImageGenerationPage';
 import VideoGenerationPage from '@/pages/VideoGenerationPage';
@@ -7,6 +8,7 @@ import Library from '@/pages/Library';
 import Login from '@/pages/Login';
 import SignupEmail from '@/pages/SignupEmail';
 import SignupPassword from '@/pages/SignupPassword';
+import OAuthCallback from '@/pages/OAuthCallback';
 
 function App() {
   return (
@@ -17,12 +19,15 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignupEmail />} />
         <Route path="/signup/password" element={<SignupPassword />} />
+        <Route path="/oauth/callback" element={<OAuthCallback />} />
 
         <Route
           element={
-            <AppShell>
-              <Outlet />
-            </AppShell>
+            <ProtectedRoute>
+              <AppShell>
+                <Outlet />
+              </AppShell>
+            </ProtectedRoute>
           }
         >
           <Route path="/home" element={<Home />} />
