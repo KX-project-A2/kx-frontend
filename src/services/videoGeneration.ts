@@ -61,7 +61,7 @@ export async function generateVideo(
     webhookUrl: '',
     options: {
       duration: mapLengthToDuration(options.length),
-      generate_audio: false,
+      generate_audio: true,
     },
   };
 
