@@ -25,6 +25,8 @@ export interface Artwork {
   aspect: number;
   /** video specific */
   duration?: string;
+  /** BE의 favorite(찜) 상태 - 라이브러리 API 전용 */
+  favorite?: boolean;
 }
 
 const u = (id: string, w = 1080) =>
