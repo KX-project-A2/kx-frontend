@@ -12,6 +12,7 @@ import ErrorMessage from '@/components/common/ErrorMessage';
 import EmptyState from '@/components/common/EmptyState';
 import { DetailModal } from '@/components/common/DetailModal';
 import { useGenerationOptionsStore } from '@/hooks/useGenerationOptionsStore';
+import { useRevokeObjectUrls } from '@/hooks/useRevokeObjectUrls';
 import { generateImage } from '@/services/imageGeneration';
 import type { GenerationResult } from '@/types/generation';
 import { toGenGroup } from '@/utils/generationAdapter';
@@ -32,6 +33,8 @@ export default function ImageGenerationPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedArt, setSelectedArt] = useState<Artwork | null>(null);
+
+  useRevokeObjectUrls(results.flatMap((result) => result.images.map((image) => image.url)));
 
   const handleGenerate = async () => {
     if (!prompt.trim() || isLoading) return;
@@ -90,8 +93,11 @@ export default function ImageGenerationPage() {
         {error && <ErrorMessage message={error} onRetry={handleGenerate} />}
 
         {isLoading && (
-          <div className="flex justify-center py-4">
+          <div className="flex flex-col items-center justify-center gap-3 py-4">
             <LoadingSpinner size="md" />
+            <p className="text-body text-content-secondary">
+              이미지 생성 중입니다. 최대 10분 정도 걸릴 수 있어요.
+            </p>
           </div>
         )}
 
