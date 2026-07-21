@@ -25,6 +25,8 @@ export interface Artwork {
   aspect: number;
   /** video specific */
   duration?: string;
+  /** BE MediaFile ID - image-to-video 생성 시 startMediaFileId로 사용 */
+  mediaFileId?: number;
 }
 
 const u = (id: string, w = 1080) =>

@@ -1,12 +1,8 @@
 import axios from 'axios';
 import axiosInstance from './axiosInstance';
 import { pollJob } from '../utils/pollJob';
+import type { ApiResponse } from '../types/api';
 import type { GenerationOptions, GenerationResult } from '../types/generation';
-
-interface ApiResponse<T> {
-  message: string;
-  data: T;
-}
 
 interface GenerateImageJob {
   jobId: number;
@@ -96,7 +92,10 @@ export async function generateImage(
   }, { intervalMs: 5000, timeoutMs: 900000 });
 
   const images = await Promise.all(
-    resultImages.map(async (image) => ({ url: await fetchImageBlobUrl(image.mediaFileId) }))
+    resultImages.map(async (image) => ({
+      url: await fetchImageBlobUrl(image.mediaFileId),
+      mediaFileId: image.mediaFileId,
+    }))
   );
 
   return {

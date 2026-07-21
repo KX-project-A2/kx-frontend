@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Copy, Download, Pencil, Play, Share2, X } from 'lucide-react';
+import { Copy, Download, Pencil, Play, Share2, Video as VideoIcon, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { Artwork } from '../../constants/mockData';
 import { Avatar, Button, IconButton, LikePill } from './ui';
@@ -123,6 +123,19 @@ export function DetailModal({ art, onClose }: { art: Artwork | null; onClose: ()
             >
               다운로드
             </Button>
+            {art.type === 'image' && (
+              <Button
+                variant="secondary"
+                block
+                leftIcon={<VideoIcon size={16} />}
+                onClick={() => {
+                  onClose();
+                  navigate('/video', { state: { referenceArt: art } });
+                }}
+              >
+                영상으로 만들기
+              </Button>
+            )}
           </div>
         </div>
       </div>

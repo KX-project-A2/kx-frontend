@@ -30,6 +30,7 @@ export function toGenGroup(result: GenerationResult, options: GenerationOptions)
     ratio: options.ratio,
     createdAt: result.createdAt,
     aspect,
+    mediaFileId: image.mediaFileId,
   }));
 
   return {

@@ -42,13 +42,17 @@ export default function Library() {
         const { items: newItems } = toGenGroup(result, options);
         setItems((prev) => [newItems[0], ...prev]);
       } else {
+        if (!art.mediaFileId) {
+          console.warn('[Library] video regenerate skipped - missing mediaFileId', art.id);
+          return;
+        }
         const options = {
           model: art.model,
           length: art.duration ?? '8초',
           ratio: art.ratio,
           quality: art.quality,
         };
-        const result = await generateVideo(art.prompt, options);
+        const result = await generateVideo(art.prompt, options, art.mediaFileId);
         const { items: newItems } = toVideoGenGroup(result, options);
         setItems((prev) => [newItems[0], ...prev]);
       }

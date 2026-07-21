@@ -32,11 +32,20 @@ export default function VideoGenerationPage() {
   const handleGenerate = async () => {
     if (!prompt.trim() || isLoading) return;
 
+    if (!referenceArt?.mediaFileId) {
+      setError('시작 이미지가 필요해요. 이미지를 먼저 선택해주세요.');
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
     try {
-      const result = await generateVideo(prompt.trim(), { model, length, ratio, quality });
+      const result = await generateVideo(
+        prompt.trim(),
+        { model, length, ratio, quality },
+        referenceArt.mediaFileId
+      );
       setResults((prev) => [result, ...prev]);
     } catch {
       setError('영상 생성에 실패했어요. 다시 시도해주세요.');
