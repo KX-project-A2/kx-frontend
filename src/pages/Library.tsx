@@ -5,6 +5,7 @@ import { Badge, Button, Select, Tabs } from '@/components/common/ui';
 import { ResultCard } from '@/components/domain/library/ResultCard';
 import ImageWithFallback from '@/components/common/ImageWithFallback';
 import { LIBRARY_ITEMS, type Artwork } from '@/constants/mockData';
+import { useRevokeObjectUrls } from '@/hooks/useRevokeObjectUrls';
 import { generateImage } from '@/services/imageGeneration';
 import { generateVideo } from '@/services/videoGeneration';
 import { downloadFile } from '@/utils/downloadFile';
@@ -19,6 +20,8 @@ export default function Library() {
   const [selected, setSelected] = useState<Artwork>(LIBRARY_ITEMS[0]);
   const [items, setItems] = useState<Artwork[]>(LIBRARY_ITEMS);
   const [regeneratingId, setRegeneratingId] = useState<string | null>(null);
+
+  useRevokeObjectUrls(items.filter((a) => a.url.startsWith('blob:')).map((a) => a.url));
 
   const visibleItems = items.filter((a) => tab === 'all' || a.type === tab);
 
@@ -104,7 +107,7 @@ export default function Library() {
 
       {/* right detail panel */}
       <div
-        className="glass-1 flex w-[380px] shrink-0 flex-col overflow-y-auto p-6"
+        className="glass-1 flex w-95 shrink-0 flex-col overflow-y-auto p-6"
         style={{ borderRadius: 0 }}
       >
         <div

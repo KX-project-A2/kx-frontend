@@ -14,6 +14,7 @@ export default function SignupPassword() {
   const email = (location.state as { email?: string } | null)?.email || 'you@example.com';
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [nickname, setNickname] = useState('');
   const [agree, setAgree] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -27,10 +28,20 @@ export default function SignupPassword() {
       return;
     }
 
+    if (password !== passwordConfirm) {
+      setError('비밀번호가 일치하지 않습니다.');
+      return;
+    }
+
+    if (!nickname.trim()) {
+      setError('닉네임을 입력해 주세요.');
+      return;
+    }
+
     setLoading(true);
 
     try {
-      await signup(email, password);
+      await signup(email, password, nickname);
       setAuthenticated(true);
       navigate('/home');
     } catch (err) {
@@ -80,13 +91,20 @@ export default function SignupPassword() {
             onChange={(e) => setPasswordConfirm(e.target.value)}
             required
           />
+          <TextField
+            label="닉네임"
+            placeholder="닉네임을 입력하세요"
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
+            required
+          />
           <div className="py-1">
             <Checkbox checked={agree} onChange={setAgree}>
               이용약관 및 개인정보 활용에 동의합니다
             </Checkbox>
           </div>
           {error && <ErrorMessage message={error} />}
-          <Button type="submit" size="lg" block disabled={!agree || loading}>
+          <Button type="submit" size="lg" block disabled={!agree || !nickname.trim() || loading}>
             {loading ? '가입 처리 중...' : '가입 완료'}
           </Button>
         </form>
