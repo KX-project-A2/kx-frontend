@@ -29,9 +29,13 @@ export async function signupEmailMock(email: string): Promise<{ success: true }>
   return { success: true };
 }
 
-export async function signup(email: string, password: string): Promise<{ success: true }> {
+export async function signup(
+  email: string,
+  password: string,
+  nickname: string
+): Promise<{ success: true }> {
   try {
-    const response = await axiosInstance.post('/api/auth/signup', { email, password });
+    const response = await axiosInstance.post('/api/auth/signup', { email, password, nickname });
 
     // TODO: 실제 응답 필드명 확인 필요 - 현재는 요청 성공 시 무조건 success: true로 처리
     console.log('[signup] response', response.data);
