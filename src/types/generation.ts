@@ -25,4 +25,5 @@ export interface VideoGenerationResult {
   videoUrl: string;
   duration: string;
   createdAt: string;
+  mediaFileId?: number;
 }

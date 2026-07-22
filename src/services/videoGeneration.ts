@@ -97,5 +97,6 @@ export async function generateVideo(
     videoUrl,
     duration: toDuration(options.length),
     createdAt: new Date().toISOString(),
+    mediaFileId: job.resultMediaFileId ?? undefined,
   };
 }

@@ -59,6 +59,7 @@ export function toVideoGenGroup(
     createdAt: result.createdAt,
     aspect: 16 / 9,
     duration: result.duration,
+    mediaFileId: result.mediaFileId,
   };
 
   return {
