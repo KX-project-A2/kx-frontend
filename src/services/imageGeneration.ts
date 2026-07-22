@@ -43,7 +43,7 @@ export function mapQualityToBE(quality: string): string {
   return QUALITY_TO_BE[quality];
 }
 
-async function fetchImageBlobUrl(mediaFileId: number): Promise<string> {
+export async function fetchImageBlobUrl(mediaFileId: number): Promise<string> {
   try {
     const response = await axiosInstance.get<Blob>(`/api/media/images/${mediaFileId}/download`, {
       responseType: 'blob',
