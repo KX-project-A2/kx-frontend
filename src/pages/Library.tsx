@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Download, Link2, Pencil, Play, Trash2, Video as VideoIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Badge, Button, Select, Tabs } from '@/components/common/ui';
 import { ResultCard } from '@/components/domain/library/ResultCard';
 import ImageWithFallback from '@/components/common/ImageWithFallback';
+import VideoWithFallback, { type VideoWithFallbackHandle } from '@/components/common/VideoWithFallback';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import EmptyState from '@/components/common/EmptyState';
@@ -26,6 +27,8 @@ export default function Library() {
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [regeneratingId, setRegeneratingId] = useState<string | null>(null);
+  const videoRef = useRef<VideoWithFallbackHandle>(null);
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -45,6 +48,10 @@ export default function Library() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    setIsVideoPlaying(false);
+  }, [selected?.id]);
 
   useRevokeObjectUrls(items.filter((a) => a.url.startsWith('blob:')).map((a) => a.url));
 
@@ -71,13 +78,17 @@ export default function Library() {
         const { items: newItems } = toGenGroup(result, options);
         setItems((prev) => [newItems[0], ...prev]);
       } else {
+        if (!art.mediaFileId) {
+          console.warn('[Library] video regenerate skipped - missing mediaFileId', art.id);
+          return;
+        }
         const options = {
           model: art.model,
           length: art.duration ?? '8초',
           ratio: art.ratio,
           quality: art.quality,
         };
-        const result = await generateVideo(art.prompt, options);
+        const result = await generateVideo(art.prompt, options, art.mediaFileId);
         const { items: newItems } = toVideoGenGroup(result, options);
         setItems((prev) => [newItems[0], ...prev]);
       }
@@ -154,7 +165,7 @@ export default function Library() {
             className="relative overflow-hidden rounded-card"
             style={{ border: '1px solid var(--stroke-soft)' }}
           >
-            {selected.type === 'video' && !selected.thumb ? (
+            {selected.type === 'video' && !selected.url ? (
               <div
                 className="flex w-full items-center justify-center bg-surface-3 text-body text-content-muted"
                 style={{ aspectRatio: '16 / 9' }}
@@ -168,23 +179,32 @@ export default function Library() {
               >
                 이미지 로드 실패
               </div>
+            ) : selected.type === 'video' ? (
+              <VideoWithFallback
+                ref={videoRef}
+                src={selected.url}
+                poster={selected.thumb}
+                alt={selected.prompt}
+                className="w-full object-cover"
+                style={{ aspectRatio: '16 / 9' }}
+                onPlayingChange={setIsVideoPlaying}
+              />
             ) : (
               <ImageWithFallback
                 src={selected.url}
                 alt={selected.prompt}
                 className="w-full object-cover"
-                style={{
-                  aspectRatio: selected.type === 'video' ? '16 / 9' : String(selected.aspect),
-                }}
+                style={{ aspectRatio: String(selected.aspect) }}
               />
             )}
-            {selected.type === 'video' && selected.thumb && (
+            {selected.type === 'video' && selected.url && !isVideoPlaying && (
               <span
-                className="absolute left-1/2 top-1/2 flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full"
+                className="absolute left-1/2 top-1/2 flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full"
                 style={{
                   background: 'rgba(11,9,18,0.55)',
                   border: '1px solid var(--stroke-strong)',
                 }}
+                onClick={() => videoRef.current?.togglePlay()}
               >
                 <Play size={18} className="translate-x-0.5 text-white" fill="white" />
               </span>

@@ -25,6 +25,8 @@ export interface Artwork {
   aspect: number;
   /** video specific */
   duration?: string;
+  /** BE MediaFile ID - image-to-video 생성 시 startMediaFileId로 사용 */
+  mediaFileId?: number;
   /** BE의 favorite(찜) 상태 - 라이브러리 API 전용 */
   favorite?: boolean;
   /** presets_catalog.json 원본 데이터의 실제 로컬 에셋 경로 */

@@ -13,6 +13,7 @@ import {
 import type { Artwork } from '@/constants/mockData';
 import { Badge, IconButton, cn } from '@/components/common/ui';
 import ImageWithFallback from '@/components/common/ImageWithFallback';
+import VideoWithFallback from '@/components/common/VideoWithFallback';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import { useLikesStore } from '@/stores/useLikesStore';
 
@@ -72,7 +73,7 @@ export function ResultCard({
       loading: isRegenerating ?? false,
     },
     ...(showToVideo
-      ? [{ icon: VideoIcon, label: '동영상으로 만들기', fn: onToVideo, loading: false }]
+      ? [{ icon: VideoIcon, label: '동영상으로 전환', fn: onToVideo, loading: false }]
       : []),
   ];
 
@@ -83,7 +84,7 @@ export function ResultCard({
       ref={ref}
     >
       <button onClick={onOpen} className="block w-full">
-        {art.type === 'video' && !art.thumb ? (
+        {art.type === 'video' && !art.url ? (
           <div
             className="flex w-full items-center justify-center bg-surface-3 text-caption text-content-muted"
             style={{ aspectRatio: '16 / 9' }}
@@ -97,12 +98,20 @@ export function ResultCard({
           >
             이미지 로드 실패
           </div>
+        ) : art.type === 'video' ? (
+          <VideoWithFallback
+            src={art.url}
+            poster={art.thumb}
+            alt={art.prompt}
+            className="w-full object-cover"
+            style={{ aspectRatio: '16 / 9' }}
+          />
         ) : (
           <ImageWithFallback
             src={art.thumb}
             alt={art.prompt}
             className="w-full object-cover"
-            style={{ aspectRatio: art.type === 'video' ? '16 / 9' : String(art.aspect) }}
+            style={{ aspectRatio: String(art.aspect) }}
           />
         )}
       </button>

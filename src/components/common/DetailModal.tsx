@@ -1,9 +1,10 @@
-import { useState } from 'react';
-import { Copy, Download, Pencil, Play, Share2, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Copy, Download, Pencil, Play, Share2, Video as VideoIcon, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { Artwork } from '../../constants/mockData';
 import { Avatar, Button, IconButton, LikePill } from './ui';
 import ImageWithFallback from './ImageWithFallback';
+import VideoWithFallback, { type VideoWithFallbackHandle } from './VideoWithFallback';
 import { useLikesStore } from '../../stores/useLikesStore';
 import { downloadFile } from '../../utils/downloadFile';
 
@@ -11,8 +12,14 @@ export function DetailModal({ art, onClose }: { art: Artwork | null; onClose: ()
   const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
+  const videoRef = useRef<VideoWithFallbackHandle>(null);
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const overrides = useLikesStore((s) => s.overrides);
   const toggleLike = useLikesStore((s) => s.toggleLike);
+
+  useEffect(() => {
+    setIsVideoPlaying(false);
+  }, [art?.id]);
 
   if (!art) return null;
 
@@ -34,10 +41,31 @@ export function DetailModal({ art, onClose }: { art: Artwork | null; onClose: ()
         onClick={(e) => e.stopPropagation()}
       >
         <div className="relative flex flex-1 items-center justify-center p-4" style={{ background: 'var(--canvas)' }}>
-          <ImageWithFallback src={art.url} alt={art.prompt} className="max-h-[80vh] w-full rounded-card object-contain" />
-          {art.type === 'video' && (
-            <span className="pointer-events-none absolute flex h-14 w-14 items-center justify-center rounded-full"
-              style={{ background: 'rgba(11,9,18,0.55)', border: '1px solid var(--stroke-strong)' }}>
+          {art.type === 'video' && !art.url ? (
+            <div
+              className="flex w-full items-center justify-center rounded-card bg-surface-3 text-body text-content-muted"
+              style={{ aspectRatio: '16 / 9' }}
+            >
+              영상 준비 중
+            </div>
+          ) : art.type === 'video' ? (
+            <VideoWithFallback
+              ref={videoRef}
+              src={art.url}
+              poster={art.thumb}
+              alt={art.prompt}
+              className="max-h-[80vh] w-full rounded-card object-contain"
+              onPlayingChange={setIsVideoPlaying}
+            />
+          ) : (
+            <ImageWithFallback src={art.url} alt={art.prompt} className="max-h-[80vh] w-full rounded-card object-contain" />
+          )}
+          {art.type === 'video' && art.url && !isVideoPlaying && (
+            <span
+              className="absolute flex h-14 w-14 cursor-pointer items-center justify-center rounded-full"
+              style={{ background: 'rgba(11,9,18,0.55)', border: '1px solid var(--stroke-strong)' }}
+              onClick={() => videoRef.current?.togglePlay()}
+            >
               <Play size={22} className="translate-x-0.5 text-white" fill="white" />
             </span>
           )}
@@ -123,6 +151,19 @@ export function DetailModal({ art, onClose }: { art: Artwork | null; onClose: ()
             >
               다운로드
             </Button>
+            {art.type === 'image' && (
+              <Button
+                variant="secondary"
+                block
+                leftIcon={<VideoIcon size={16} />}
+                onClick={() => {
+                  onClose();
+                  navigate('/video', { state: { referenceArt: art } });
+                }}
+              >
+                영상으로 만들기
+              </Button>
+            )}
           </div>
         </div>
       </div>

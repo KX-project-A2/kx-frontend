@@ -6,14 +6,18 @@ import {
   ResultGroup,
   SettingSection,
 } from '@/components/domain/image-generation/GenParts';
-import { StoryboardUpload } from '@/components/domain/video-generation/StoryboardUpload';
+import {
+  StoryboardUpload,
+  type StoryboardImage,
+} from '@/components/domain/video-generation/StoryboardUpload';
 import { Panel, Select } from '@/components/common/ui';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import EmptyState from '@/components/common/EmptyState';
 import { DetailModal } from '@/components/common/DetailModal';
 import { useVideoGenerationOptionsStore } from '@/hooks/useVideoGenerationOptionsStore';
-import { generateVideo } from '@/services/videoGeneration';
+import { useRevokeObjectUrls } from '@/hooks/useRevokeObjectUrls';
+import { generateVideo, uploadReferenceImage } from '@/services/videoGeneration';
 import type { VideoGenerationResult } from '@/types/generation';
 import { toVideoGenGroup } from '@/utils/generationAdapter';
 import { getAvailableLengths, toVideoValidationInput } from '@/utils/videoOptionMapping';
@@ -35,6 +39,9 @@ export default function VideoGenerationPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedArt, setSelectedArt] = useState<Artwork | null>(null);
+  const [storyboardImages, setStoryboardImages] = useState<StoryboardImage[]>([]);
+
+  useRevokeObjectUrls(storyboardImages.map((img) => img.previewUrl));
 
   const availableLengths = getAvailableLengths(model);
 
@@ -52,11 +59,24 @@ export default function VideoGenerationPage() {
   const handleGenerate = async () => {
     if (!prompt.trim() || isLoading || validationError) return;
 
+    if (!referenceArt?.mediaFileId) {
+      setError('시작 이미지가 필요해요. 이미지를 먼저 선택해주세요.');
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
     try {
-      const result = await generateVideo(prompt.trim(), { model, length, ratio, quality });
+      const referenceMediaFileIds = await Promise.all(
+        storyboardImages.map((img) => uploadReferenceImage(img.file))
+      );
+      const result = await generateVideo(
+        prompt.trim(),
+        { model, length, ratio, quality },
+        referenceArt.mediaFileId,
+        referenceMediaFileIds
+      );
       setResults((prev) => [result, ...prev]);
     } catch {
       setError('영상 생성에 실패했어요. 다시 시도해주세요.');
@@ -90,7 +110,7 @@ export default function VideoGenerationPage() {
         <SettingSection title="품질">
           <Select value={quality} options={VIDEO_QUALITIES} onChange={setQuality} />
         </SettingSection>
-        <StoryboardUpload />
+        <StoryboardUpload images={storyboardImages} onChange={setStoryboardImages} />
         <ReferenceGrid
           slots={REFERENCE_SLOTS}
           used={referenceImage ? 1 : 0}
