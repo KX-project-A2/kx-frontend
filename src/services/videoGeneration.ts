@@ -1,9 +1,8 @@
 import axiosInstance from './axiosInstance';
 import { pollJob } from '../utils/pollJob';
+import { mapLengthToDuration, mapModelToModelId } from '../utils/videoOptionMapping';
 import type { ApiResponse } from '../types/api';
 import type { VideoGenerationOptions, VideoGenerationResult } from '../types/generation';
-
-const DEFAULT_MODEL_ID = 'fal-ai/kling-video/o3/standard/image-to-video';
 
 interface GenerateVideoJob {
   id: number;
@@ -27,18 +26,6 @@ interface GenerateVideoJob {
   resultResolution?: string | null;
 }
 
-const LENGTH_TO_DURATION: Record<string, string> = {
-  '3초': '3',
-  '5초': '5',
-  '8초': '8',
-  '10초': '10',
-  '15초': '15',
-};
-
-export function mapLengthToDuration(length: string): string {
-  return LENGTH_TO_DURATION[length];
-}
-
 /** 화면 표시용 mm:ss 변환 (요청 body의 duration과는 별개) */
 function toDuration(length: string): string {
   const seconds = parseInt(length, 10) || 0;
@@ -47,16 +34,28 @@ function toDuration(length: string): string {
   return `${minutes}:${remainder.toString().padStart(2, '0')}`;
 }
 
+/** 스토리보드 원본 파일을 업로드해 mediaFileId를 받아온다. */
+export async function uploadReferenceImage(file: File): Promise<number> {
+  const formData = new FormData();
+  formData.append('file', file);
+  const response = await axiosInstance.post<ApiResponse<{ mediaFileId: number }>>(
+    '/api/media/images/upload',
+    formData
+  );
+  return response.data.data.mediaFileId;
+}
+
 export async function generateVideo(
   prompt: string,
   options: VideoGenerationOptions,
-  startMediaFileId: number
+  startMediaFileId: number,
+  referenceMediaFileIds: number[] = []
 ): Promise<VideoGenerationResult> {
   const requestBody = {
     startMediaFileId,
     endMediaFileId: null,
-    referenceMediaFileIds: [], // TODO: 스토리보드 업로드는 다음 단계에서 연동
-    modelId: DEFAULT_MODEL_ID,
+    referenceMediaFileIds,
+    modelId: mapModelToModelId(options.model),
     prompt,
     webhookUrl: '',
     options: {
