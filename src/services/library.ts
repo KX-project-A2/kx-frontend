@@ -97,7 +97,36 @@ function toImageErrorPlaceholderArtwork(file: MediaFile): Artwork {
   };
 }
 
-/** 영상 다운로드 API 미구현 - thumb/url을 비워서 "준비 중" placeholder로 표시 (ResultCard/Library에서 처리) */
+async function fetchVideoDownloadUrl(mediaFileId: number): Promise<string> {
+  const response = await axiosInstance.get<ApiResponse<{ downloadUrl: string; expiresInSeconds: number }>>(
+    `/api/media/files/${mediaFileId}/download-url`
+  );
+  return response.data.data.downloadUrl;
+}
+
+async function toVideoArtwork(file: MediaFile): Promise<Artwork> {
+  const url = await fetchVideoDownloadUrl(file.id);
+
+  return {
+    id: String(file.id),
+    type: 'video',
+    url,
+    thumb: '',
+    prompt: file.reversedPrompt ?? '',
+    creator: ME,
+    likes: 0,
+    liked: file.favorite,
+    favorite: file.favorite,
+    model: file.model ?? '',
+    quality: file.quality ?? '',
+    ratio: composeRatio(file.aspectRatio, file.resolution),
+    createdAt: file.createdAt,
+    aspect: parseAspect(file.aspectRatio),
+    mediaFileId: file.id,
+  };
+}
+
+/** download-url 발급 실패 시 fallback placeholder로 재사용 */
 function toVideoPlaceholderArtwork(file: MediaFile): Artwork {
   return {
     id: String(file.id),
@@ -129,7 +158,12 @@ export async function fetchLibraryItems(page = 0, size = 20): Promise<Artwork[]>
     console.error('[fetchLibraryItems] image load failed', imageFiles[index].id, result.reason);
     return toImageErrorPlaceholderArtwork(imageFiles[index]);
   });
-  const videos = videoFiles.map(toVideoPlaceholderArtwork);
+  const videoResults = await Promise.allSettled(videoFiles.map(toVideoArtwork));
+  const videos = videoResults.map((result, index) => {
+    if (result.status === 'fulfilled') return result.value;
+    console.error('[fetchLibraryItems] video download url failed', videoFiles[index].id, result.reason);
+    return toVideoPlaceholderArtwork(videoFiles[index]);
+  });
 
   return [...images, ...videos];
 }
