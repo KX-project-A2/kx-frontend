@@ -149,7 +149,9 @@ export default function Library() {
                   onRegenerate={() => handleRegenerate(art)}
                   isRegenerating={regeneratingId === art.id}
                   onDownload={
-                    art.type === 'image' ? () => downloadFile(art.url, `${art.id}.jpg`) : undefined
+                    art.url
+                      ? () => downloadFile(art.url, `${art.id}.${art.type === 'video' ? 'mp4' : 'jpg'}`)
+                      : undefined
                   }
                 />
               </div>
@@ -257,11 +259,13 @@ export default function Library() {
                 variant="secondary"
                 leftIcon={<Download size={16} />}
                 className={selected.type === 'video' ? 'col-span-2' : undefined}
-                disabled={selected.type === 'video'}
+                disabled={selected.type === 'video' && !selected.url}
                 onClick={
                   selected.type === 'image'
                     ? () => downloadFile(selected.url, `${selected.id}.jpg`)
-                    : undefined
+                    : selected.type === 'video' && selected.url
+                      ? () => downloadFile(selected.url, `${selected.id}.mp4`)
+                      : undefined
                 }
               >
                 다운로드
