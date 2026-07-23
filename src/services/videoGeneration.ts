@@ -46,7 +46,8 @@ export async function uploadReferenceImage(file: File): Promise<number> {
   formData.append('file', file);
   const response = await axiosInstance.post<ApiResponse<{ mediaFileId: number }>>(
     '/api/media/images/upload',
-    formData
+    formData,
+    { headers: { 'Content-Type': undefined } }
   );
   return response.data.data.mediaFileId;
 }
