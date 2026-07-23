@@ -30,12 +30,10 @@ const RATIO_TO_SIZE: Record<string, string> = {
   '1:1': '1024x1024',
   '4:3': '1536x1024',
   '3:4': '1024x1536',
-  '16:9': '1792x1024',
-  '9:16': '1024x1792',
 };
 
 const QUALITY_TO_BE: Record<string, string> = {
-  '2K': 'medium',
+  '2K': 'standard',
   '4K': 'high',
 };
 
