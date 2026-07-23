@@ -1,6 +1,12 @@
 import axiosInstance from './axiosInstance';
 import { pollJob } from '../utils/pollJob';
-import { mapLengthToDuration, mapModelToModelId } from '../utils/videoOptionMapping';
+import {
+  getVideoModelCapability,
+  mapLengthToDuration,
+  mapModelToModelId,
+  mapQualityToResolution,
+  mapRatioToAspectRatio,
+} from '../utils/videoOptionMapping';
 import type { ApiResponse } from '../types/api';
 import type { VideoGenerationOptions, VideoGenerationResult } from '../types/generation';
 
@@ -48,20 +54,26 @@ export async function uploadReferenceImage(file: File): Promise<number> {
 export async function generateVideo(
   prompt: string,
   options: VideoGenerationOptions,
-  startMediaFileId: number,
+  startMediaFileId: number | null,
   referenceMediaFileIds: number[] = []
 ): Promise<VideoGenerationResult> {
+  const capability = getVideoModelCapability(options.model);
+
+  const videoOptions: Record<string, unknown> = {
+    duration: mapLengthToDuration(options.length),
+    generate_audio: true,
+  };
+  if (capability.supportsRatio) videoOptions.aspect_ratio = mapRatioToAspectRatio(options.ratio);
+  if (capability.supportsQuality) videoOptions.resolution = mapQualityToResolution(options.quality);
+
   const requestBody = {
-    startMediaFileId,
+    startMediaFileId: capability.requiresStartImage ? startMediaFileId : null,
     endMediaFileId: null,
-    referenceMediaFileIds,
+    referenceMediaFileIds: capability.supportsReferenceImages ? referenceMediaFileIds : [],
     modelId: mapModelToModelId(options.model),
     prompt,
     webhookUrl: '',
-    options: {
-      duration: mapLengthToDuration(options.length),
-      generate_audio: true,
-    },
+    options: videoOptions,
   };
 
   console.log('[generateVideo] request body', requestBody);

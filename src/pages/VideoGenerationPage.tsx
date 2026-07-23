@@ -17,11 +17,17 @@ import EmptyState from '@/components/common/EmptyState';
 import { DetailModal } from '@/components/common/DetailModal';
 import { useVideoGenerationOptionsStore } from '@/hooks/useVideoGenerationOptionsStore';
 import { useRevokeObjectUrls } from '@/hooks/useRevokeObjectUrls';
+import { fetchImageBlobUrl } from '@/services/imageGeneration';
 import { generateVideo, uploadReferenceImage } from '@/services/videoGeneration';
 import type { VideoGenerationResult } from '@/types/generation';
 import { toVideoGenGroup } from '@/utils/generationAdapter';
-import { getAvailableLengths, toVideoValidationInput } from '@/utils/videoOptionMapping';
-import { validateVideoOptions } from '@/utils/videoOptionValidator';
+import {
+  getAvailableLengths,
+  getVideoModelCapability,
+  mapModelToModelId,
+  toVideoValidationInput,
+} from '@/utils/videoOptionMapping';
+import { KLING_IMAGE_TO_VIDEO, validateVideoOptions } from '@/utils/videoOptionValidator';
 import { VIDEO_MODELS, VIDEO_QUALITIES, VIDEO_RATIOS, type Artwork } from '@/constants/mockData';
 
 const REFERENCE_SLOTS = ['레퍼런스 추가'];
@@ -33,7 +39,7 @@ export default function VideoGenerationPage() {
   const { model, length, ratio, quality, setModel, setLength, setRatio, setQuality } =
     useVideoGenerationOptionsStore();
   const [prompt, setPrompt] = useState(referenceArt?.prompt ?? '');
-  const [referenceImage] = useState<string | undefined>(referenceArt?.thumb);
+  const [referenceImage, setReferenceImage] = useState<string | undefined>(undefined);
   const [correction, setCorrection] = useState(false);
   const [results, setResults] = useState<VideoGenerationResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -43,6 +49,7 @@ export default function VideoGenerationPage() {
 
   useRevokeObjectUrls(storyboardImages.map((img) => img.previewUrl));
 
+  const capability = getVideoModelCapability(model);
   const availableLengths = getAvailableLengths(model);
 
   useEffect(() => {
@@ -52,6 +59,28 @@ export default function VideoGenerationPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- model 변경 시에만 리셋, length 변경으로는 재실행 안 함
   }, [model]);
 
+  useEffect(() => {
+    if (!referenceArt?.mediaFileId) {
+      setReferenceImage(undefined);
+      return;
+    }
+    let objectUrl: string | undefined;
+    fetchImageBlobUrl(referenceArt.mediaFileId).then((url) => {
+      objectUrl = url;
+      setReferenceImage(url);
+    });
+    return () => {
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [referenceArt?.mediaFileId]);
+
+  useEffect(() => {
+    if (referenceArt?.mediaFileId) {
+      setModel(VIDEO_MODELS.find((m) => mapModelToModelId(m) === KLING_IMAGE_TO_VIDEO) ?? VIDEO_MODELS[0]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- referenceArt.mediaFileId 변경(새로 "동영상 만들기"로 진입) 시에만 실행
+  }, [referenceArt?.mediaFileId]);
+
   const validationError = validateVideoOptions(
     toVideoValidationInput(prompt.trim(), { model, length, ratio, quality })
   );
@@ -59,8 +88,12 @@ export default function VideoGenerationPage() {
   const handleGenerate = async () => {
     if (!prompt.trim() || isLoading || validationError) return;
 
-    if (!referenceArt?.mediaFileId) {
+    if (capability.requiresStartImage && !referenceArt?.mediaFileId) {
       setError('시작 이미지가 필요해요. 이미지를 먼저 선택해주세요.');
+      return;
+    }
+    if (capability.requiresReferenceImages && storyboardImages.length === 0) {
+      setError('참조 이미지가 필요해요. 스토리보드에 이미지를 추가해주세요.');
       return;
     }
 
@@ -74,7 +107,7 @@ export default function VideoGenerationPage() {
       const result = await generateVideo(
         prompt.trim(),
         { model, length, ratio, quality },
-        referenceArt.mediaFileId,
+        referenceArt?.mediaFileId ?? null,
         referenceMediaFileIds
       );
       setResults((prev) => [result, ...prev]);
@@ -104,18 +137,26 @@ export default function VideoGenerationPage() {
         <SettingSection title="길이">
           <Select value={length} options={availableLengths} onChange={setLength} />
         </SettingSection>
-        <SettingSection title="비율">
-          <Select value={ratio} options={VIDEO_RATIOS} onChange={setRatio} />
-        </SettingSection>
-        <SettingSection title="품질">
-          <Select value={quality} options={VIDEO_QUALITIES} onChange={setQuality} />
-        </SettingSection>
-        <StoryboardUpload images={storyboardImages} onChange={setStoryboardImages} />
-        <ReferenceGrid
-          slots={REFERENCE_SLOTS}
-          used={referenceImage ? 1 : 0}
-          images={[referenceImage]}
-        />
+        {capability.supportsRatio && (
+          <SettingSection title="비율">
+            <Select value={ratio} options={VIDEO_RATIOS} onChange={setRatio} />
+          </SettingSection>
+        )}
+        {capability.supportsQuality && (
+          <SettingSection title="품질">
+            <Select value={quality} options={VIDEO_QUALITIES} onChange={setQuality} />
+          </SettingSection>
+        )}
+        {capability.supportsReferenceImages && (
+          <StoryboardUpload images={storyboardImages} onChange={setStoryboardImages} />
+        )}
+        {capability.requiresStartImage && (
+          <ReferenceGrid
+            slots={REFERENCE_SLOTS}
+            used={referenceImage ? 1 : 0}
+            images={[referenceImage]}
+          />
+        )}
       </Panel>
 
       {/* main area */}
@@ -123,7 +164,12 @@ export default function VideoGenerationPage() {
         <PromptComposer
           value={prompt}
           onChange={setPrompt}
-          chips={[model, length, ratio.split(' · ')[0], quality.split(' ')[0]]}
+          chips={[
+            model,
+            length,
+            ...(capability.supportsRatio ? [ratio.split(' · ')[0]] : []),
+            ...(capability.supportsQuality ? [quality.split(' ')[0]] : []),
+          ]}
           correction={correction}
           onCorrectionChange={setCorrection}
           onGenerate={handleGenerate}
