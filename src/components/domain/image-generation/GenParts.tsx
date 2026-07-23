@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { ImagePlus, Sparkles, Wand2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { Artwork, GenGroup } from '@/constants/mockData';
@@ -32,17 +33,36 @@ export function ReferenceGrid({
   slots,
   used = 2,
   images = [],
+  onAdd,
+  onRemove,
 }: {
   slots: string[];
   used?: number;
   images?: (string | undefined)[];
+  onAdd?: (file: File) => void;
+  onRemove?: (index: number) => void;
 }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) onAdd?.(file);
+    e.target.value = '';
+  };
+
   return (
     <div className="flex flex-col gap-2.5">
       <div className="flex items-center justify-between">
         <span className="text-label text-content-muted">레퍼런스</span>
         <span className="font-num text-label text-content-secondary">{used}/8</span>
       </div>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleFileChange}
+      />
       <div className="grid grid-cols-2 gap-2">
         {slots.map((label, i) => {
           const filled = i < used;
@@ -50,6 +70,7 @@ export function ReferenceGrid({
           return (
             <button
               key={label}
+              onClick={() => (filled ? onRemove?.(i) : inputRef.current?.click())}
               className={cn('flex aspect-square flex-col items-center justify-center gap-1.5 overflow-hidden rounded-field p-2 text-center transition-colors hover:border-selected-border')}
               style={{
                 background: filled ? 'var(--selected-bg)' : 'var(--surface-2)',
