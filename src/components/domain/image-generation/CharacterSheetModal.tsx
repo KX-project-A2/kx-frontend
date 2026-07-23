@@ -43,7 +43,7 @@ const TEXT_BUTTON_STRONG: React.CSSProperties = {
 /* ------------------------------------------------------------------ */
 /* Options (Figma frame only exposes each dropdown's closed/selected
    state — the shown value is kept as the default below) */
-const GENDER_OPTIONS = ['여성', '남성', '중성적'] as const;
+const GENDER_OPTIONS = ['여성', '남성'] as const;
 const AGE_GROUP_OPTIONS = ['10대', '20대', '30대', '40대', '50대 이상'] as const;
 const BODY_TYPE_OPTIONS = ['슬림', '보통', '근육질', '통통'] as const;
 const HAIR_LENGTH_OPTIONS = ['숏컷', '단발', '중단발', '장발'] as const;

@@ -16,7 +16,7 @@ import { CharacterSheetModal } from '@/components/domain/image-generation/Charac
 import { useGenerationOptionsStore } from '@/hooks/useGenerationOptionsStore';
 import { useRevokeObjectUrls } from '@/hooks/useRevokeObjectUrls';
 import { useObjectUrls } from '@/hooks/useObjectUrls';
-import { generateImage } from '@/services/imageGeneration';
+import { characterConceptSheet, generateImage } from '@/services/imageGeneration';
 import type { GenerationResult } from '@/types/generation';
 import { toGenGroup } from '@/utils/generationAdapter';
 import { IMAGE_QUALITIES, type Artwork } from '@/constants/mockData';
@@ -165,10 +165,19 @@ export default function ImageGenerationPage() {
       <CharacterSheetModal
         open={isCharacterModalOpen}
         onClose={() => setIsCharacterModalOpen(false)}
-        onGenerate={(data) => {
-          // TODO: 다음 단계에서 CharacterConceptSheetRequestDto로 변환해 API 연동 후
-          // 반환된 GenerationResult를 setResults((prev) => [result, ...prev])로 반영
-          console.log('character sheet form data', data);
+        onGenerate={async (data) => {
+          setIsLoading(true);
+          setError(null);
+
+          try {
+            const result = await characterConceptSheet(data, { model, ratio, quality, quantity });
+            setResults((prev) => [result, ...prev]);
+            setIsCharacterModalOpen(false);
+          } catch {
+            setError('캐릭터 생성에 실패했어요. 다시 시도해주세요.');
+          } finally {
+            setIsLoading(false);
+          }
         }}
       />
     </div>

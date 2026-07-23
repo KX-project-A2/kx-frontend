@@ -130,3 +130,84 @@ export async function generateImage(
     createdAt: new Date().toISOString(),
   };
 }
+
+export async function characterConceptSheet(
+  data: {
+    gender: string;
+    ageGroup: string;
+    bodyType: string;
+    style: string;
+    worldSetting: string;
+    hairLength: string;
+    hairStyle: string;
+    hairColor: string;
+    expression: string;
+    eyeColor: string;
+    outfitGenre: string;
+    outfitColor: string;
+    accessories: string[];
+  },
+  options: GenerationOptions
+): Promise<GenerationResult> {
+  const requestBody = {
+    gender: data.gender,
+    age: data.ageGroup,
+    bodyType: data.bodyType,
+    artStyle: data.style,
+    worldView: data.worldSetting,
+    hairLength: data.hairLength,
+    hairStyle: data.hairStyle,
+    hairColor: data.hairColor,
+    eyeColor: data.eyeColor,
+    expression: data.expression,
+    outfitGenre: data.outfitGenre,
+    outfitColor: data.outfitColor,
+    accessories: data.accessories,
+    imageCount: options.quantity,
+    size: mapRatioToSize(options.ratio),
+    quality: mapQualityToBE(options.quality),
+  };
+
+  console.log('[characterConceptSheet] request body', requestBody);
+  const createResponse = await axiosInstance.post<ApiResponse<GenerateImageJob>>(
+    '/api/generate/images/character-concept-sheet',
+    requestBody
+  );
+
+  console.log(
+    '[characterConceptSheet] create response',
+    JSON.stringify(createResponse.data, null, 2)
+  );
+  const { jobId } = createResponse.data.data;
+
+  const job = await pollJob<GenerateImageJob>(
+    async () => {
+      const statusResponse = await axiosInstance.get<ApiResponse<GenerateImageJob>>(
+        `/api/generate/images/jobs/${jobId}`
+      );
+
+      console.log(
+        '[characterConceptSheet] job status response',
+        JSON.stringify(statusResponse.data, null, 2)
+      );
+      const { status } = statusResponse.data.data;
+
+      return { status, data: statusResponse.data.data };
+    },
+    { intervalMs: 5000, timeoutMs: 900000 }
+  );
+
+  const images = await Promise.all(
+    job.resultImages.map(async (image) => ({
+      url: await fetchImageBlobUrl(image.mediaFileId),
+      mediaFileId: image.mediaFileId,
+    }))
+  );
+
+  return {
+    id: String(jobId),
+    prompt: job.prompt,
+    images,
+    createdAt: new Date().toISOString(),
+  };
+}
