@@ -24,7 +24,6 @@ const PURPOSE_OPTIONS = ['캐릭터', '배경'];
 const MIN_QUANTITY = 1;
 const MAX_QUANTITY = 4;
 const MAX_REFERENCES = 8;
-const REFERENCE_SLOTS = ['레퍼런스 추가', '레퍼런스 추가', '레퍼런스 추가', '레퍼런스 추가'];
 
 export default function ImageGenerationPage() {
   const { model, ratio, quality, quantity, setRatio, setQuality, setQuantity } =
@@ -93,7 +92,10 @@ export default function ImageGenerationPage() {
           <Stepper value={quantity} min={MIN_QUANTITY} max={MAX_QUANTITY} onChange={setQuantity} />
         </SettingSection>
         <ReferenceGrid
-          slots={REFERENCE_SLOTS}
+          slots={Array.from(
+            { length: Math.max(4, Math.min(references.length + 1, MAX_REFERENCES)) },
+            () => '레퍼런스 추가'
+          )}
           used={references.length}
           images={referencePreviewUrls}
           onAdd={handleAddReference}
