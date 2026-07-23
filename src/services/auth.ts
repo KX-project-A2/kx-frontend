@@ -1,6 +1,15 @@
 import axios from 'axios';
 import axiosInstance from './axiosInstance';
 
+export class SignupApiError extends Error {
+  status?: number;
+  constructor(message: string, status?: number) {
+    super(message);
+    this.name = 'SignupApiError';
+    this.status = status;
+  }
+}
+
 export function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
@@ -15,9 +24,9 @@ export async function login(email: string, password: string): Promise<{ success:
     return { success: true };
   } catch (error) {
     if (axios.isAxiosError(error) && error.response?.data?.message) {
-      throw new Error(error.response.data.message);
+      throw new Error(error.response.data.message, { cause: error });
     }
-    throw new Error('로그인에 실패했습니다. 다시 시도해주세요.');
+    throw new Error('로그인에 실패했습니다. 다시 시도해주세요.', { cause: error });
   }
 }
 
@@ -43,8 +52,11 @@ export async function signup(
     return { success: true };
   } catch (error) {
     if (axios.isAxiosError(error) && error.response?.data?.message) {
-      throw new Error(error.response.data.message);
+      throw new SignupApiError(error.response.data.message, error.response.status);
     }
-    throw new Error('회원가입에 실패했습니다. 다시 시도해주세요.');
+    throw new SignupApiError(
+      '회원가입에 실패했습니다. 다시 시도해주세요.',
+      axios.isAxiosError(error) ? error.response?.status : undefined
+    );
   }
 }
