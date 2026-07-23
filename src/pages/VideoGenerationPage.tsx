@@ -17,15 +17,17 @@ import EmptyState from '@/components/common/EmptyState';
 import { DetailModal } from '@/components/common/DetailModal';
 import { useVideoGenerationOptionsStore } from '@/hooks/useVideoGenerationOptionsStore';
 import { useRevokeObjectUrls } from '@/hooks/useRevokeObjectUrls';
+import { fetchImageBlobUrl } from '@/services/imageGeneration';
 import { generateVideo, uploadReferenceImage } from '@/services/videoGeneration';
 import type { VideoGenerationResult } from '@/types/generation';
 import { toVideoGenGroup } from '@/utils/generationAdapter';
 import {
   getAvailableLengths,
   getVideoModelCapability,
+  mapModelToModelId,
   toVideoValidationInput,
 } from '@/utils/videoOptionMapping';
-import { validateVideoOptions } from '@/utils/videoOptionValidator';
+import { KLING_IMAGE_TO_VIDEO, validateVideoOptions } from '@/utils/videoOptionValidator';
 import { VIDEO_MODELS, VIDEO_QUALITIES, VIDEO_RATIOS, type Artwork } from '@/constants/mockData';
 
 const REFERENCE_SLOTS = ['레퍼런스 추가'];
@@ -37,7 +39,7 @@ export default function VideoGenerationPage() {
   const { model, length, ratio, quality, setModel, setLength, setRatio, setQuality } =
     useVideoGenerationOptionsStore();
   const [prompt, setPrompt] = useState(referenceArt?.prompt ?? '');
-  const [referenceImage] = useState<string | undefined>(referenceArt?.thumb);
+  const [referenceImage, setReferenceImage] = useState<string | undefined>(undefined);
   const [correction, setCorrection] = useState(false);
   const [results, setResults] = useState<VideoGenerationResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -56,6 +58,28 @@ export default function VideoGenerationPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- model 변경 시에만 리셋, length 변경으로는 재실행 안 함
   }, [model]);
+
+  useEffect(() => {
+    if (!referenceArt?.mediaFileId) {
+      setReferenceImage(undefined);
+      return;
+    }
+    let objectUrl: string | undefined;
+    fetchImageBlobUrl(referenceArt.mediaFileId).then((url) => {
+      objectUrl = url;
+      setReferenceImage(url);
+    });
+    return () => {
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [referenceArt?.mediaFileId]);
+
+  useEffect(() => {
+    if (referenceArt?.mediaFileId) {
+      setModel(VIDEO_MODELS.find((m) => mapModelToModelId(m) === KLING_IMAGE_TO_VIDEO) ?? VIDEO_MODELS[0]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- referenceArt.mediaFileId 변경(새로 "동영상 만들기"로 진입) 시에만 실행
+  }, [referenceArt?.mediaFileId]);
 
   const validationError = validateVideoOptions(
     toVideoValidationInput(prompt.trim(), { model, length, ratio, quality })
@@ -140,7 +164,12 @@ export default function VideoGenerationPage() {
         <PromptComposer
           value={prompt}
           onChange={setPrompt}
-          chips={[model, length, ratio.split(' · ')[0], quality.split(' ')[0]]}
+          chips={[
+            model,
+            length,
+            ...(capability.supportsRatio ? [ratio.split(' · ')[0]] : []),
+            ...(capability.supportsQuality ? [quality.split(' ')[0]] : []),
+          ]}
           correction={correction}
           onCorrectionChange={setCorrection}
           onGenerate={handleGenerate}
