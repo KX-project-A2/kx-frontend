@@ -74,7 +74,10 @@ export default function Library() {
     try {
       if (art.type === 'image') {
         const options = { model: art.model, ratio: art.ratio, quality: art.quality, quantity: 1 };
-        const result = await generateImage(art.prompt, options);
+        const result = await generateImage(art.prompt, options, {
+          purpose: '캐릭터',
+          promptCorrectionEnabled: false,
+        });
         const { items: newItems } = toGenGroup(result, options);
         setItems((prev) => [newItems[0], ...prev]);
       } else {

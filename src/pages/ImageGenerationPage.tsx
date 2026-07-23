@@ -13,28 +13,40 @@ import EmptyState from '@/components/common/EmptyState';
 import { DetailModal } from '@/components/common/DetailModal';
 import { useGenerationOptionsStore } from '@/hooks/useGenerationOptionsStore';
 import { useRevokeObjectUrls } from '@/hooks/useRevokeObjectUrls';
+import { useObjectUrls } from '@/hooks/useObjectUrls';
 import { generateImage } from '@/services/imageGeneration';
 import type { GenerationResult } from '@/types/generation';
 import { toGenGroup } from '@/utils/generationAdapter';
-import { IMAGE_QUALITIES, PURPOSES, type Artwork } from '@/constants/mockData';
+import { IMAGE_QUALITIES, type Artwork } from '@/constants/mockData';
 
-const RATIO_OPTIONS = ['1:1', '4:3', '3:4', '16:9', '9:16'];
+const RATIO_OPTIONS = ['1:1', '4:3', '3:4'];
+const PURPOSE_OPTIONS = ['캐릭터', '배경'];
 const MIN_QUANTITY = 1;
 const MAX_QUANTITY = 4;
-const REFERENCE_SLOTS = ['레퍼런스 추가', '레퍼런스 추가', '레퍼런스 추가', '레퍼런스 추가'];
+const MAX_REFERENCES = 8;
 
 export default function ImageGenerationPage() {
   const { model, ratio, quality, quantity, setRatio, setQuality, setQuantity } =
     useGenerationOptionsStore();
-  const [purpose, setPurpose] = useState(PURPOSES[0]);
+  const [purpose, setPurpose] = useState(PURPOSE_OPTIONS[0]);
   const [prompt, setPrompt] = useState('');
   const [correction, setCorrection] = useState(false);
+  const [references, setReferences] = useState<File[]>([]);
   const [results, setResults] = useState<GenerationResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedArt, setSelectedArt] = useState<Artwork | null>(null);
 
   useRevokeObjectUrls(results.flatMap((result) => result.images.map((image) => image.url)));
+  const referencePreviewUrls = useObjectUrls(references);
+
+  const handleAddReference = (file: File) => {
+    setReferences((prev) => (prev.length >= MAX_REFERENCES ? prev : [...prev, file]));
+  };
+
+  const handleRemoveReference = (index: number) => {
+    setReferences((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const handleGenerate = async () => {
     if (!prompt.trim() || isLoading) return;
@@ -43,7 +55,11 @@ export default function ImageGenerationPage() {
     setError(null);
 
     try {
-      const result = await generateImage(prompt.trim(), { model, ratio, quality, quantity });
+      const result = await generateImage(
+        prompt.trim(),
+        { model, ratio, quality, quantity },
+        { purpose, promptCorrectionEnabled: correction, references }
+      );
       setResults((prev) => [result, ...prev]);
     } catch {
       setError('이미지 생성에 실패했어요. 다시 시도해주세요.');
@@ -64,7 +80,7 @@ export default function ImageGenerationPage() {
           <ModelField name={model} />
         </SettingSection>
         <SettingSection title="목적">
-          <Select value={purpose} options={PURPOSES} onChange={setPurpose} />
+          <Select value={purpose} options={PURPOSE_OPTIONS} onChange={setPurpose} />
         </SettingSection>
         <SettingSection title="비율">
           <Select value={ratio} options={RATIO_OPTIONS} onChange={setRatio} />
@@ -75,7 +91,16 @@ export default function ImageGenerationPage() {
         <SettingSection title="수량">
           <Stepper value={quantity} min={MIN_QUANTITY} max={MAX_QUANTITY} onChange={setQuantity} />
         </SettingSection>
-        <ReferenceGrid slots={REFERENCE_SLOTS} used={0} />
+        <ReferenceGrid
+          slots={Array.from(
+            { length: Math.max(4, Math.min(references.length + 1, MAX_REFERENCES)) },
+            () => '레퍼런스 추가'
+          )}
+          used={references.length}
+          images={referencePreviewUrls}
+          onAdd={handleAddReference}
+          onRemove={handleRemoveReference}
+        />
       </Panel>
 
       {/* main area */}

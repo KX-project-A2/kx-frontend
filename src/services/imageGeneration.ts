@@ -26,13 +26,16 @@ const RATIO_TO_SIZE: Record<string, string> = {
   '1:1': '1024x1024',
   '4:3': '1536x1024',
   '3:4': '1024x1536',
-  '16:9': '1792x1024',
-  '9:16': '1024x1792',
 };
 
 const QUALITY_TO_BE: Record<string, string> = {
-  '2K': 'medium',
+  '2K': 'standard',
   '4K': 'high',
+};
+
+const PURPOSE_TO_BE: Record<string, string> = {
+  캐릭터: 'CHARACTER',
+  배경: 'BACKGROUND',
 };
 
 export function mapRatioToSize(ratio: string): string {
@@ -41,6 +44,10 @@ export function mapRatioToSize(ratio: string): string {
 
 export function mapQualityToBE(quality: string): string {
   return QUALITY_TO_BE[quality];
+}
+
+export function mapPurposeToBE(purpose: string): string {
+  return PURPOSE_TO_BE[purpose];
 }
 
 export async function fetchImageBlobUrl(mediaFileId: number): Promise<string> {
@@ -61,35 +68,53 @@ export async function fetchImageBlobUrl(mediaFileId: number): Promise<string> {
 
 export async function generateImage(
   prompt: string,
-  options: GenerationOptions
+  options: GenerationOptions,
+  extra: { purpose: string; promptCorrectionEnabled: boolean; references?: File[] }
 ): Promise<GenerationResult> {
   const requestBody = {
     prompt,
-    type: 'TEXT_TO_IMAGE',
+    purpose: mapPurposeToBE(extra.purpose),
     imageCount: options.quantity,
     size: mapRatioToSize(options.ratio),
     quality: mapQualityToBE(options.quality),
+    promptCorrectionEnabled: extra.promptCorrectionEnabled,
   };
+
+  const formData = new FormData();
+  formData.append('request', new Blob([JSON.stringify(requestBody)], { type: 'application/json' }));
+  extra.references?.forEach((file) => {
+    formData.append('references', file);
+  });
 
   console.log('[generateImage] request body', requestBody);
   const createResponse = await axiosInstance.post<ApiResponse<GenerateImageJob>>(
     '/api/generate/images',
-    requestBody
+    formData,
+    {
+      headers: { 'Content-Type': undefined },
+      timeout: 60000,
+    }
   );
 
   console.log('[generateImage] create response', JSON.stringify(createResponse.data, null, 2));
   const { jobId } = createResponse.data.data;
 
-  const resultImages = await pollJob<{ mediaFileId: number; filePath: string }[]>(async () => {
-    const statusResponse = await axiosInstance.get<ApiResponse<GenerateImageJob>>(
-      `/api/generate/images/jobs/${jobId}`
-    );
+  const resultImages = await pollJob<{ mediaFileId: number; filePath: string }[]>(
+    async () => {
+      const statusResponse = await axiosInstance.get<ApiResponse<GenerateImageJob>>(
+        `/api/generate/images/jobs/${jobId}`
+      );
 
-    console.log('[generateImage] job status response', JSON.stringify(statusResponse.data, null, 2));
-    const { status, resultImages } = statusResponse.data.data;
+      console.log(
+        '[generateImage] job status response',
+        JSON.stringify(statusResponse.data, null, 2)
+      );
+      const { status, resultImages } = statusResponse.data.data;
 
-    return { status, data: resultImages };
-  }, { intervalMs: 5000, timeoutMs: 900000 });
+      return { status, data: resultImages };
+    },
+    { intervalMs: 5000, timeoutMs: 900000 }
+  );
 
   const images = await Promise.all(
     resultImages.map(async (image) => ({
