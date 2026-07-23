@@ -69,7 +69,7 @@ export function ReferenceGrid({
           const image = images[i];
           return (
             <button
-              key={label}
+              key={i}
 
               onClick={() => (filled ? onRemove?.(i) : inputRef.current?.click())}
 
