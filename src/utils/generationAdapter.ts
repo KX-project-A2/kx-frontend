@@ -30,6 +30,7 @@ export function toGenGroup(result: GenerationResult, options: GenerationOptions)
     ratio: options.ratio,
     createdAt: result.createdAt,
     aspect,
+    mediaFileId: image.mediaFileId,
   }));
 
   return {
@@ -58,6 +59,7 @@ export function toVideoGenGroup(
     createdAt: result.createdAt,
     aspect: 16 / 9,
     duration: result.duration,
+    mediaFileId: result.mediaFileId,
   };
 
   return {

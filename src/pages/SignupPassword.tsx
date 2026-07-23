@@ -1,20 +1,23 @@
 import { useState } from 'react';
-import { Mail } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import Logo from '../components/common/Logo';
 import { Button, Checkbox, TextField } from '../components/common/ui';
 import ErrorMessage from '../components/common/ErrorMessage';
-import { signup } from '../services/auth';
+import AuthBackground from '../components/auth/AuthBackground';
+import AuthCard from '../components/auth/AuthCard';
+import AuthEmailChip from '../components/auth/AuthEmailChip';
+import AuthStepLabel from '../components/auth/AuthStepLabel';
+import { signup, SignupApiError } from '../services/auth';
 import { useAuthStore } from '../hooks/useAuthStore';
 
 export default function SignupPassword() {
   const navigate = useNavigate();
   const location = useLocation();
   const setAuthenticated = useAuthStore((state) => state.setAuthenticated);
-  const email = (location.state as { email?: string } | null)?.email || 'you@example.com';
+  const state = location.state as { email?: string; nickname?: string } | null;
+  const email = state?.email || 'you@example.com';
+  const nickname = state?.nickname || '';
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
-  const [nickname, setNickname] = useState('');
   const [agree, setAgree] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -33,11 +36,6 @@ export default function SignupPassword() {
       return;
     }
 
-    if (!nickname.trim()) {
-      setError('닉네임을 입력해 주세요.');
-      return;
-    }
-
     setLoading(true);
 
     try {
@@ -45,6 +43,10 @@ export default function SignupPassword() {
       setAuthenticated(true);
       navigate('/home');
     } catch (err) {
+      if (err instanceof SignupApiError && err.status === 409) {
+        navigate('/signup', { state: { email, error: '이미 가입된 이메일입니다.' } });
+        return;
+      }
       setError((err as Error).message);
     } finally {
       setLoading(false);
@@ -52,63 +54,89 @@ export default function SignupPassword() {
   };
 
   return (
-    <div className="relative flex h-screen w-full items-center justify-center p-6">
-      <div className="glass-2 relative z-10 flex w-full max-w-[400px] flex-col gap-8 rounded-card p-8">
-        <Logo />
-
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-1.5 text-caption text-content-muted">
-            <span className="text-brand-light">2</span>
-            <span>/ 2 단계</span>
-          </div>
-          <h1 className="text-h1 text-content">비밀번호 설정</h1>
-          <p className="text-body text-content-secondary">안전한 비밀번호로 계정을 완성하세요.</p>
+    <AuthBackground>
+      <AuthCard style={{ gap: 64 }}>
+        <div className="flex w-full flex-col gap-8">
+          <h1
+            className="self-stretch"
+            style={{
+              color: '#F5F5F5',
+              fontFamily: '"Noto Sans KR", var(--font-sans)',
+              fontSize: 32,
+              fontWeight: 700,
+              lineHeight: '40px',
+              letterSpacing: '-0.16px',
+              textAlign: 'center',
+            }}
+          >
+            비밀번호 설정
+          </h1>
+          <AuthEmailChip email={email} />
         </div>
 
-        {/* confirmed email */}
-        <div
-          className="flex items-center gap-3 rounded-field px-3.5 h-11"
-          style={{ background: 'var(--surface-2)', border: '1px solid var(--stroke-strong)' }}
-        >
-          <Mail size={16} className="text-brand-light" />
-          <span className="font-num text-body text-content">{email}</span>
-        </div>
-
-        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-          <TextField
-            label="비밀번호"
-            type="password"
-            placeholder="8자 이상 입력"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-          <TextField
-            label="비밀번호 확인"
-            type="password"
-            placeholder="비밀번호를 다시 입력"
-            value={passwordConfirm}
-            onChange={(e) => setPasswordConfirm(e.target.value)}
-            required
-          />
-          <TextField
-            label="닉네임"
-            placeholder="닉네임을 입력하세요"
-            value={nickname}
-            onChange={(e) => setNickname(e.target.value)}
-            required
-          />
-          <div className="py-1">
+        <form className="flex w-full flex-col gap-10" onSubmit={handleSubmit}>
+          <div className="flex w-full flex-col gap-6">
+            <div className="flex w-full flex-col gap-1.5">
+              <AuthStepLabel text="안전한 비밀번호로 계정을 완성해 주세요." step={3} />
+              <TextField
+                type="password"
+                placeholder="비밀번호"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="rounded-lg"
+                style={{
+                  background: 'rgba(29, 26, 33, 0.80)',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                }}
+              />
+            </div>
+            <TextField
+              type="password"
+              placeholder="비밀번호 확인"
+              value={passwordConfirm}
+              onChange={(e) => setPasswordConfirm(e.target.value)}
+              required
+              className="rounded-lg"
+              style={{
+                background: 'rgba(29, 26, 33, 0.80)',
+                border: '1px solid rgba(255,255,255,0.15)',
+              }}
+            />
             <Checkbox checked={agree} onChange={setAgree}>
-              이용약관 및 개인정보 활용에 동의합니다
+              Genstudio의 이용약관과 개인정보 활용에 동의합니다
             </Checkbox>
+            {error && <ErrorMessage message={error} />}
           </div>
-          {error && <ErrorMessage message={error} />}
-          <Button type="submit" size="lg" block disabled={!agree || !nickname.trim() || loading}>
-            {loading ? '가입 처리 중...' : '가입 완료'}
-          </Button>
+
+          <div className="flex w-full flex-col gap-2">
+            <Button
+              type="submit"
+              block
+              style={{ borderRadius: 999, background: 'var(--primary-200)', color: '#4d0071' }}
+              disabled={!agree || loading}
+            >
+              {loading ? '가입 처리 중...' : '확인'}
+            </Button>
+
+            <div
+              className="flex w-full items-center justify-between px-2 text-caption"
+              style={{ color: '#988e99' }}
+            >
+              <span className="inline-flex items-center gap-3">
+                이미 계정이 있으시다면
+                <button type="button" className="text-brand" onClick={() => navigate('/login')}>
+                  로그인
+                </button>
+              </span>
+              {/* TODO: 비밀번호 찾기 플로우 미구현 — 화면만 반영, 클릭 동작 없음 */}
+              <button type="button" className="hover:text-content-secondary">
+                비밀번호 찾기
+              </button>
+            </div>
+          </div>
         </form>
-      </div>
-    </div>
+      </AuthCard>
+    </AuthBackground>
   );
 }

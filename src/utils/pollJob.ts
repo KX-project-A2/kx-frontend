@@ -26,7 +26,7 @@ export function pollJob<T>(
           return;
         }
 
-        if (status === 'FAILED') {
+        if (status === 'FAILED' || status === 'CANCELED') {
           reject(new Error(`폴링 실패: status=${status}`));
           return;
         }

@@ -7,6 +7,7 @@ import VideoGenerationPage from '@/pages/VideoGenerationPage';
 import Library from '@/pages/Library';
 import Login from '@/pages/Login';
 import SignupEmail from '@/pages/SignupEmail';
+import SignupNickname from '@/pages/SignupNickname';
 import SignupPassword from '@/pages/SignupPassword';
 import OAuthCallback from '@/pages/OAuthCallback';
 
@@ -18,6 +19,7 @@ function App() {
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignupEmail />} />
+        <Route path="/signup/nickname" element={<SignupNickname />} />
         <Route path="/signup/password" element={<SignupPassword />} />
         <Route path="/oauth/callback" element={<OAuthCallback />} />
 

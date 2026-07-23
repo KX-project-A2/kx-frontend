@@ -8,7 +8,7 @@ export interface GenerationOptions {
 export interface GenerationResult {
   id: string;
   prompt: string;
-  images: { url: string }[];
+  images: { url: string; mediaFileId?: number }[];
   createdAt: string;
 }
 
@@ -25,4 +25,5 @@ export interface VideoGenerationResult {
   videoUrl: string;
   duration: string;
   createdAt: string;
+  mediaFileId?: number;
 }

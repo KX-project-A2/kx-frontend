@@ -107,7 +107,7 @@ export function ResultCard({
     { icon: Copy, label: '프롬프트 복사', fn: onCopyPrompt },
     { icon: Pencil, label: '재편집', fn: onReedit },
     { icon: RefreshCw, label: '다시 생성', fn: onRegenerate },
-    ...(showToVideo ? [{ icon: VideoIcon, label: '동영상으로 만들기', fn: onToVideo }] : []),
+    ...(showToVideo ? [{ icon: VideoIcon, label: '동영상으로 전환', fn: onToVideo }] : []),
   ];
 
   return (

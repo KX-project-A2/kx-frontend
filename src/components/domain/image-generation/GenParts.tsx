@@ -70,8 +70,13 @@ export function ReferenceGrid({
           return (
             <button
               key={label}
+
               onClick={() => (filled ? onRemove?.(i) : inputRef.current?.click())}
-              className={cn('flex aspect-square flex-col items-center justify-center gap-1.5 overflow-hidden rounded-field p-2 text-center transition-colors hover:border-selected-border')}
+
+              className={cn(
+                'flex aspect-square flex-col items-center justify-center gap-1.5 overflow-hidden rounded-field p-2 text-center transition-colors hover:border-selected-border'
+              )}
+
               style={{
                 background: filled ? 'var(--selected-bg)' : 'var(--surface-2)',
                 border: `1px dashed ${filled ? 'var(--selected-border)' : 'var(--stroke-strong)'}`,
@@ -81,8 +86,14 @@ export function ReferenceGrid({
                 <img src={image} alt={label} className="h-full w-full object-cover" />
               ) : (
                 <>
-                  <ImagePlus size={16} className={filled ? 'text-brand-light' : 'text-content-muted'} />
-                  <span className="text-label leading-tight" style={{ color: filled ? 'var(--content)' : 'var(--content-muted)' }}>
+                  <ImagePlus
+                    size={16}
+                    className={filled ? 'text-brand-light' : 'text-content-muted'}
+                  />
+                  <span
+                    className="text-label leading-tight"
+                    style={{ color: filled ? 'var(--content)' : 'var(--content-muted)' }}
+                  >
                     {label}
                   </span>
                 </>
@@ -104,6 +115,7 @@ export function PromptComposer({
   onCorrectionChange,
   onGenerate,
   placeholder,
+  disabled,
 }: {
   value: string;
   onChange: (v: string) => void;
@@ -112,6 +124,7 @@ export function PromptComposer({
   onCorrectionChange: (v: boolean) => void;
   onGenerate: () => void;
   placeholder: string;
+  disabled?: boolean;
 }) {
   return (
     <Panel level={2} className="flex flex-col gap-3 p-3">
@@ -130,12 +143,15 @@ export function PromptComposer({
         className="w-full resize-none bg-transparent px-1 text-body text-content placeholder:text-content-muted outline-none"
       />
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 rounded-chip px-3 h-8" style={{ background: 'var(--surface-3)' }}>
+        <div
+          className="flex items-center gap-2 rounded-chip px-3 h-8"
+          style={{ background: 'var(--surface-3)' }}
+        >
           <Wand2 size={14} className="text-brand-light" />
           <span className="text-caption text-content-secondary">AI 프롬프트 교정</span>
           <Toggle checked={correction} onChange={onCorrectionChange} />
         </div>
-        <Button leftIcon={<Sparkles size={16} />} onClick={onGenerate}>
+        <Button leftIcon={<Sparkles size={16} />} onClick={onGenerate} disabled={disabled}>
           생성
         </Button>
       </div>
@@ -158,10 +174,20 @@ export function ResultGroup({
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-2.5">
-        <p className="line-clamp-1 flex-1 text-body-medium text-content-secondary">{group.prompt}</p>
-        <Badge tone="brand">{group.items.length}{isVideo ? '개' : '장'}</Badge>
+        <p className="line-clamp-1 flex-1 text-body-medium text-content-secondary">
+          {group.prompt}
+        </p>
+        <Badge tone="brand">
+          {group.items.length}
+          {isVideo ? '개' : '장'}
+        </Badge>
       </div>
-      <div className={cn('grid gap-4', isVideo ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-2 md:grid-cols-4')}>
+      <div
+        className={cn(
+          'grid gap-4',
+          isVideo ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-2 md:grid-cols-4'
+        )}
+      >
         {group.items.map((art) => (
           <ResultCard
             key={art.id}

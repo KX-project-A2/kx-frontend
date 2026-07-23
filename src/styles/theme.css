@@ -351,3 +351,12 @@
   background: var(--brand-dark);
   background-clip: padding-box;
 }
+
+@keyframes slideFill {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}

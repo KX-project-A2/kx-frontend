@@ -13,7 +13,9 @@ import {
 import type { Artwork } from '@/constants/mockData';
 import { Badge, IconButton, cn } from '@/components/common/ui';
 import ImageWithFallback from '@/components/common/ImageWithFallback';
+import VideoWithFallback from '@/components/common/VideoWithFallback';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
+import { useLikesStore } from '@/stores/useLikesStore';
 
 /* --- Result / library card with hover actions + more menu --- */
 interface ResultCardProps {
@@ -46,7 +48,10 @@ export function ResultCard({
   isRegenerating,
 }: ResultCardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [fav, setFav] = useState(false);
+  const overrides = useLikesStore((s) => s.overrides);
+  const toggleLike = useLikesStore((s) => s.toggleLike);
+  const liked = overrides[art.id]?.liked ?? art.favorite ?? art.liked ?? false;
+  const likes = overrides[art.id]?.likes ?? art.likes ?? 0;
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -68,7 +73,7 @@ export function ResultCard({
       loading: isRegenerating ?? false,
     },
     ...(showToVideo
-      ? [{ icon: VideoIcon, label: '동영상으로 만들기', fn: onToVideo, loading: false }]
+      ? [{ icon: VideoIcon, label: '동영상으로 전환', fn: onToVideo, loading: false }]
       : []),
   ];
 
@@ -79,18 +84,48 @@ export function ResultCard({
       ref={ref}
     >
       <button onClick={onOpen} className="block w-full">
-        <ImageWithFallback
-          src={art.thumb}
-          alt={art.prompt}
-          className="w-full object-cover"
-          style={{ aspectRatio: art.type === 'video' ? '16 / 9' : String(art.aspect) }}
-        />
+        {art.type === 'video' && !art.url ? (
+          <div
+            className="flex w-full items-center justify-center bg-surface-3 text-caption text-content-muted"
+            style={{ aspectRatio: '16 / 9' }}
+          >
+            영상 준비 중
+          </div>
+        ) : art.type === 'image' && !art.thumb ? (
+          <div
+            className="flex w-full items-center justify-center bg-surface-3 text-caption text-content-muted"
+            style={{ aspectRatio: String(art.aspect) }}
+          >
+            이미지 로드 실패
+          </div>
+        ) : art.type === 'video' ? (
+          <VideoWithFallback
+            src={art.url}
+            poster={art.thumb}
+            alt={art.prompt}
+            className="w-full object-cover"
+            style={{ aspectRatio: '16 / 9' }}
+          />
+        ) : (
+          <ImageWithFallback
+            src={art.thumb}
+            alt={art.prompt}
+            className="w-full object-cover"
+            style={{ aspectRatio: String(art.aspect) }}
+          />
+        )}
       </button>
 
       {art.type === 'video' && (
         <div className="pointer-events-none absolute left-2.5 top-2.5 flex gap-1.5">
           <Badge tone="neutral">
-            <Play size={11} fill="currentColor" /> {art.duration}
+            {art.thumb ? (
+              <>
+                <Play size={11} fill="currentColor" /> {art.duration}
+              </>
+            ) : (
+              '준비 중'
+            )}
           </Badge>
         </div>
       )}
@@ -102,14 +137,14 @@ export function ResultCard({
       />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-end gap-1.5 p-2.5 opacity-0 transition-opacity duration-200 group-hover:pointer-events-auto group-hover:opacity-100">
         <IconButton
-          active={fav}
+          active={liked}
           onClick={() => {
-            setFav((f) => !f);
+            toggleLike(art.id, liked, likes);
             onFavorite?.();
           }}
           aria-label="찜"
         >
-          <Heart size={14} strokeWidth={2} fill={fav ? 'currentColor' : 'transparent'} />
+          <Heart size={14} strokeWidth={2} fill={liked ? 'currentColor' : 'transparent'} />
         </IconButton>
         <IconButton
           onClick={onDownload}
