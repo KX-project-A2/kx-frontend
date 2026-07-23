@@ -74,6 +74,7 @@ async function toImageArtwork(file: MediaFile): Promise<Artwork> {
     ratio: composeRatio(file.aspectRatio, file.resolution),
     createdAt: file.createdAt,
     aspect: parseAspect(file.aspectRatio),
+    mediaFileId: file.id,
   };
 }
 
@@ -94,6 +95,7 @@ function toImageErrorPlaceholderArtwork(file: MediaFile): Artwork {
     ratio: composeRatio(file.aspectRatio, file.resolution),
     createdAt: file.createdAt,
     aspect: parseAspect(file.aspectRatio),
+    mediaFileId: file.id,
   };
 }
 
