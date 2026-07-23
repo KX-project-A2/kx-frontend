@@ -20,7 +20,11 @@ import { useRevokeObjectUrls } from '@/hooks/useRevokeObjectUrls';
 import { generateVideo, uploadReferenceImage } from '@/services/videoGeneration';
 import type { VideoGenerationResult } from '@/types/generation';
 import { toVideoGenGroup } from '@/utils/generationAdapter';
-import { getAvailableLengths, toVideoValidationInput } from '@/utils/videoOptionMapping';
+import {
+  getAvailableLengths,
+  getVideoModelCapability,
+  toVideoValidationInput,
+} from '@/utils/videoOptionMapping';
 import { validateVideoOptions } from '@/utils/videoOptionValidator';
 import { VIDEO_MODELS, VIDEO_QUALITIES, VIDEO_RATIOS, type Artwork } from '@/constants/mockData';
 
@@ -43,6 +47,7 @@ export default function VideoGenerationPage() {
 
   useRevokeObjectUrls(storyboardImages.map((img) => img.previewUrl));
 
+  const capability = getVideoModelCapability(model);
   const availableLengths = getAvailableLengths(model);
 
   useEffect(() => {
@@ -59,8 +64,12 @@ export default function VideoGenerationPage() {
   const handleGenerate = async () => {
     if (!prompt.trim() || isLoading || validationError) return;
 
-    if (!referenceArt?.mediaFileId) {
+    if (capability.requiresStartImage && !referenceArt?.mediaFileId) {
       setError('시작 이미지가 필요해요. 이미지를 먼저 선택해주세요.');
+      return;
+    }
+    if (capability.requiresReferenceImages && storyboardImages.length === 0) {
+      setError('참조 이미지가 필요해요. 스토리보드에 이미지를 추가해주세요.');
       return;
     }
 
@@ -74,7 +83,7 @@ export default function VideoGenerationPage() {
       const result = await generateVideo(
         prompt.trim(),
         { model, length, ratio, quality },
-        referenceArt.mediaFileId,
+        referenceArt?.mediaFileId ?? null,
         referenceMediaFileIds
       );
       setResults((prev) => [result, ...prev]);
@@ -104,18 +113,26 @@ export default function VideoGenerationPage() {
         <SettingSection title="길이">
           <Select value={length} options={availableLengths} onChange={setLength} />
         </SettingSection>
-        <SettingSection title="비율">
-          <Select value={ratio} options={VIDEO_RATIOS} onChange={setRatio} />
-        </SettingSection>
-        <SettingSection title="품질">
-          <Select value={quality} options={VIDEO_QUALITIES} onChange={setQuality} />
-        </SettingSection>
-        <StoryboardUpload images={storyboardImages} onChange={setStoryboardImages} />
-        <ReferenceGrid
-          slots={REFERENCE_SLOTS}
-          used={referenceImage ? 1 : 0}
-          images={[referenceImage]}
-        />
+        {capability.supportsRatio && (
+          <SettingSection title="비율">
+            <Select value={ratio} options={VIDEO_RATIOS} onChange={setRatio} />
+          </SettingSection>
+        )}
+        {capability.supportsQuality && (
+          <SettingSection title="품질">
+            <Select value={quality} options={VIDEO_QUALITIES} onChange={setQuality} />
+          </SettingSection>
+        )}
+        {capability.supportsReferenceImages && (
+          <StoryboardUpload images={storyboardImages} onChange={setStoryboardImages} />
+        )}
+        {capability.requiresStartImage && (
+          <ReferenceGrid
+            slots={REFERENCE_SLOTS}
+            used={referenceImage ? 1 : 0}
+            images={[referenceImage]}
+          />
+        )}
       </Panel>
 
       {/* main area */}
