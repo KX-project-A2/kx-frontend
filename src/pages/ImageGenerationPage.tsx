@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Plus } from 'lucide-react';
 import {
   ModelField,
   PromptComposer,
@@ -6,21 +7,26 @@ import {
   ResultGroup,
   SettingSection,
 } from '@/components/domain/image-generation/GenParts';
-import { Panel, Select, Stepper } from '@/components/common/ui';
+import { Button, Panel, Select, Stepper, Tabs } from '@/components/common/ui';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import EmptyState from '@/components/common/EmptyState';
 import { DetailModal } from '@/components/common/DetailModal';
+import { CharacterSheetModal } from '@/components/domain/image-generation/CharacterSheetModal';
 import { useGenerationOptionsStore } from '@/hooks/useGenerationOptionsStore';
 import { useRevokeObjectUrls } from '@/hooks/useRevokeObjectUrls';
 import { useObjectUrls } from '@/hooks/useObjectUrls';
-import { generateImage } from '@/services/imageGeneration';
+import { characterConceptSheet, generateImage } from '@/services/imageGeneration';
 import type { GenerationResult } from '@/types/generation';
 import { toGenGroup } from '@/utils/generationAdapter';
 import { IMAGE_QUALITIES, type Artwork } from '@/constants/mockData';
 
 const RATIO_OPTIONS = ['1:1', '4:3', '3:4'];
-const PURPOSE_OPTIONS = ['캐릭터', '배경'];
+const PURPOSE_TABS = [
+  { id: '캐릭터', label: '캐릭터' },
+  { id: '배경', label: '배경' },
+  { id: '캐릭터시트', label: '캐릭터시트' },
+];
 const MIN_QUANTITY = 1;
 const MAX_QUANTITY = 4;
 const MAX_REFERENCES = 8;
@@ -28,7 +34,7 @@ const MAX_REFERENCES = 8;
 export default function ImageGenerationPage() {
   const { model, ratio, quality, quantity, setRatio, setQuality, setQuantity } =
     useGenerationOptionsStore();
-  const [purpose, setPurpose] = useState(PURPOSE_OPTIONS[0]);
+  const [purpose, setPurpose] = useState(PURPOSE_TABS[0].id);
   const [prompt, setPrompt] = useState('');
   const [correction, setCorrection] = useState(false);
   const [references, setReferences] = useState<File[]>([]);
@@ -36,6 +42,7 @@ export default function ImageGenerationPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedArt, setSelectedArt] = useState<Artwork | null>(null);
+  const [isCharacterModalOpen, setIsCharacterModalOpen] = useState(false);
 
   useRevokeObjectUrls(results.flatMap((result) => result.images.map((image) => image.url)));
   const referencePreviewUrls = useObjectUrls(references);
@@ -80,7 +87,17 @@ export default function ImageGenerationPage() {
           <ModelField name={model} />
         </SettingSection>
         <SettingSection title="목적">
-          <Select value={purpose} options={PURPOSE_OPTIONS} onChange={setPurpose} />
+          <Tabs tabs={PURPOSE_TABS} value={purpose} onChange={setPurpose} />
+          {purpose === '캐릭터시트' && (
+            <Button
+              variant="secondary"
+              block
+              leftIcon={<Plus size={14} />}
+              onClick={() => setIsCharacterModalOpen(true)}
+            >
+              캐릭터 만들기
+            </Button>
+          )}
         </SettingSection>
         <SettingSection title="비율">
           <Select value={ratio} options={RATIO_OPTIONS} onChange={setRatio} />
@@ -113,6 +130,7 @@ export default function ImageGenerationPage() {
           onCorrectionChange={setCorrection}
           onGenerate={handleGenerate}
           placeholder="생성하고 싶은 이미지를 설명해주세요"
+          disabled={purpose === '캐릭터시트'}
         />
 
         {error && <ErrorMessage message={error} onRetry={handleGenerate} />}
@@ -143,6 +161,25 @@ export default function ImageGenerationPage() {
       </div>
 
       <DetailModal art={selectedArt} onClose={() => setSelectedArt(null)} />
+
+      <CharacterSheetModal
+        open={isCharacterModalOpen}
+        onClose={() => setIsCharacterModalOpen(false)}
+        onGenerate={async (data) => {
+          setIsLoading(true);
+          setError(null);
+
+          try {
+            const result = await characterConceptSheet(data, { model, ratio, quality, quantity });
+            setResults((prev) => [result, ...prev]);
+            setIsCharacterModalOpen(false);
+          } catch {
+            setError('캐릭터 생성에 실패했어요. 다시 시도해주세요.');
+          } finally {
+            setIsLoading(false);
+          }
+        }}
+      />
     </div>
   );
 }
