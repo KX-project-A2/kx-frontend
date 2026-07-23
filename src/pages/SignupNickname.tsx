@@ -4,58 +4,56 @@ import { Button, TextField } from '../components/common/ui';
 import ErrorMessage from '../components/common/ErrorMessage';
 import AuthBackground from '../components/auth/AuthBackground';
 import AuthCard from '../components/auth/AuthCard';
+import AuthEmailChip from '../components/auth/AuthEmailChip';
 import AuthStepLabel from '../components/auth/AuthStepLabel';
-import { signupEmailMock } from '../services/auth';
 
-export default function SignupEmail() {
+export default function SignupNickname() {
   const navigate = useNavigate();
   const location = useLocation();
-  const redirectState = location.state as { email?: string; error?: string } | null;
-  const [email, setEmail] = useState(redirectState?.email ?? '');
-  const [error, setError] = useState<string | null>(redirectState?.error ?? null);
-  const [loading, setLoading] = useState(false);
+  const email = (location.state as { email?: string } | null)?.email || 'you@example.com';
+  const [nickname, setNickname] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setLoading(true);
 
-    try {
-      await signupEmailMock(email);
-      navigate('/signup/nickname', { state: { email } });
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setLoading(false);
+    if (!nickname.trim()) {
+      setError('닉네임을 입력해 주세요.');
+      return;
     }
+
+    navigate('/signup/password', { state: { email, nickname } });
   };
 
   return (
     <AuthBackground>
       <AuthCard style={{ gap: 64 }}>
-        <h1
-          className="self-stretch"
-          style={{
-            color: '#F5F5F5',
-            fontFamily: '"Noto Sans KR", var(--font-sans)',
-            fontSize: 32,
-            fontWeight: 700,
-            lineHeight: '40px',
-            letterSpacing: '-0.16px',
-            textAlign: 'center',
-          }}
-        >
-          이메일 입력
-        </h1>
+        <div className="flex w-full flex-col gap-8">
+          <h1
+            className="self-stretch"
+            style={{
+              color: '#F5F5F5',
+              fontFamily: '"Noto Sans KR", var(--font-sans)',
+              fontSize: 32,
+              fontWeight: 700,
+              lineHeight: '40px',
+              letterSpacing: '-0.16px',
+              textAlign: 'center',
+            }}
+          >
+            닉네임 설정
+          </h1>
+          <AuthEmailChip email={email} />
+        </div>
 
         <form className="flex w-full flex-col gap-10" onSubmit={handleSubmit}>
           <div className="flex w-full flex-col gap-1.5">
-            <AuthStepLabel text="가입할 이메일을 입력하세요." step={1} />
+            <AuthStepLabel text="사용할 닉네임을 알려주세요." step={2} />
             <TextField
-              type="email"
-              placeholder="example@kx.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              placeholder="닉네임"
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
               required
               className="rounded-lg"
               style={{
@@ -71,9 +69,9 @@ export default function SignupEmail() {
               type="submit"
               block
               style={{ borderRadius: 999, background: 'var(--primary-200)', color: '#4d0071' }}
-              disabled={loading}
+              disabled={!nickname.trim()}
             >
-              {loading ? '확인 중...' : '확인'}
+              확인
             </Button>
 
             <div
