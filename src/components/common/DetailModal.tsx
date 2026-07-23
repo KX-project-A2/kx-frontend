@@ -144,9 +144,13 @@ export function DetailModal({ art, onClose }: { art: Artwork | null; onClose: ()
               variant="secondary"
               block
               leftIcon={<Download size={16} />}
-              disabled={art.type === 'video'}
+              disabled={art.type === 'video' && !art.url}
               onClick={
-                art.type === 'image' ? () => downloadFile(art.url, `${art.id}.jpg`) : undefined
+                art.type === 'image'
+                  ? () => downloadFile(art.url, `${art.id}.jpg`)
+                  : art.type === 'video' && art.url
+                    ? () => downloadFile(art.url, `${art.id}.mp4`)
+                    : undefined
               }
             >
               다운로드

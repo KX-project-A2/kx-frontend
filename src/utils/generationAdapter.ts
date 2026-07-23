@@ -48,7 +48,7 @@ export function toVideoGenGroup(
     id: result.id,
     type: 'video',
     url: result.videoUrl,
-    thumb: result.videoUrl,
+    thumb: '',
     prompt: result.prompt,
     creator: ME,
     likes: 0,

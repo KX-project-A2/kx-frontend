@@ -167,5 +167,7 @@ export async function fetchLibraryItems(page = 0, size = 20): Promise<Artwork[]>
     return toVideoPlaceholderArtwork(videoFiles[index]);
   });
 
-  return [...images, ...videos];
+  return [...images, ...videos].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
 }

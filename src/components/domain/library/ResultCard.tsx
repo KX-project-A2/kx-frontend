@@ -105,6 +105,7 @@ export function ResultCard({
             alt={art.prompt}
             className="w-full object-cover"
             style={{ aspectRatio: '16 / 9' }}
+            disableClickToggle
           />
         ) : (
           <ImageWithFallback
@@ -119,7 +120,7 @@ export function ResultCard({
       {art.type === 'video' && (
         <div className="pointer-events-none absolute left-2.5 top-2.5 flex gap-1.5">
           <Badge tone="neutral">
-            {art.thumb ? (
+            {art.url ? (
               <>
                 <Play size={11} fill="currentColor" /> {art.duration}
               </>

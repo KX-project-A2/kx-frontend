@@ -12,10 +12,14 @@ interface VideoWithFallbackProps {
   className?: string;
   style?: React.CSSProperties;
   onPlayingChange?: (playing: boolean) => void;
+  disableClickToggle?: boolean;
 }
 
 const VideoWithFallback = forwardRef<VideoWithFallbackHandle, VideoWithFallbackProps>(
-  function VideoWithFallback({ src, poster, alt, className = '', style, onPlayingChange }, ref) {
+  function VideoWithFallback(
+    { src, poster, alt, className = '', style, onPlayingChange, disableClickToggle },
+    ref
+  ) {
     const videoRef = useRef<HTMLVideoElement>(null);
     const [failed, setFailed] = useState(false);
 
@@ -45,7 +49,9 @@ const VideoWithFallback = forwardRef<VideoWithFallbackHandle, VideoWithFallbackP
         className={className}
         style={style}
         playsInline
+        preload="metadata"
         onClick={(e) => {
+          if (disableClickToggle) return;
           e.stopPropagation();
           const video = videoRef.current;
           if (!video) return;
