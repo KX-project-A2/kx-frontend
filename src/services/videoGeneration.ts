@@ -97,12 +97,17 @@ export async function generateVideo(
     return { status: jobData.status, data: jobData };
   }, { intervalMs: 5000, timeoutMs: 900000 });
 
-  // TODO: falResponseUrl과 resultFilePath 중 실제 재생 가능한 URL이 무엇인지 로그로 확인 후 확정
   console.log('[generateVideo] COMPLETED job - url candidates', {
     falResponseUrl: job.falResponseUrl,
     resultFilePath: job.resultFilePath,
   });
-  const videoUrl = job.falResponseUrl ?? job.resultFilePath ?? '';
+  let videoUrl = '';
+  if (job.resultMediaFileId) {
+    const downloadResponse = await axiosInstance.get<ApiResponse<{ downloadUrl: string; expiresInSeconds: number }>>(
+      `/api/media/files/${job.resultMediaFileId}/download-url`
+    );
+    videoUrl = downloadResponse.data.data.downloadUrl;
+  }
 
   return {
     id: String(jobId),
