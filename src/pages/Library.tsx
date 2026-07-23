@@ -5,6 +5,7 @@ import { Badge, Button, Select, Tabs } from '@/components/common/ui';
 import { ResultCard } from '@/components/domain/library/ResultCard';
 import ImageWithFallback from '@/components/common/ImageWithFallback';
 import VideoWithFallback, { type VideoWithFallbackHandle } from '@/components/common/VideoWithFallback';
+import { DetailModal } from '@/components/common/DetailModal';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import EmptyState from '@/components/common/EmptyState';
@@ -29,6 +30,7 @@ export default function Library() {
   const [regeneratingId, setRegeneratingId] = useState<string | null>(null);
   const videoRef = useRef<VideoWithFallbackHandle>(null);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -55,7 +57,13 @@ export default function Library() {
 
   useRevokeObjectUrls(items.filter((a) => a.url.startsWith('blob:')).map((a) => a.url));
 
-  const visibleItems = items.filter((a) => tab === 'all' || a.type === tab);
+  const visibleItems = items
+    .filter((a) => tab === 'all' || a.type === tab)
+    .sort((a, b) => {
+      if (sort === '오래된순') return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      if (sort === '좋아요순') return (b.likes ?? 0) - (a.likes ?? 0);
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(); // 최신순 기본
+    });
 
   const meta: [string, string][] = selected
     ? (
@@ -170,38 +178,41 @@ export default function Library() {
             className="relative overflow-hidden rounded-card"
             style={{ border: '1px solid var(--stroke-soft)' }}
           >
-            {selected.type === 'video' && !selected.url ? (
-              <div
-                className="flex w-full items-center justify-center bg-surface-3 text-body text-content-muted"
-                style={{ aspectRatio: '16 / 9' }}
-              >
-                영상 준비 중
-              </div>
-            ) : selected.type === 'image' && !selected.thumb ? (
-              <div
-                className="flex w-full items-center justify-center bg-surface-3 text-body text-content-muted"
-                style={{ aspectRatio: String(selected.aspect) }}
-              >
-                이미지 로드 실패
-              </div>
-            ) : selected.type === 'video' ? (
-              <VideoWithFallback
-                ref={videoRef}
-                src={selected.url}
-                poster={selected.thumb}
-                alt={selected.prompt}
-                className="w-full object-cover"
-                style={{ aspectRatio: '16 / 9' }}
-                onPlayingChange={setIsVideoPlaying}
-              />
-            ) : (
-              <ImageWithFallback
-                src={selected.url}
-                alt={selected.prompt}
-                className="w-full object-cover"
-                style={{ aspectRatio: String(selected.aspect) }}
-              />
-            )}
+            <button type="button" className="block w-full" onClick={() => setShowDetailModal(true)}>
+              {selected.type === 'video' && !selected.url ? (
+                <div
+                  className="flex w-full items-center justify-center bg-surface-3 text-body text-content-muted"
+                  style={{ aspectRatio: '16 / 9' }}
+                >
+                  영상 준비 중
+                </div>
+              ) : selected.type === 'image' && !selected.thumb ? (
+                <div
+                  className="flex w-full items-center justify-center bg-surface-3 text-body text-content-muted"
+                  style={{ aspectRatio: String(selected.aspect) }}
+                >
+                  이미지 로드 실패
+                </div>
+              ) : selected.type === 'video' ? (
+                <VideoWithFallback
+                  ref={videoRef}
+                  src={selected.url}
+                  poster={selected.thumb}
+                  alt={selected.prompt}
+                  className="w-full object-cover"
+                  style={{ aspectRatio: '16 / 9' }}
+                  onPlayingChange={setIsVideoPlaying}
+                  disableClickToggle
+                />
+              ) : (
+                <ImageWithFallback
+                  src={selected.url}
+                  alt={selected.prompt}
+                  className="w-full object-cover"
+                  style={{ aspectRatio: String(selected.aspect) }}
+                />
+              )}
+            </button>
             {selected.type === 'video' && selected.url && !isVideoPlaying && (
               <span
                 className="absolute left-1/2 top-1/2 flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full"
@@ -285,6 +296,10 @@ export default function Library() {
             <span className="text-caption text-content-muted">공유 링크 — 준비 중</span>
           </div>
         </div>
+      )}
+
+      {showDetailModal && (
+        <DetailModal art={selected} onClose={() => setShowDetailModal(false)} />
       )}
     </div>
   );
