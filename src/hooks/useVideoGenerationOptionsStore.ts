@@ -11,7 +11,7 @@ interface VideoGenerationOptionsStore extends VideoGenerationOptions {
 
 export const useVideoGenerationOptionsStore = create<VideoGenerationOptionsStore>((set) => ({
   model: VIDEO_MODELS[0],
-  length: VIDEO_LENGTHS[3], // "8초" 유지 (VIDEO_LENGTHS에 "4초"가 추가되며 인덱스 밀림)
+  length: VIDEO_LENGTHS[2], // "5초" 기본값 (VIDEO_LENGTHS: ['3초','4초','5초','8초','10초','15초','자동'])
   ratio: VIDEO_RATIOS[0],
   quality: VIDEO_QUALITIES[0],
   setModel: (model) => set({ model }),
