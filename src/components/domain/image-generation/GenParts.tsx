@@ -120,8 +120,8 @@ export function PromptComposer({
   value: string;
   onChange: (v: string) => void;
   chips: string[];
-  correction: boolean;
-  onCorrectionChange: (v: boolean) => void;
+  correction?: boolean;
+  onCorrectionChange?: (v: boolean) => void;
   onGenerate: () => void;
   placeholder: string;
   disabled?: boolean;
@@ -142,15 +142,17 @@ export function PromptComposer({
         placeholder={placeholder}
         className="w-full resize-none bg-transparent px-1 text-body text-content placeholder:text-content-muted outline-none"
       />
-      <div className="flex items-center justify-between">
-        <div
-          className="flex items-center gap-2 rounded-chip px-3 h-8"
-          style={{ background: 'var(--surface-3)' }}
-        >
-          <Wand2 size={14} className="text-brand-light" />
-          <span className="text-caption text-content-secondary">AI 프롬프트 교정</span>
-          <Toggle checked={correction} onChange={onCorrectionChange} />
-        </div>
+      <div className={cn('flex items-center', onCorrectionChange ? 'justify-between' : 'justify-end')}>
+        {onCorrectionChange && (
+          <div
+            className="flex items-center gap-2 rounded-chip px-3 h-8"
+            style={{ background: 'var(--surface-3)' }}
+          >
+            <Wand2 size={14} className="text-brand-light" />
+            <span className="text-caption text-content-secondary">AI 프롬프트 교정</span>
+            <Toggle checked={!!correction} onChange={onCorrectionChange} />
+          </div>
+        )}
         <Button leftIcon={<Sparkles size={16} />} onClick={onGenerate} disabled={disabled}>
           생성
         </Button>

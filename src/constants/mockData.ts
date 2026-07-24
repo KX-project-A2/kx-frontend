@@ -204,7 +204,7 @@ export const IMAGE_RATIOS = [
 ];
 export const VIDEO_RATIOS = ['16:9 · 1376×768', '9:16 · 768×1376', '1:1 · 1024×1024'];
 export const IMAGE_QUALITIES = ['2K', '4K'];
-export const VIDEO_LENGTHS = ['3초', '4초', '5초', '8초', '10초', '15초'];
+export const VIDEO_LENGTHS = ['3초', '4초', '5초', '8초', '10초', '15초', '자동'];
 export const VIDEO_QUALITIES = ['고화질 1920×1080', '표준 1280×720'];
 
 /** presets_catalog.json (235개 프리셋: 이미지 173 + 영상 62) 다른 Artwork 타입으로 변환 */

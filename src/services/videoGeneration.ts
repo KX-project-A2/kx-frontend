@@ -64,11 +64,13 @@ export async function generateVideo(
     duration: mapLengthToDuration(options.length),
     generate_audio: true,
   };
-  if (capability.supportsRatio) videoOptions.aspect_ratio = mapRatioToAspectRatio(options.ratio);
-  if (capability.supportsQuality) videoOptions.resolution = mapQualityToResolution(options.quality);
+  if (capability.ratioOptions.length > 0)
+    videoOptions.aspect_ratio = mapRatioToAspectRatio(options.ratio);
+  if (capability.qualityOptions.length > 0)
+    videoOptions.resolution = mapQualityToResolution(options.quality);
 
   const requestBody = {
-    startMediaFileId: capability.requiresStartImage ? startMediaFileId : null,
+    startMediaFileId: capability.supportsStartImage ? startMediaFileId : null,
     endMediaFileId: null,
     referenceMediaFileIds: capability.supportsReferenceImages ? referenceMediaFileIds : [],
     modelId: mapModelToModelId(options.model),
