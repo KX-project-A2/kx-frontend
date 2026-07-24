@@ -7,8 +7,8 @@ export function cn(...parts: Array<string | false | null | undefined>) {
 }
 
 /* ---------------------------------------------------------------- Button */
-type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'ghost';
-type ButtonSize = 'sm' | 'md' | 'lg';
+type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'ghost' | 'hero';
+type ButtonSize = 'sm' | 'md' | 'lg' | 'hero';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
@@ -22,6 +22,7 @@ const SIZES: Record<ButtonSize, string> = {
   sm: 'h-8 px-3 text-caption',
   md: 'h-10 px-4 text-body-medium',
   lg: 'h-12 px-6 text-title',
+  hero: 'px-6 py-3 text-[18px] font-medium',
 };
 
 export function Button({
@@ -36,14 +37,15 @@ export function Button({
   ...props
 }: ButtonProps) {
   const base =
-    'inline-flex items-center justify-center gap-2 rounded-btn transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] whitespace-nowrap';
+    'inline-flex items-center justify-center gap-2 transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] whitespace-nowrap';
 
   // M3 button types: primary=Filled · secondary=Outlined · tertiary/ghost=Text
   const variants: Record<ButtonVariant, string> = {
-    primary: 'hover:brightness-95',
-    secondary: 'border hover:bg-surface-3',
-    tertiary: 'hover:bg-surface-2',
-    ghost: 'hover:bg-surface-2 hover:text-content',
+    primary: 'rounded-btn hover:brightness-95',
+    secondary: 'rounded-btn border hover:bg-surface-3',
+    tertiary: 'rounded-btn hover:bg-surface-2',
+    ghost: 'rounded-btn hover:bg-surface-2 hover:text-content',
+    hero: 'rounded-full hover:brightness-95',
   };
 
   const variantStyle: React.CSSProperties =
@@ -53,7 +55,9 @@ export function Button({
         ? { borderColor: 'var(--stroke-strong)', color: 'var(--brand)', background: 'transparent' }
         : variant === 'tertiary'
           ? { color: 'var(--brand)' }
-          : { color: 'var(--content-secondary)' };
+          : variant === 'hero'
+            ? { background: '#f5c0ff', color: '#543180' }
+            : { color: 'var(--content-secondary)' };
 
   return (
     <button

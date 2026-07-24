@@ -184,7 +184,7 @@ interface RecentJobItem {
 }
 
 interface RecentJob {
-  generateJobId: number;
+  generateJobId: number | null;
   type: 'IMAGE' | 'VIDEO';
   status: string;
   prompt: string | null;
@@ -209,29 +209,87 @@ function toRecentMediaFile(job: RecentJob, item: RecentJobItem): MediaFile {
   };
 }
 
-export async function fetchRecentWorks(size = 4): Promise<Artwork[]> {
+interface RecentFileEntry {
+  file: MediaFile;
+  job: RecentJob;
+}
+
+/**
+ * perTypeSize: "전체 개수"가 아니라 "타입별로 화면에 쓸 후보 개수" — 화면엔 탭당 4개만
+ * 보여주지만, 변환 실패(=존재하지 않는 파일) 항목을 조용히 건너뛰고도 4개를 채울 수 있도록
+ * 여유분을 두고 그만큼만 실제 네트워크 변환을 시도한다 (안 쓰일 항목까지 미리 다운로드하지 않음).
+ */
+export async function fetchRecentWorks(perTypeSize = 8): Promise<Artwork[]> {
   const response = await axiosInstance.get<ApiResponse<RecentJob[]>>('/api/media/files/recent', {
-    params: { size },
+    params: { size: perTypeSize * 3 },
   });
 
-  const files = response.data.data.flatMap((job) =>
-    job.items.map((item) => toRecentMediaFile(job, item))
+  const jobs = response.data.data;
+
+  // 예전 라이브러리 버그(레퍼런스 업로드 이미지가 generateJob 없이 목록에 섞여 나옴)의
+  // 재발 여부를 바로 확인할 수 있도록 — generateJobId 없는 job이 있으면 콘솔에 남김
+  const jobsWithoutGenerateJobId = jobs.filter((job) => !job.generateJobId);
+  if (jobsWithoutGenerateJobId.length > 0) {
+    console.warn(
+      '[fetchRecentWorks] generateJobId가 없는 job이 최근 목록에 포함됨 — BE 버그 의심(레퍼런스 업로드 이미지 오분류 패턴)',
+      jobsWithoutGenerateJobId
+    );
+  }
+
+  const entries: RecentFileEntry[] = jobs.flatMap((job) =>
+    job.items.map((item) => ({ file: toRecentMediaFile(job, item), job }))
   );
 
-  const results = await Promise.allSettled(
-    files.map((file) => (file.type === 'IMAGE' ? toImageArtwork(file) : toVideoArtwork(file)))
+  // BE의 items[].type 대소문자/값이 예상과 다를 수 있어 방어적으로 정규화 — 다르면 콘솔에 남겨서
+  // 실제 응답 계약을 다음에 바로 확인할 수 있게 함 (이미지가 전부 video로 오분류되는 버그 대응)
+  const isImage = (file: MediaFile) => {
+    const normalized = String(file.type).toUpperCase();
+    if (normalized !== 'IMAGE' && normalized !== 'VIDEO') {
+      console.warn('[fetchRecentWorks] unexpected item.type value', file.type, file.id);
+    }
+    return normalized === 'IMAGE';
+  };
+  const byRecency = (a: RecentFileEntry, b: RecentFileEntry) =>
+    new Date(b.file.createdAt).getTime() - new Date(a.file.createdAt).getTime();
+
+  // 타입별로 최신순 상위 perTypeSize개만 골라서 그만큼만 변환 시도 (나머지는 네트워크 호출 자체를 안 함)
+  const imageEntries = entries
+    .filter((e) => isImage(e.file))
+    .sort(byRecency)
+    .slice(0, perTypeSize);
+  const videoEntries = entries
+    .filter((e) => !isImage(e.file))
+    .sort(byRecency)
+    .slice(0, perTypeSize);
+
+  const convert = async (
+    list: RecentFileEntry[],
+    toArtwork: (file: MediaFile) => Promise<Artwork>
+  ): Promise<Artwork[]> => {
+    const results = await Promise.allSettled(list.map((entry) => toArtwork(entry.file)));
+    return results.flatMap((result, index) => {
+      if (result.status === 'fulfilled') return [result.value];
+      const { file, job } = list[index];
+      // 플레이스홀더로 대체하지 않고 조용히 건너뜀 — 실패한 자리는 위에서 뽑아둔 여유분(perTypeSize)이 채워줌
+      console.error('[fetchRecentWorks] 변환 실패 — 건너뜀 (BE에 실제 파일이 없을 가능성)', {
+        mediaFileId: file.id,
+        type: file.type,
+        generateJobId: job.generateJobId,
+        jobStatus: job.status,
+        jobPrompt: job.prompt,
+        createdAt: file.createdAt,
+        reason: result.reason,
+      });
+      return [];
+    });
+  };
+
+  const [images, videos] = await Promise.all([
+    convert(imageEntries, toImageArtwork),
+    convert(videoEntries, toVideoArtwork),
+  ]);
+
+  return [...images, ...videos].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
-
-  const artworks = results.map((result, index) => {
-    if (result.status === 'fulfilled') return result.value;
-    const file = files[index];
-    console.error('[fetchRecentWorks] media load failed', file.id, result.reason);
-    return file.type === 'IMAGE'
-      ? toImageErrorPlaceholderArtwork(file)
-      : toVideoPlaceholderArtwork(file);
-  });
-
-  return artworks
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    .slice(0, size);
 }
