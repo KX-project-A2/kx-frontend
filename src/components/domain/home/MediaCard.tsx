@@ -131,7 +131,7 @@ export function ResultCard({
 
   return (
     <div
-      className="group relative overflow-hidden rounded-card"
+      className="group relative overflow-hidden rounded-[20px]"
       style={{ border: `1px solid ${selected ? 'var(--selected-border)' : 'var(--stroke-soft)'}` }}
       ref={ref}
     >

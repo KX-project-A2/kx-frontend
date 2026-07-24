@@ -223,7 +223,7 @@
 /*
  * ============================================================
  *  TYPOGRAPHY SCALE  (Pretendard)
- *  Display 48/800 · H1 34/800 · H2 24/700 · Body 14/400
+ *  Display 48/800 · H1 34/800 · H1-Section 32/700 · H2 24/700 · Body 14/400
  * ============================================================
  */
 @layer components {
@@ -240,6 +240,14 @@
     font-weight: 800;
     line-height: 1.2;
     letter-spacing: -0.015em;
+  }
+  /* 섹션 타이틀 전용 (탐색하기/AI 튜토리얼/최근 생성한 작품) — 피그마 Heading 1 토큰 */
+  .text-h1-section {
+    font-family: var(--font-sans);
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.5px;
   }
   .text-h2 {
     font-family: var(--font-sans);
