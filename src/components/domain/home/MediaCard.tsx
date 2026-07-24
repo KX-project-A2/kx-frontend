@@ -3,6 +3,7 @@ import { Copy, Download, Heart, MoreHorizontal, Pencil, Play, RefreshCw, Trash2,
 import type { Artwork } from '@/constants/mockData';
 import { Avatar, Badge, IconButton, LikePill, cn } from '@/components/common/ui';
 import ImageWithFallback from '@/components/common/ImageWithFallback';
+import VideoWithFallback from '@/components/common/VideoWithFallback';
 import { useLikesStore } from '@/stores/useLikesStore';
 
 /* --- Explore gallery card (author + likes on hover, click opens detail) --- */
@@ -26,12 +27,30 @@ export function GalleryCard({ art, onOpen }: { art: Artwork; onOpen?: () => void
       className="group relative block w-full cursor-pointer overflow-hidden rounded-card"
       style={{ border: '1px solid var(--stroke-soft)' }}
     >
-      <ImageWithFallback
-        src={art.thumb}
-        alt={art.prompt}
-        className="w-full object-cover"
-        style={{ aspectRatio: String(art.aspect) }}
-      />
+      {art.type === 'video' && !art.url ? (
+        <div
+          className="flex w-full items-center justify-center bg-surface-3 text-caption text-content-muted"
+          style={{ aspectRatio: String(art.aspect) }}
+        >
+          영상 준비 중
+        </div>
+      ) : art.type === 'video' ? (
+        <VideoWithFallback
+          src={art.url}
+          poster={art.thumb}
+          alt={art.prompt}
+          className="w-full object-cover"
+          style={{ aspectRatio: String(art.aspect) }}
+          disableClickToggle
+        />
+      ) : (
+        <ImageWithFallback
+          src={art.thumb}
+          alt={art.prompt}
+          className="w-full object-cover"
+          style={{ aspectRatio: String(art.aspect) }}
+        />
+      )}
       {/* overlay */}
       <div
         className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
@@ -117,18 +136,42 @@ export function ResultCard({
       ref={ref}
     >
       <button onClick={onOpen} className="block w-full">
-        <ImageWithFallback
-          src={art.thumb}
-          alt={art.prompt}
-          className="w-full object-cover"
-          style={{ aspectRatio: art.type === 'video' ? '16 / 9' : String(art.aspect) }}
-        />
+        {art.type === 'video' && !art.url ? (
+          <div
+            className="flex w-full items-center justify-center bg-surface-3 text-caption text-content-muted"
+            style={{ aspectRatio: '16 / 9' }}
+          >
+            영상 준비 중
+          </div>
+        ) : art.type === 'video' ? (
+          <VideoWithFallback
+            src={art.url}
+            poster={art.thumb}
+            alt={art.prompt}
+            className="w-full object-cover"
+            style={{ aspectRatio: '16 / 9' }}
+            disableClickToggle
+          />
+        ) : (
+          <ImageWithFallback
+            src={art.thumb}
+            alt={art.prompt}
+            className="w-full object-cover"
+            style={{ aspectRatio: String(art.aspect) }}
+          />
+        )}
       </button>
 
       {art.type === 'video' && (
         <div className="pointer-events-none absolute left-2.5 top-2.5 flex gap-1.5">
           <Badge tone="neutral">
-            <Play size={11} fill="currentColor" /> {art.duration}
+            {art.url ? (
+              <>
+                <Play size={11} fill="currentColor" /> {art.duration}
+              </>
+            ) : (
+              '준비 중'
+            )}
           </Badge>
         </div>
       )}

@@ -31,14 +31,14 @@ interface MediaFilePage {
   hasPrevious: boolean;
 }
 
-function parseAspect(aspectRatio: string | null): number {
+export function parseAspect(aspectRatio: string | null): number {
   if (!aspectRatio) return 1;
   const [w, h] = aspectRatio.split(':').map(Number);
   return w && h ? w / h : 1;
 }
 
 /** 둘 다 null이면 빈 문자열을 반환 - Library.tsx에서 해당 표시 줄을 숨김 */
-function composeRatio(aspectRatio: string | null, resolution: string | null): string {
+export function composeRatio(aspectRatio: string | null, resolution: string | null): string {
   if (aspectRatio && resolution) return `${aspectRatio} · ${resolution}`;
   return aspectRatio ?? resolution ?? '';
 }
@@ -56,7 +56,7 @@ async function fetchMediaPage(
   return response.data.data.content;
 }
 
-async function toImageArtwork(file: MediaFile): Promise<Artwork> {
+export async function toImageArtwork(file: MediaFile): Promise<Artwork> {
   const url = await fetchImageBlobUrl(file.id);
 
   return {
@@ -106,7 +106,7 @@ async function fetchVideoDownloadUrl(mediaFileId: number): Promise<string> {
   return response.data.data.downloadUrl;
 }
 
-async function toVideoArtwork(file: MediaFile): Promise<Artwork> {
+export async function toVideoArtwork(file: MediaFile): Promise<Artwork> {
   const url = await fetchVideoDownloadUrl(file.id);
 
   return {
@@ -170,4 +170,68 @@ export async function fetchLibraryItems(page = 0, size = 20): Promise<Artwork[]>
   return [...images, ...videos].sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
+}
+
+interface RecentJobItem {
+  mediaFileId: number;
+  type: 'IMAGE' | 'VIDEO';
+  model: string | null;
+  quality: string | null;
+  aspectRatio: string | null;
+  resolution: string | null;
+  favorite: boolean;
+  createdAt: string;
+}
+
+interface RecentJob {
+  generateJobId: number;
+  type: 'IMAGE' | 'VIDEO';
+  status: string;
+  prompt: string | null;
+  createdAt: string;
+  items: RecentJobItem[];
+}
+
+/** job.prompt(reversedPrompt 없음) + item을 기존 MediaFile 형태로 합쳐서 toImageArtwork/toVideoArtwork 재사용 */
+function toRecentMediaFile(job: RecentJob, item: RecentJobItem): MediaFile {
+  return {
+    id: item.mediaFileId,
+    type: item.type,
+    filePath: null,
+    model: item.model,
+    quality: item.quality,
+    aspectRatio: item.aspectRatio,
+    resolution: item.resolution,
+    reversedPrompt: job.prompt,
+    tags: [],
+    favorite: item.favorite,
+    createdAt: item.createdAt,
+  };
+}
+
+export async function fetchRecentWorks(size = 4): Promise<Artwork[]> {
+  const response = await axiosInstance.get<ApiResponse<RecentJob[]>>('/api/media/files/recent', {
+    params: { size },
+  });
+
+  const files = response.data.data.flatMap((job) =>
+    job.items.map((item) => toRecentMediaFile(job, item))
+  );
+
+  const results = await Promise.allSettled(
+    files.map((file) => (file.type === 'IMAGE' ? toImageArtwork(file) : toVideoArtwork(file)))
+  );
+
+  const artworks = results.map((result, index) => {
+    if (result.status === 'fulfilled') return result.value;
+    const file = files[index];
+    console.error('[fetchRecentWorks] media load failed', file.id, result.reason);
+    return file.type === 'IMAGE'
+      ? toImageErrorPlaceholderArtwork(file)
+      : toVideoPlaceholderArtwork(file);
+  });
+
+  return artworks
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, size);
 }
