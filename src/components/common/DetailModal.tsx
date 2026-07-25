@@ -243,7 +243,7 @@ export function DetailModal({ art, onClose }: { art: Artwork | null; onClose: ()
               leftIcon={<Pencil size={16} />}
               onClick={() => {
                 onClose();
-                navigate(art.type === 'video' ? '/video' : '/image');
+                navigate(art.type === 'video' ? '/video' : '/image', { state: { editArt: art } });
               }}
             >
               재편집

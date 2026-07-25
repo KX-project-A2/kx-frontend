@@ -162,6 +162,8 @@ export async function toImageArtwork(file: MediaFile): Promise<Artwork> {
     createdAt: file.createdAt,
     aspect: parseAspect(file.aspectRatio),
     mediaFileId: file.id,
+    aspectRatioRaw: file.aspectRatio ?? undefined,
+    qualityRaw: file.quality ?? undefined,
   };
 }
 
@@ -183,6 +185,8 @@ function toImageErrorPlaceholderArtwork(file: MediaFile): Artwork {
     createdAt: file.createdAt,
     aspect: parseAspect(file.aspectRatio),
     mediaFileId: file.id,
+    aspectRatioRaw: file.aspectRatio ?? undefined,
+    qualityRaw: file.quality ?? undefined,
   };
 }
 
@@ -212,6 +216,8 @@ export async function toVideoArtwork(file: MediaFile): Promise<Artwork> {
     createdAt: file.createdAt,
     aspect: parseAspect(file.aspectRatio),
     mediaFileId: file.id,
+    aspectRatioRaw: file.aspectRatio ?? undefined,
+    qualityRaw: file.resolution ?? undefined,
   };
 }
 
@@ -232,6 +238,8 @@ function toVideoPlaceholderArtwork(file: MediaFile): Artwork {
     ratio: composeRatio(file.aspectRatio, file.resolution),
     createdAt: file.createdAt,
     aspect: parseAspect(file.aspectRatio),
+    aspectRatioRaw: file.aspectRatio ?? undefined,
+    qualityRaw: file.resolution ?? undefined,
   };
 }
 

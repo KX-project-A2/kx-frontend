@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import {
   ModeTabs,
@@ -22,10 +22,13 @@ import {
   getAvailableLengths,
   getVideoModelCapability,
   mapModelToModelId,
+  mapQualityToResolution,
+  mapRatioToAspectRatio,
   toVideoValidationInput,
 } from '@/utils/videoOptionMapping';
 import { KLING_REFERENCE_TO_VIDEO, validateVideoOptions } from '@/utils/videoOptionValidator';
 import { VIDEO_MODELS, type Artwork } from '@/constants/mockData';
+import { findOptionForRestore } from '@/utils/restoreOption';
 
 interface SeedReference {
   mediaFileId: number;
@@ -70,10 +73,13 @@ const REFERENCE_CELL_STYLE: React.CSSProperties = {
 export default function VideoGenerationPage() {
   const location = useLocation();
   const referenceArt = (location.state as { referenceArt?: Artwork } | null)?.referenceArt;
+  const editArt = (location.state as { editArt?: Artwork } | null)?.editArt;
 
   const { model, length, ratio, quality, setModel, setLength, setRatio, setQuality } =
     useVideoGenerationOptionsStore();
-  const [prompt, setPrompt] = useState(referenceArt?.prompt ?? '');
+  // length(길이)는 BE에 저장되지 않아 재편집 시 복원하지 않고 기본값으로 시작한다.
+  // BE에 length 저장이 추가되면 복원 로직도 추가.
+  const [prompt, setPrompt] = useState(referenceArt?.prompt ?? editArt?.prompt ?? '');
   const [seedReference, setSeedReference] = useState<SeedReference | null>(null);
   const [referenceImages, setReferenceImages] = useState<File[]>([]);
   const [storyboardImage, setStoryboardImage] = useState<File | null>(null);
@@ -83,7 +89,15 @@ export default function VideoGenerationPage() {
   const [selectedArt, setSelectedArt] = useState<Artwork | null>(null);
 
   const referencePreviewUrls = useObjectUrls(referenceImages);
-  const storyboardPreviewUrls = useObjectUrls(storyboardImage ? [storyboardImage] : []);
+  // storyboardImage ? [storyboardImage] : [] 를 그대로 넘기면 매 렌더마다 새 배열 참조가 생겨
+  // useObjectUrls 내부 useEffect([files])가 매번 재실행 → setUrls가 매번 새 배열을 세팅 →
+  // 무한 렌더 루프("Maximum update depth exceeded")로 이어진다. storyboardImage가 실제로
+  // 바뀔 때만 배열 참조가 바뀌도록 메모이즈.
+  const storyboardFiles = useMemo(
+    () => (storyboardImage ? [storyboardImage] : []),
+    [storyboardImage]
+  );
+  const storyboardPreviewUrls = useObjectUrls(storyboardFiles);
 
   const capability = getVideoModelCapability(model);
   const availableLengths = getAvailableLengths(model);
@@ -134,6 +148,30 @@ export default function VideoGenerationPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- referenceArt.mediaFileId 변경(새로 "동영상 만들기"로 진입) 시에만 실행
   }, [referenceArt?.mediaFileId]);
+
+  useEffect(() => {
+    if (!editArt) return;
+    setModel(editArt.model);
+
+    // art.ratio/quality는 DetailModal 표시용(픽셀 해상도 포함/축약 라벨)이라 옵션 목록과 그대로
+    // 매칭되지 않는다. BE 원본 값(aspectRatioRaw/qualityRaw)을 옵션이 실제 검증에 쓰는 형태로
+    // 역변환해 일치하는 옵션을 찾아 복원한다. 일치하는 옵션이 없으면 기본값을 그대로 둔다.
+    const capability = getVideoModelCapability(editArt.model);
+    const ratioOption = findOptionForRestore(
+      capability.ratioOptions,
+      editArt.aspectRatioRaw,
+      mapRatioToAspectRatio
+    );
+    if (ratioOption) setRatio(ratioOption);
+
+    const qualityOption = findOptionForRestore(
+      capability.qualityOptions,
+      editArt.qualityRaw,
+      mapQualityToResolution
+    );
+    if (qualityOption) setQuality(qualityOption);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- editArt로 재편집 진입 시에만 실행
+  }, [editArt?.id]);
 
   const validationError = validateVideoOptions(
     toVideoValidationInput(prompt.trim(), { model, length, ratio, quality })

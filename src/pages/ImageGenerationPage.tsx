@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Plus } from 'lucide-react';
 import {
@@ -21,9 +21,10 @@ import { CharacterSheetModal } from '@/components/domain/image-generation/Charac
 import { useGenerationOptionsStore } from '@/hooks/useGenerationOptionsStore';
 import { useRevokeObjectUrls } from '@/hooks/useRevokeObjectUrls';
 import { useObjectUrls } from '@/hooks/useObjectUrls';
-import { characterConceptSheet, generateImage } from '@/services/imageGeneration';
+import { characterConceptSheet, generateImage, mapQualityToBE } from '@/services/imageGeneration';
 import type { GenerationResult } from '@/types/generation';
 import { toGenGroup } from '@/utils/generationAdapter';
+import { findOptionForRestore } from '@/utils/restoreOption';
 import { IMAGE_QUALITIES, type Artwork } from '@/constants/mockData';
 
 const RATIO_OPTIONS = ['1:1', '4:3', '3:4'];
@@ -39,11 +40,14 @@ const MAX_REFERENCES = 8;
 export default function ImageGenerationPage() {
   const location = useLocation();
   const initialPrompt = (location.state as { prompt?: string } | null)?.prompt;
+  const editArt = (location.state as { editArt?: Artwork } | null)?.editArt;
 
   const { model, ratio, quality, quantity, setRatio, setQuality, setQuantity } =
     useGenerationOptionsStore();
+  // purpose(유형: 캐릭터/배경/캐릭터시트)는 BE 응답에 해당 데이터가 없어 재편집 시 복원하지 않고
+  // 항상 기본값(첫 번째 탭)으로 시작한다. BE에 purpose 노출 요청 필요, 노출되면 복원 로직 추가.
   const [purpose, setPurpose] = useState(PURPOSE_TABS[0].id);
-  const [prompt, setPrompt] = useState(initialPrompt ?? '');
+  const [prompt, setPrompt] = useState(editArt?.prompt ?? initialPrompt ?? '');
   const [correction, setCorrection] = useState(false);
   const [references, setReferences] = useState<File[]>([]);
   const [results, setResults] = useState<GenerationResult[]>([]);
@@ -51,6 +55,20 @@ export default function ImageGenerationPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedArt, setSelectedArt] = useState<Artwork | null>(null);
   const [isCharacterModalOpen, setIsCharacterModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (!editArt) return;
+
+    // art.ratio/quality는 DetailModal 표시용(픽셀 해상도 포함/축약 라벨)이라 옵션 목록과 그대로
+    // 매칭되지 않는다. BE 원본 값(aspectRatioRaw/qualityRaw)을 옵션이 실제 검증에 쓰는 형태로
+    // 역변환해 일치하는 옵션을 찾아 복원한다. 일치하는 옵션이 없으면 기본값을 그대로 둔다.
+    const ratioOption = findOptionForRestore(RATIO_OPTIONS, editArt.aspectRatioRaw, (opt) => opt);
+    if (ratioOption) setRatio(ratioOption);
+
+    const qualityOption = findOptionForRestore(IMAGE_QUALITIES, editArt.qualityRaw, mapQualityToBE);
+    if (qualityOption) setQuality(qualityOption);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- editArt로 재편집 진입 시에만 실행
+  }, [editArt?.id]);
 
   useRevokeObjectUrls(results.flatMap((result) => result.images.map((image) => image.url)));
   const referencePreviewUrls = useObjectUrls(references);

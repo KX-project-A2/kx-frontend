@@ -92,7 +92,7 @@ export default function Login() {
             ? 'absolute top-0 h-full w-auto object-cover'
             : 'absolute inset-0 h-full w-full object-cover'
         }
-        heroStyle={heroIsOffset ? { left: 549.2 } : undefined}
+        heroStyle={heroIsOffset ? { left: 549.2 } : { left: 0 }}
         slideIndicator={
           // slide indicators — label + 150x4 progress track, aligned to hero's left edge (549.2px);
           // stays fixed even in returning-visit mode where the photo goes full-bleed
