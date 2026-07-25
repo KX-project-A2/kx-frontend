@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import { fetchMe } from '../services/auth';
 import { useAuthStore } from '../hooks/useAuthStore';
 
 export default function OAuthCallback() {
@@ -8,8 +9,14 @@ export default function OAuthCallback() {
   const setAuthenticated = useAuthStore((state) => state.setAuthenticated);
 
   useEffect(() => {
-    setAuthenticated(true);
-    navigate('/home', { replace: true });
+    fetchMe()
+      .then((profile) => {
+        setAuthenticated(profile);
+        navigate('/home', { replace: true });
+      })
+      .catch(() => {
+        navigate('/login', { replace: true });
+      });
   }, [setAuthenticated, navigate]);
 
   return (

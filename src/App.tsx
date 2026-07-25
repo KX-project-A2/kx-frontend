@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Routes, Route, Outlet, Navigate } from 'react-router-dom';
 import AppShell from '@/layouts/AppShell';
 import ProtectedRoute from '@/components/common/ProtectedRoute';
@@ -10,8 +11,21 @@ import SignupEmail from '@/pages/SignupEmail';
 import SignupNickname from '@/pages/SignupNickname';
 import SignupPassword from '@/pages/SignupPassword';
 import OAuthCallback from '@/pages/OAuthCallback';
+import { fetchMe } from '@/services/auth';
+import { useAuthStore } from '@/hooks/useAuthStore';
 
 function App() {
+  const setChecking = useAuthStore((state) => state.setChecking);
+  const setAuthenticated = useAuthStore((state) => state.setAuthenticated);
+  const setUnauthenticated = useAuthStore((state) => state.setUnauthenticated);
+
+  useEffect(() => {
+    setChecking();
+    fetchMe()
+      .then((profile) => setAuthenticated(profile))
+      .catch(() => setUnauthenticated());
+  }, [setChecking, setAuthenticated, setUnauthenticated]);
+
   return (
     <>
       <div className="app-backdrop" />

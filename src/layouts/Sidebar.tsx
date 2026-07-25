@@ -1,6 +1,7 @@
 import { Home, Image as ImageIcon, Library, Video } from 'lucide-react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import Logo from '@/components/common/Logo';
+import { useAuthStore } from '@/hooks/useAuthStore';
 
 const NAV = [
   { to: '/home', label: '홈', icon: Home },
@@ -9,12 +10,7 @@ const NAV = [
   { to: '/library', label: '라이브러리', icon: Library },
 ];
 
-// TODO(PROF-001): 실제 로그인 사용자 데이터 연동 전까지 Figma 목업 값 사용.
-const ME = {
-  name: 'Jane Doe',
-  email: 'yerin0512@gmail.com',
-  avatar: '/assets/profile/mock-avatar.png',
-};
+const DEFAULT_AVATAR = '/assets/profile/mock-avatar.png';
 
 // 이미지/영상 생성 화면은 캔버스 자리를 확보하기 위해 사이드바를 자동으로 접는다.
 const COLLAPSE_ROUTES = ['/image', '/video'];
@@ -23,6 +19,7 @@ export default function Sidebar() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const collapsed = COLLAPSE_ROUTES.includes(pathname);
+  const profile = useAuthStore((state) => state.profile);
 
   return (
     <aside
@@ -84,7 +81,7 @@ export default function Sidebar() {
             }`}
           >
             <img
-              src={ME.avatar}
+              src={profile?.profileImageUrl || DEFAULT_AVATAR}
               alt=""
               className={
                 collapsed
@@ -94,8 +91,12 @@ export default function Sidebar() {
             />
             {!collapsed && (
               <div className="min-w-0">
-                <div className="truncate text-[16px] font-bold leading-[24px] text-[#e9e0e9]">{ME.name}</div>
-                <div className="truncate font-num text-[12px] leading-[16px] text-[#988e99]">{ME.email}</div>
+                <div className="truncate text-[16px] font-bold leading-[24px] text-[#e9e0e9]">
+                  {profile?.nickname}
+                </div>
+                <div className="truncate font-num text-[12px] leading-[16px] text-[#988e99]">
+                  {profile?.email}
+                </div>
               </div>
             )}
           </button>
