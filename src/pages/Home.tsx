@@ -84,7 +84,6 @@ export default function Home() {
         <div className="fixed inset-0 -z-10">
           <video
             className="absolute inset-0 h-full w-full object-cover"
-            style={{ filter: 'saturate(1.6) contrast(1.5) brightness(0.92) hue-rotate(-8deg)' }}
             src="/assets/video/home.mp4"
             autoPlay
             loop
@@ -93,20 +92,20 @@ export default function Home() {
           />
           <div
             className="absolute inset-0"
-            style={{ background: 'rgba(0,0,0,0.45)', mixBlendMode: 'multiply' }}
+            style={{ background: 'rgba(0,0,0,0.2)', mixBlendMode: 'multiply' }}
           />
           <div
             className="absolute inset-0"
             style={{
               background:
-                'radial-gradient(circle at 68% 16%, rgba(227,110,255,0.4), transparent 70%)',
+                'radial-gradient(circle at 68% 16%, rgba(227,110,255,0.2), transparent 70%)',
             }}
           />
           <div
             className="absolute inset-0"
             style={{
               background:
-                'radial-gradient(circle at 38% 76%, rgba(234,251,47,0.2), transparent 70%)',
+                'radial-gradient(circle at 38% 76%, rgba(234,251,47,0.1), transparent 70%)',
             }}
           />
         </div>
@@ -159,7 +158,7 @@ export default function Home() {
               variant="hero"
               size="hero"
               leftIcon={<Plus size={24} />}
-              onClick={() => navigate('/image')}
+              onClick={() => navigate('/image', { state: { prompt } })}
             >
               생성
             </Button>

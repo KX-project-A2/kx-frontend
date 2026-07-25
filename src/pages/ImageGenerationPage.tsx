@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Plus } from 'lucide-react';
 import {
   ModeTabs,
@@ -36,10 +37,13 @@ const MAX_QUANTITY = 4;
 const MAX_REFERENCES = 8;
 
 export default function ImageGenerationPage() {
+  const location = useLocation();
+  const initialPrompt = (location.state as { prompt?: string } | null)?.prompt;
+
   const { model, ratio, quality, quantity, setRatio, setQuality, setQuantity } =
     useGenerationOptionsStore();
   const [purpose, setPurpose] = useState(PURPOSE_TABS[0].id);
-  const [prompt, setPrompt] = useState('');
+  const [prompt, setPrompt] = useState(initialPrompt ?? '');
   const [correction, setCorrection] = useState(false);
   const [references, setReferences] = useState<File[]>([]);
   const [results, setResults] = useState<GenerationResult[]>([]);

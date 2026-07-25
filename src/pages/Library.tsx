@@ -4,7 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { Badge, Button, Select, Tabs } from '@/components/common/ui';
 import { ResultCard } from '@/components/domain/library/ResultCard';
 import ImageWithFallback from '@/components/common/ImageWithFallback';
-import VideoWithFallback, { type VideoWithFallbackHandle } from '@/components/common/VideoWithFallback';
+import VideoWithFallback, {
+  type VideoWithFallbackHandle,
+} from '@/components/common/VideoWithFallback';
 import { DetailModal } from '@/components/common/DetailModal';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
@@ -13,15 +15,21 @@ import { type Artwork } from '@/constants/mockData';
 import { useRevokeObjectUrls } from '@/hooks/useRevokeObjectUrls';
 import { generateImage } from '@/services/imageGeneration';
 import { generateVideo } from '@/services/videoGeneration';
-import { fetchLibraryItems } from '@/services/library';
+import { deleteMediaFile, fetchLibraryItems } from '@/services/library';
+import { useLikesStore } from '@/stores/useLikesStore';
 import { downloadFile } from '@/utils/downloadFile';
 import { formatDate } from '@/utils/formatDate';
 import { toGenGroup, toVideoGenGroup } from '@/utils/generationAdapter';
 
 const SORTS = ['최신순', '오래된순', '좋아요순'];
+const SCOPES: { id: 'mine' | 'liked'; label: string }[] = [
+  { id: 'mine', label: '내 작업' },
+  { id: 'liked', label: '찜한 목록' },
+];
 
 export default function Library() {
   const navigate = useNavigate();
+  const [scope, setScope] = useState<'mine' | 'liked'>('mine');
   const [tab, setTab] = useState('all');
   const [sort, setSort] = useState(SORTS[0]);
   const [selected, setSelected] = useState<Artwork | null>(null);
@@ -29,9 +37,11 @@ export default function Library() {
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [regeneratingId, setRegeneratingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const videoRef = useRef<VideoWithFallbackHandle>(null);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const likeOverrides = useLikesStore((s) => s.overrides);
 
   useEffect(() => {
     let cancelled = false;
@@ -58,10 +68,14 @@ export default function Library() {
 
   useRevokeObjectUrls(items.filter((a) => a.url.startsWith('blob:')).map((a) => a.url));
 
+  const isLiked = (a: Artwork) => likeOverrides[a.id]?.liked ?? a.favorite ?? a.liked ?? false;
+
   const visibleItems = items
     .filter((a) => tab === 'all' || a.type === tab)
+    .filter((a) => scope === 'mine' || isLiked(a))
     .sort((a, b) => {
-      if (sort === '오래된순') return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      if (sort === '오래된순')
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
       if (sort === '좋아요순') return (b.likes ?? 0) - (a.likes ?? 0);
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(); // 최신순 기본
     });
@@ -112,12 +126,54 @@ export default function Library() {
     }
   };
 
+  const handleDelete = async (art: Artwork) => {
+    if (deletingId || !window.confirm('이 항목을 삭제할까요?')) return;
+    setDeletingId(art.id);
+    try {
+      await deleteMediaFile(Number(art.id));
+      setItems((prev) => prev.filter((i) => i.id !== art.id));
+      setSelected((prev) => (prev?.id === art.id ? null : prev));
+    } catch {
+      window.alert('삭제에 실패했어요. 다시 시도해주세요.');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   return (
     <div className="flex h-full">
       {/* left grid */}
       <div className="flex flex-1 flex-col gap-6 overflow-y-auto px-8 py-8">
         <div className="flex items-center justify-between">
-          <h1 className="text-h1 text-content">라이브러리</h1>
+          <div className="flex items-center gap-4">
+            <h1 className="text-h1 text-content">라이브러리</h1>
+            <div
+              className="inline-flex items-center gap-1 rounded-full p-1"
+              style={{
+                border: '1px solid rgba(255,255,255,0.15)',
+                background: 'rgba(29,26,33,0.80)',
+              }}
+            >
+              {SCOPES.map(({ id, label }) => {
+                const active = id === scope;
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setScope(id)}
+                    className="rounded-full px-4 h-8 text-caption transition-colors"
+                    style={
+                      active
+                        ? { background: 'var(--Primary-300, #F0A5FF)', color: '#4d0071' }
+                        : { color: 'var(--content-secondary)' }
+                    }
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
           <Select value={sort} options={SORTS} onChange={setSort} className="w-36" />
         </div>
 
@@ -129,6 +185,11 @@ export default function Library() {
             { id: 'image', label: '이미지' },
             { id: 'video', label: '영상' },
           ]}
+          containerClassName="inline-flex items-center gap-1 rounded-[12px] p-1"
+          containerStyle={{
+            border: '1px solid var(--Surface-Elevated, #2C2830)',
+            background: 'var(--Surface-Background, #151218)',
+          }}
         />
 
         {isLoading ? (
@@ -162,9 +223,11 @@ export default function Library() {
                   isRegenerating={regeneratingId === art.id}
                   onDownload={
                     art.url
-                      ? () => downloadFile(art.url, `${art.id}.${art.type === 'video' ? 'mp4' : 'jpg'}`)
+                      ? () =>
+                          downloadFile(art.url, `${art.id}.${art.type === 'video' ? 'mp4' : 'jpg'}`)
                       : undefined
                   }
+                  onDelete={() => handleDelete(art)}
                 />
               </div>
             ))}
@@ -286,7 +349,11 @@ export default function Library() {
                 다운로드
               </Button>
             </div>
-            <Button variant="ghost" leftIcon={<Trash2 size={16} />}>
+            <Button
+              variant="ghost"
+              leftIcon={<Trash2 size={16} />}
+              onClick={() => handleDelete(selected)}
+            >
               삭제
             </Button>
           </div>
@@ -302,9 +369,7 @@ export default function Library() {
         </div>
       )}
 
-      {showDetailModal && (
-        <DetailModal art={selected} onClose={() => setShowDetailModal(false)} />
-      )}
+      {showDetailModal && <DetailModal art={selected} onClose={() => setShowDetailModal(false)} />}
     </div>
   );
 }

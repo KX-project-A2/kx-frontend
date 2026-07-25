@@ -64,7 +64,10 @@ function isPortraitRatio(aspectRatio: string | null): boolean {
   return !!w && !!h && h > w;
 }
 
-function resolutionToPixelSize(resolution: string | null, aspectRatio: string | null): string | null {
+function resolutionToPixelSize(
+  resolution: string | null,
+  aspectRatio: string | null
+): string | null {
   const dims = resolution ? VIDEO_RESOLUTION_TO_PIXELS[resolution] : undefined;
   if (!dims) return null;
   const { width, height } = isPortraitRatio(aspectRatio)
@@ -184,9 +187,9 @@ function toImageErrorPlaceholderArtwork(file: MediaFile): Artwork {
 }
 
 async function fetchVideoDownloadUrl(mediaFileId: number): Promise<string> {
-  const response = await axiosInstance.get<ApiResponse<{ downloadUrl: string; expiresInSeconds: number }>>(
-    `/api/media/files/${mediaFileId}/download-url`
-  );
+  const response = await axiosInstance.get<
+    ApiResponse<{ downloadUrl: string; expiresInSeconds: number }>
+  >(`/api/media/files/${mediaFileId}/download-url`);
   return response.data.data.downloadUrl;
 }
 
@@ -232,6 +235,10 @@ function toVideoPlaceholderArtwork(file: MediaFile): Artwork {
   };
 }
 
+export async function deleteMediaFile(mediaFileId: number): Promise<void> {
+  await axiosInstance.delete<ApiResponse<null>>(`/api/media/files/${mediaFileId}`);
+}
+
 export async function fetchLibraryItems(page = 0, size = 20): Promise<Artwork[]> {
   const [imageFiles, videoFiles] = await Promise.all([
     fetchMediaPage('IMAGE', page, size),
@@ -247,7 +254,11 @@ export async function fetchLibraryItems(page = 0, size = 20): Promise<Artwork[]>
   const videoResults = await Promise.allSettled(videoFiles.map(toVideoArtwork));
   const videos = videoResults.map((result, index) => {
     if (result.status === 'fulfilled') return result.value;
-    console.error('[fetchLibraryItems] video download url failed', videoFiles[index].id, result.reason);
+    console.error(
+      '[fetchLibraryItems] video download url failed',
+      videoFiles[index].id,
+      result.reason
+    );
     return toVideoPlaceholderArtwork(videoFiles[index]);
   });
 
