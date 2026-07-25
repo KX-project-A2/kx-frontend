@@ -48,13 +48,10 @@ export function StoryboardUpload({ images, onChange, maxCount = 9 }: StoryboardU
   return (
     <div className="flex flex-col gap-2.5">
       <div className="flex items-center justify-between">
-        <span className="text-label text-content-muted">스토리보드 (9컷)</span>
-        <span className="font-num text-label text-content-secondary">{images.length}개</span>
+        <span className="text-[14px] leading-[20px] text-content-secondary">스토리보드 (9컷)</span>
+        <span className="font-num text-[11px] text-[rgba(255,255,255,0.4)]">{images.length}개</span>
       </div>
-      <div
-        className="grid aspect-square grid-cols-3 grid-rows-3 gap-1 rounded-field p-1.5"
-        style={{ background: 'var(--surface-2)', border: '1px dashed var(--stroke-strong)' }}
-      >
+      <div className="grid aspect-square grid-cols-3 grid-rows-3 gap-1">
         {Array.from({ length: maxCount }).map((_, i) => {
           const image = images[i];
           const showHint = !image && i === 4 && images.length === 0;
@@ -65,10 +62,13 @@ export function StoryboardUpload({ images, onChange, maxCount = 9 }: StoryboardU
               type="button"
               onClick={() => (image ? handleRemove(i) : !isFull && inputRef.current?.click())}
               disabled={disabled}
-              className={`flex items-center justify-center overflow-hidden rounded-sm transition-colors ${
+              className={`flex items-center justify-center overflow-hidden rounded-[8px] transition-colors ${
                 disabled ? 'cursor-not-allowed opacity-60' : 'hover:opacity-80'
               }`}
-              style={{ background: showHint ? 'var(--selected-bg)' : 'var(--surface-3)' }}
+              style={{
+                background: showHint ? 'var(--selected-bg)' : 'var(--surface-1)',
+                border: '1px solid var(--surface-3)',
+              }}
             >
               {image ? (
                 <img

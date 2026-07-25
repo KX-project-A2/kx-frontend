@@ -1,5 +1,5 @@
-import { useRef } from 'react';
-import { ImagePlus, Sparkles, Wand2 } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Check, Image as ImageIcon, Minus, PenLine, Plus, Sparkles, Video } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { Artwork, GenGroup } from '@/constants/mockData';
 import { Badge, Button, Chip, Panel, Toggle, cn } from '@/components/common/ui';
@@ -9,38 +9,225 @@ import { ResultCard } from '@/components/domain/library/ResultCard';
 export function SettingSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-2.5">
-      <span className="text-label text-content-muted">{title}</span>
+      <span className="text-[14px] leading-[20px] text-content-secondary">{title}</span>
       {children}
     </div>
   );
 }
 
-/* Read-only model field (image screen) */
+/* Read-only model field (image/video screens) */
 export function ModelField({ name }: { name: string }) {
   return (
     <div
-      className="flex items-center gap-2 rounded-field px-3 h-10"
-      style={{ background: 'var(--surface-2)', border: '1px solid var(--stroke-soft)' }}
+      className="flex h-12 items-center justify-center rounded-[12px] px-3"
+      style={{ background: 'var(--surface-1)', border: '1px solid var(--surface-3)' }}
     >
-      <Sparkles size={15} className="text-brand-light" />
-      <span className="text-body text-content">{name}</span>
+      <span className="text-[16px] font-medium leading-[24px] text-content">{name}</span>
     </div>
   );
 }
 
-/* 2×2 reference upload grid with a x/8 counter */
+/* Top-of-panel image/video/prompt mode switcher — image/video tabs navigate, prompt is not yet built */
+export function ModeTabs({ variant }: { variant: 'image' | 'video' }) {
+  const navigate = useNavigate();
+  const items = [
+    { id: 'image' as const, label: '이미지', icon: ImageIcon, to: '/image' },
+    { id: 'video' as const, label: '영상', icon: Video, to: '/video' },
+    {
+      id: 'prompt' as const,
+      label: variant === 'image' ? '역프롬프트' : '프롬프트',
+      icon: PenLine,
+      to: null,
+    },
+  ];
+
+  return (
+    <div className="flex flex-col gap-4 pt-2">
+      <div className="flex items-center justify-between">
+        {items.map((item) => {
+          const active = item.id === variant;
+          const big = variant === 'video' && active;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              disabled={!item.to}
+              onClick={() => item.to && navigate(item.to)}
+              className={cn(
+                'flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg transition-colors',
+                big ? 'px-4 py-2' : 'px-3 py-2',
+                !item.to && 'cursor-not-allowed opacity-50'
+              )}
+              style={
+                active
+                  ? variant === 'video'
+                    ? { background: '#f5c0ff', color: '#4d0071' }
+                    : { background: 'var(--surface-3)', color: '#f5c0ff' }
+                  : { color: '#988e99' }
+              }
+            >
+              <item.icon size={big ? 18 : 16} strokeWidth={2} />
+              <span className={big ? 'text-[16px] font-medium' : 'text-[14px] font-medium'}>
+                {item.label}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+      <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.08)' }} />
+    </div>
+  );
+}
+
+/* Independent pill buttons for the "유형" (purpose) selector */
+export function PurposeTabs({
+  tabs,
+  value,
+  onChange,
+}: {
+  tabs: { id: string; label: string }[];
+  value: string;
+  onChange?: (id: string) => void;
+}) {
+  return (
+    <div className="flex w-full items-center gap-2">
+      {tabs.map((t) => {
+        const active = t.id === value;
+        return (
+          <button
+            key={t.id}
+            type="button"
+            onClick={() => onChange?.(t.id)}
+            className="flex flex-1 items-center justify-center whitespace-nowrap rounded-full px-4 py-2.5 text-[14px] transition-colors"
+            style={
+              active
+                ? { background: 'rgba(240,165,255,0.3)', border: '1px solid #f5c0ff', color: '#f8d6ff' }
+                : { border: '1px solid rgba(255,255,255,0.15)', color: '#e9e0e9' }
+            }
+          >
+            {t.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/* Dropdown used for 비율/품질/모델 fields in the generation panels */
+export function PanelSelect({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  options: string[];
+  onChange?: (v: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const h = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', h);
+    return () => document.removeEventListener('mousedown', h);
+  }, [open]);
+
+  return (
+    <SettingSection title={label}>
+      <div className="relative" ref={ref}>
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          className="flex w-full items-center justify-between rounded-[8px] p-3 text-content transition-colors"
+          style={{ background: 'var(--surface-3)', border: '1px solid rgba(255,255,255,0.15)' }}
+        >
+          <span className="truncate text-[16px] leading-[24px]">{value}</span>
+          <span className="text-[20px] leading-[20px] text-content-muted">▾</span>
+        </button>
+        {open && (
+          <div
+            className="absolute z-30 mt-1.5 w-full overflow-hidden rounded-[8px] p-1 shadow-xl"
+            style={{ background: 'var(--surface-3)', border: '1px solid rgba(255,255,255,0.15)' }}
+          >
+            {options.map((opt) => (
+              <button
+                key={opt}
+                type="button"
+                onClick={() => {
+                  onChange?.(opt);
+                  setOpen(false);
+                }}
+                className="flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-[16px] text-content-secondary hover:bg-surface-2 hover:text-content"
+              >
+                <span className="truncate text-left">{opt}</span>
+                {opt === value && <Check size={15} strokeWidth={2} style={{ color: 'var(--brand-light)' }} />}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </SettingSection>
+  );
+}
+
+/* Quantity pill stepper (수량) */
+export function QuantityStepper({
+  value,
+  min = 1,
+  max = 4,
+  onChange,
+}: {
+  value: number;
+  min?: number;
+  max?: number;
+  onChange?: (v: number) => void;
+}) {
+  return (
+    <div
+      className="flex h-10 items-center gap-2 rounded-full px-4"
+      style={{ background: 'rgba(29,26,33,0.8)', border: '1px solid rgba(255,255,255,0.15)' }}
+    >
+      <button
+        type="button"
+        onClick={() => onChange?.(Math.max(min, value - 1))}
+        disabled={value <= min}
+        className="flex items-center justify-center text-content-secondary transition-colors hover:text-content disabled:opacity-30"
+      >
+        <Minus size={20} strokeWidth={2} />
+      </button>
+      <span className="font-num text-[14px] leading-[20px] text-content">{value}</span>
+      <button
+        type="button"
+        onClick={() => onChange?.(Math.min(max, value + 1))}
+        disabled={value >= max}
+        className="flex items-center justify-center text-content-secondary transition-colors hover:text-content disabled:opacity-30"
+      >
+        <Plus size={20} strokeWidth={2} />
+      </button>
+    </div>
+  );
+}
+
+/* Reference image upload — 2 columns (video screen) or a single 4-wide row (image screen) */
 export function ReferenceGrid({
   slots,
   used = 2,
   images = [],
   onAdd,
   onRemove,
+  layout = 'grid',
 }: {
   slots: string[];
   used?: number;
   images?: (string | undefined)[];
   onAdd?: (file: File) => void;
   onRemove?: (index: number) => void;
+  layout?: 'grid' | 'row';
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -53,8 +240,8 @@ export function ReferenceGrid({
   return (
     <div className="flex flex-col gap-2.5">
       <div className="flex items-center justify-between">
-        <span className="text-label text-content-muted">레퍼런스</span>
-        <span className="font-num text-label text-content-secondary">{used}/8</span>
+        <span className="text-[14px] leading-[20px] text-content-secondary">레퍼런스</span>
+        <span className="font-num text-[12px] leading-[16px] text-content-secondary">{used}/8</span>
       </div>
       <input
         ref={inputRef}
@@ -63,40 +250,33 @@ export function ReferenceGrid({
         className="hidden"
         onChange={handleFileChange}
       />
-      <div className="grid grid-cols-2 gap-2">
+      <div className={layout === 'row' ? 'grid grid-cols-4 gap-2' : 'grid grid-cols-2 gap-2'}>
         {slots.map((label, i) => {
           const filled = i < used;
           const image = images[i];
           return (
             <button
               key={i}
-
+              type="button"
+              aria-label={label}
               onClick={() => (filled ? onRemove?.(i) : inputRef.current?.click())}
-
-              className={cn(
-                'flex aspect-square flex-col items-center justify-center gap-1.5 overflow-hidden rounded-field p-2 text-center transition-colors hover:border-selected-border'
-              )}
-
+              className="flex aspect-square items-center justify-center overflow-hidden rounded-[12px] transition-colors hover:border-selected-border"
               style={{
-                background: filled ? 'var(--selected-bg)' : 'var(--surface-2)',
-                border: `1px dashed ${filled ? 'var(--selected-border)' : 'var(--stroke-strong)'}`,
+                background: filled ? 'var(--selected-bg)' : '#212121',
+                border: `1px dashed ${filled ? 'var(--selected-border)' : 'rgba(240,165,255,0.5)'}`,
               }}
             >
               {image ? (
                 <img src={image} alt={label} className="h-full w-full object-cover" />
               ) : (
-                <>
-                  <ImagePlus
-                    size={16}
-                    className={filled ? 'text-brand-light' : 'text-content-muted'}
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path
+                    fillRule="evenodd"
+                    clipRule="evenodd"
+                    d="M19 13H13V19H11V13H5V11H11V5H13V11H19V13Z"
+                    fill="#F8D6FF"
                   />
-                  <span
-                    className="text-label leading-tight"
-                    style={{ color: filled ? 'var(--content)' : 'var(--content-muted)' }}
-                  >
-                    {label}
-                  </span>
-                </>
+                </svg>
               )}
             </button>
           );
@@ -127,14 +307,15 @@ export function PromptComposer({
   disabled?: boolean;
 }) {
   return (
-    <Panel level={2} className="flex flex-col gap-3 p-3">
-      <div className="flex flex-wrap gap-2">
-        {chips.map((c) => (
-          <Chip key={c} selected>
-            {c} <span className="text-content-muted">▾</span>
-          </Chip>
-        ))}
-      </div>
+    <Panel
+      level={2}
+      className="flex flex-col gap-4 p-4"
+      style={{
+        borderRadius: '15px',
+        border: '1px solid var(--content-muted, #988E99)',
+        background: 'rgba(1, 1, 1, 0.80)',
+      }}
+    >
       <textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -142,17 +323,23 @@ export function PromptComposer({
         placeholder={placeholder}
         className="w-full resize-none bg-transparent px-1 text-body text-content placeholder:text-content-muted outline-none"
       />
-      <div className={cn('flex items-center', onCorrectionChange ? 'justify-between' : 'justify-end')}>
-        {onCorrectionChange && (
-          <div
-            className="flex items-center gap-2 rounded-chip px-3 h-8"
-            style={{ background: 'var(--surface-3)' }}
-          >
-            <Wand2 size={14} className="text-brand-light" />
-            <span className="text-caption text-content-secondary">AI 프롬프트 교정</span>
-            <Toggle checked={!!correction} onChange={onCorrectionChange} />
-          </div>
-        )}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex flex-1 flex-wrap items-center gap-2">
+          {onCorrectionChange && (
+            <div
+              className="flex items-center gap-2 px-3 h-8"
+              style={{ background: 'rgba(255,255,255,0.08)', borderRadius: '8px' }}
+            >
+              <span className="text-caption text-content-secondary">AI 프롬프트 변환</span>
+              <Toggle checked={!!correction} onChange={onCorrectionChange} />
+            </div>
+          )}
+          {chips.map((c) => (
+            <Chip key={c} selected style={{ borderRadius: '100px', background: 'var(--surface-1)', border: 'none' }}>
+              {c} <span className="text-content-muted">▾</span>
+            </Chip>
+          ))}
+        </div>
         <Button leftIcon={<Sparkles size={16} />} onClick={onGenerate} disabled={disabled}>
           생성
         </Button>

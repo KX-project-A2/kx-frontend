@@ -1,13 +1,17 @@
 import { useState } from 'react';
 import { Plus } from 'lucide-react';
 import {
+  ModeTabs,
   ModelField,
+  PanelSelect,
   PromptComposer,
+  PurposeTabs,
+  QuantityStepper,
   ReferenceGrid,
   ResultGroup,
   SettingSection,
 } from '@/components/domain/image-generation/GenParts';
-import { Button, Panel, Select, Stepper, Tabs } from '@/components/common/ui';
+import { Panel } from '@/components/common/ui';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import EmptyState from '@/components/common/EmptyState';
@@ -82,33 +86,45 @@ export default function ImageGenerationPage() {
   return (
     <div className="flex h-full">
       {/* left settings panel */}
-      <Panel level={1} bordered={false} className="flex w-[300px] shrink-0 flex-col gap-6 overflow-y-auto p-6" style={{ borderRadius: 0 }}>
+      <Panel level={1} bordered={false} className="flex w-[300px] shrink-0 flex-col gap-8 overflow-y-auto p-6" style={{ borderRadius: 0 }}>
+        <ModeTabs variant="image" />
         <SettingSection title="모델">
           <ModelField name={model} />
         </SettingSection>
-        <SettingSection title="목적">
-          <Tabs tabs={PURPOSE_TABS} value={purpose} onChange={setPurpose} />
-          {purpose === '캐릭터시트' && (
-            <Button
-              variant="secondary"
-              block
-              leftIcon={<Plus size={14} />}
+        <SettingSection title="유형">
+          <PurposeTabs tabs={PURPOSE_TABS} value={purpose} onChange={setPurpose} />
+        </SettingSection>
+        {purpose === '캐릭터시트' && (
+          <div className="flex flex-col gap-4">
+            <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.08)' }} />
+            <button
+              type="button"
               onClick={() => setIsCharacterModalOpen(true)}
+              className="flex items-center justify-center gap-1 rounded-[12px] py-3 transition-colors hover:bg-surface-2"
+              style={{
+                background: 'var(--surface-3)',
+                border: '1px solid rgba(255,255,255,0.15)',
+                color: 'var(--primary-100)',
+                fontFamily: 'var(--font-sans)',
+                fontSize: 16,
+                fontWeight: 500,
+                lineHeight: '24px',
+              }}
             >
+              <Plus size={20} strokeWidth={2} />
               캐릭터 만들기
-            </Button>
-          )}
-        </SettingSection>
-        <SettingSection title="비율">
-          <Select value={ratio} options={RATIO_OPTIONS} onChange={setRatio} />
-        </SettingSection>
-        <SettingSection title="품질">
-          <Select value={quality} options={IMAGE_QUALITIES} onChange={setQuality} />
-        </SettingSection>
-        <SettingSection title="수량">
-          <Stepper value={quantity} min={MIN_QUANTITY} max={MAX_QUANTITY} onChange={setQuantity} />
-        </SettingSection>
+            </button>
+            <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.08)' }} />
+          </div>
+        )}
+        <PanelSelect label="비율" value={ratio} options={RATIO_OPTIONS} onChange={setRatio} />
+        <PanelSelect label="품질" value={quality} options={IMAGE_QUALITIES} onChange={setQuality} />
+        <div className="flex items-center justify-between">
+          <span className="text-[14px] leading-[20px] text-content-secondary">수량</span>
+          <QuantityStepper value={quantity} min={MIN_QUANTITY} max={MAX_QUANTITY} onChange={setQuantity} />
+        </div>
         <ReferenceGrid
+          layout="row"
           slots={Array.from(
             { length: Math.max(4, Math.min(references.length + 1, MAX_REFERENCES)) },
             () => '레퍼런스 추가'

@@ -3,6 +3,7 @@ import { VideoOff } from 'lucide-react';
 
 export interface VideoWithFallbackHandle {
   togglePlay: () => void;
+  seek: (time: number) => void;
 }
 
 interface VideoWithFallbackProps {
@@ -12,12 +13,13 @@ interface VideoWithFallbackProps {
   className?: string;
   style?: React.CSSProperties;
   onPlayingChange?: (playing: boolean) => void;
+  onTimeUpdate?: (currentTime: number, duration: number) => void;
   disableClickToggle?: boolean;
 }
 
 const VideoWithFallback = forwardRef<VideoWithFallbackHandle, VideoWithFallbackProps>(
   function VideoWithFallback(
-    { src, poster, alt, className = '', style, onPlayingChange, disableClickToggle },
+    { src, poster, alt, className = '', style, onPlayingChange, onTimeUpdate, disableClickToggle },
     ref
   ) {
     const videoRef = useRef<HTMLVideoElement>(null);
@@ -29,6 +31,11 @@ const VideoWithFallback = forwardRef<VideoWithFallbackHandle, VideoWithFallbackP
         if (!video) return;
         if (video.paused) video.play();
         else video.pause();
+      },
+      seek: (time) => {
+        const video = videoRef.current;
+        if (!video) return;
+        video.currentTime = time;
       },
     }));
 
@@ -61,6 +68,10 @@ const VideoWithFallback = forwardRef<VideoWithFallbackHandle, VideoWithFallbackP
         onPlay={() => onPlayingChange?.(true)}
         onPause={() => onPlayingChange?.(false)}
         onEnded={() => onPlayingChange?.(false)}
+        onTimeUpdate={(e) => {
+          const video = e.currentTarget;
+          onTimeUpdate?.(video.currentTime, video.duration || 0);
+        }}
         onError={() => setFailed(true)}
       />
     );

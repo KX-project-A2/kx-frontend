@@ -1,16 +1,17 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import {
+  ModeTabs,
+  PanelSelect,
   PromptComposer,
   ReferenceGrid,
   ResultGroup,
-  SettingSection,
 } from '@/components/domain/image-generation/GenParts';
 import {
   StoryboardUpload,
   type StoryboardImage,
 } from '@/components/domain/video-generation/StoryboardUpload';
-import { Panel, Select } from '@/components/common/ui';
+import { Panel } from '@/components/common/ui';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import EmptyState from '@/components/common/EmptyState';
@@ -152,21 +153,14 @@ export default function VideoGenerationPage() {
         className="flex w-[300px] shrink-0 flex-col gap-6 overflow-y-auto p-6"
         style={{ borderRadius: 0 }}
       >
-        <SettingSection title="모델">
-          <Select value={model} options={VIDEO_MODELS} onChange={setModel} />
-        </SettingSection>
-        <SettingSection title="길이">
-          <Select value={length} options={availableLengths} onChange={setLength} />
-        </SettingSection>
+        <ModeTabs variant="video" />
+        <PanelSelect label="모델" value={model} options={VIDEO_MODELS} onChange={setModel} />
+        <PanelSelect label="길이" value={length} options={availableLengths} onChange={setLength} />
         {capability.ratioOptions.length > 0 && (
-          <SettingSection title="비율">
-            <Select value={ratio} options={capability.ratioOptions} onChange={setRatio} />
-          </SettingSection>
+          <PanelSelect label="비율" value={ratio} options={capability.ratioOptions} onChange={setRatio} />
         )}
         {capability.qualityOptions.length > 0 && (
-          <SettingSection title="품질">
-            <Select value={quality} options={capability.qualityOptions} onChange={setQuality} />
-          </SettingSection>
+          <PanelSelect label="품질" value={quality} options={capability.qualityOptions} onChange={setQuality} />
         )}
         {capability.supportsReferenceImages && (
           <StoryboardUpload images={storyboardImages} onChange={setStoryboardImages} />

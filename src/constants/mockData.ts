@@ -148,7 +148,7 @@ export const IMAGE_RATIOS = [
   '9:16 · 768×1376',
 ];
 export const VIDEO_RATIOS = ['16:9 · 1376×768', '9:16 · 768×1376', '1:1 · 1024×1024'];
-export const IMAGE_QUALITIES = ['2K', '4K'];
+export const IMAGE_QUALITIES = ['표준(Standard)', '4K'];
 export const VIDEO_LENGTHS = ['3초', '4초', '5초', '8초', '10초', '15초', '자동'];
 export const VIDEO_QUALITIES = ['고화질 1920×1080', '표준 1280×720'];
 
@@ -177,10 +177,15 @@ function gcd(a: number, b: number): number {
   return b === 0 ? a : gcd(b, a % b);
 }
 
-function simplifyRatio(width: number, height: number): string {
+export function simplifyRatio(width: number, height: number): string {
   const divisor = gcd(width, height);
   return `${width / divisor}:${height / divisor}`;
 }
+
+/** presets_catalog.json의 quality는 미가공 값("High" 등)이라 앱에서 쓰는 품질 라벨로 매핑 필요 */
+const PRESET_QUALITY_TO_LABEL: Record<string, string> = {
+  High: '4K',
+};
 
 function toPresetArtwork(entry: PresetCatalogEntry): Artwork {
   const [width, height] = entry.size.split('x').map(Number);
@@ -202,7 +207,7 @@ function toPresetArtwork(entry: PresetCatalogEntry): Artwork {
     likes: 0,
     liked: false,
     model: entry.generationModel,
-    quality: entry.quality,
+    quality: PRESET_QUALITY_TO_LABEL[entry.quality] ?? entry.quality,
     ratio: `${ratioLabel} · ${width}×${height}`,
     createdAt: entry.createdDate,
     aspect: Math.round((width / height) * 1000) / 1000,

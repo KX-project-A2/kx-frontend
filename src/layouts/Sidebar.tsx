@@ -1,5 +1,5 @@
-import { Home, Image as ImageIcon, Library, Video, Zap } from 'lucide-react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { Home, Image as ImageIcon, Library, Video } from 'lucide-react';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import Logo from '@/components/common/Logo';
 
 const NAV = [
@@ -9,62 +9,97 @@ const NAV = [
   { to: '/library', label: '라이브러리', icon: Library },
 ];
 
+// TODO(PROF-001): 실제 로그인 사용자 데이터 연동 전까지 Figma 목업 값 사용.
 const ME = {
-  handle: '@lumina_studio',
-  avatar: 'https://api.dicebear.com/9.x/identicon/svg?seed=lumina',
+  name: 'Jane Doe',
+  email: 'yerin0512@gmail.com',
+  avatar: '/assets/profile/mock-avatar.png',
 };
+
+// 이미지/영상 생성 화면은 캔버스 자리를 확보하기 위해 사이드바를 자동으로 접는다.
+const COLLAPSE_ROUTES = ['/image', '/video'];
 
 export default function Sidebar() {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const collapsed = COLLAPSE_ROUTES.includes(pathname);
 
   return (
-    <aside className="glass-2 flex h-screen w-[240px] shrink-0 flex-col justify-between border-r border-stroke-soft px-4 py-6">
-      <div className="flex flex-col gap-8">
-        <div className="px-1.5">
-          <Logo />
+    <aside
+      className={`relative h-screen shrink-0 transition-[width] ${
+        collapsed ? 'w-[121px] duration-200 ease-out' : 'w-[332px] duration-150 ease-[cubic-bezier(0.16,1,0.3,1)]'
+      }`}
+    >
+      <div
+        className={`absolute flex flex-col justify-between rounded-[40px] border border-stroke-soft px-5 py-10 shadow-[0_2px_2px_0_rgba(255,255,255,0.15)_inset,0_2px_10px_0_rgba(0,0,0,0.25)] ${
+          collapsed
+            ? 'left-[25px] top-[45px] h-[990px] w-[96px] bg-black'
+            : 'left-[31px] top-[43px] h-[990px] w-[300px] bg-[rgba(1,1,1,0.30)]'
+        }`}
+      >
+        <div className="flex flex-col gap-8">
+          {collapsed ? (
+            <div className="flex justify-center">
+              <img src="/assets/logo/small.png" alt="GeNova" className="h-9 w-9" />
+            </div>
+          ) : (
+            <div className="px-1.5">
+              <Logo />
+            </div>
+          )}
+          <nav className="flex flex-col gap-1">
+            {NAV.map(({ to, label, icon: Icon }) => (
+              <NavLink
+                key={to}
+                to={to}
+                className={({ isActive }) =>
+                  collapsed
+                    ? `flex h-11 items-center justify-center rounded-full border px-0 text-body-medium transition-colors ${
+                        isActive
+                          ? 'glass-1 border-[rgba(231,180,255,0.7)] bg-[var(--selected-bg)] text-content'
+                          : 'border-transparent text-content-secondary hover:bg-surface-2 hover:text-content'
+                      }`
+                    : `flex h-[60px] items-center gap-4 border p-4 text-[18px] leading-[28px] transition-colors ${
+                        isActive
+                          ? 'rounded-[100px] border-[#f5c0ff] bg-[rgba(240,165,255,0.3)] text-[#f8d6ff]'
+                          : 'rounded-[12px] border-transparent text-[#9e9e9e] hover:bg-surface-2 hover:text-content'
+                      }`
+                }
+              >
+                <Icon size={collapsed ? 20 : 24} strokeWidth={2} />
+                {!collapsed && label}
+              </NavLink>
+            ))}
+          </nav>
         </div>
-        <nav className="flex flex-col gap-1">
-          {NAV.map(({ to, label, icon: Icon }) => (
-            <NavLink
-              key={to}
-              to={to}
-              className={({ isActive }) =>
-                `flex h-11 items-center gap-3 rounded-full border px-3 text-body-medium transition-colors ${
-                  isActive
-                    ? 'glass-1 border-[rgba(231,180,255,0.7)] bg-[var(--selected-bg)] text-content'
-                    : 'border-transparent text-content-secondary hover:bg-surface-2 hover:text-content'
-                }`
+
+        <div className="flex flex-col gap-3">
+          <button
+            type="button"
+            onClick={() => navigate('/library')}
+            className={`flex items-center text-left transition-colors hover:bg-surface-2 ${
+              collapsed
+                ? 'justify-center rounded-[var(--radius-btn)] p-2'
+                : 'gap-[15px] rounded-[11px] p-[10px]'
+            }`}
+          >
+            <img
+              src={ME.avatar}
+              alt=""
+              className={
+                collapsed
+                  ? 'h-9 w-9 shrink-0 rounded-full'
+                  : 'h-[50px] w-[50px] shrink-0 rounded-full border border-[rgba(255,255,255,0.15)] object-cover'
               }
-            >
-              <Icon size={20} strokeWidth={2} />
-              {label}
-            </NavLink>
-          ))}
-        </nav>
-      </div>
-
-      <div className="flex flex-col gap-3">
-        <div className="flex items-center justify-between rounded-[var(--radius-btn)] border border-stroke-soft bg-surface-2 px-3 py-2.5">
-          <div className="flex items-center gap-2">
-            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent-500/15">
-              <Zap size={13} strokeWidth={2.5} className="fill-accent-500 text-accent-500" />
-            </span>
-            <span className="text-caption text-content-secondary">크레딧</span>
-          </div>
-          <span className="font-num text-body-medium text-accent-500">320</span>
+            />
+            {!collapsed && (
+              <div className="min-w-0">
+                <div className="truncate text-[16px] font-bold leading-[24px] text-[#e9e0e9]">{ME.name}</div>
+                <div className="truncate font-num text-[12px] leading-[16px] text-[#988e99]">{ME.email}</div>
+              </div>
+            )}
+          </button>
         </div>
-
-        <button
-          type="button"
-          onClick={() => navigate('/library')}
-          className="flex items-center gap-3 rounded-[var(--radius-btn)] p-2 text-left transition-colors hover:bg-surface-2"
-        >
-          <img src={ME.avatar} alt="" className="h-9 w-9 shrink-0 rounded-full" />
-          <div className="min-w-0">
-            <div className="truncate text-body-medium text-content">내 스튜디오</div>
-            <div className="truncate font-num text-caption text-content-muted">{ME.handle}</div>
-          </div>
-        </button>
       </div>
     </aside>
   );
