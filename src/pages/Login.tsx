@@ -6,7 +6,7 @@ import LegalModal, { type LegalKind } from '../components/common/LegalModal';
 import GoogleIcon from '../components/common/icons/GoogleIcon';
 import AuthBackground from '../components/auth/AuthBackground';
 import AuthCard from '../components/auth/AuthCard';
-import { login } from '../services/auth';
+import { login, fetchMe } from '../services/auth';
 import { useAuthStore } from '../hooks/useAuthStore';
 
 const HAS_LOGGED_IN_BEFORE_KEY = 'hasLoggedInBefore';
@@ -55,8 +55,9 @@ export default function Login() {
 
     try {
       await login(email, password);
+      const profile = await fetchMe();
       localStorage.setItem(HAS_LOGGED_IN_BEFORE_KEY, 'true');
-      setAuthenticated(true);
+      setAuthenticated(profile);
       navigate('/home');
     } catch (err) {
       setError((err as Error).message);

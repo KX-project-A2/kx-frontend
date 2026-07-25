@@ -6,7 +6,7 @@ import AuthBackground from '../components/auth/AuthBackground';
 import AuthCard from '../components/auth/AuthCard';
 import AuthEmailChip from '../components/auth/AuthEmailChip';
 import AuthStepLabel from '../components/auth/AuthStepLabel';
-import { signup, SignupApiError } from '../services/auth';
+import { signup, fetchMe, SignupApiError } from '../services/auth';
 import { useAuthStore } from '../hooks/useAuthStore';
 
 export default function SignupPassword() {
@@ -40,7 +40,8 @@ export default function SignupPassword() {
 
     try {
       await signup(email, password, nickname);
-      setAuthenticated(true);
+      const profile = await fetchMe();
+      setAuthenticated(profile);
       navigate('/home');
     } catch (err) {
       if (err instanceof SignupApiError && err.status === 409) {
