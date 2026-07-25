@@ -7,17 +7,13 @@ import {
   ReferenceGrid,
   ResultGroup,
 } from '@/components/domain/image-generation/GenParts';
-import {
-  StoryboardUpload,
-  type StoryboardImage,
-} from '@/components/domain/video-generation/StoryboardUpload';
 import { Panel } from '@/components/common/ui';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import EmptyState from '@/components/common/EmptyState';
 import { DetailModal } from '@/components/common/DetailModal';
 import { useVideoGenerationOptionsStore } from '@/hooks/useVideoGenerationOptionsStore';
-import { useRevokeObjectUrls } from '@/hooks/useRevokeObjectUrls';
+import { useObjectUrls } from '@/hooks/useObjectUrls';
 import { fetchImageBlobUrl } from '@/services/imageGeneration';
 import { generateVideo, uploadReferenceImage } from '@/services/videoGeneration';
 import type { VideoGenerationResult } from '@/types/generation';
@@ -31,7 +27,45 @@ import {
 import { KLING_REFERENCE_TO_VIDEO, validateVideoOptions } from '@/utils/videoOptionValidator';
 import { VIDEO_MODELS, type Artwork } from '@/constants/mockData';
 
-const REFERENCE_SLOTS = ['레퍼런스 추가'];
+interface SeedReference {
+  mediaFileId: number;
+  previewUrl: string;
+}
+
+const REFERENCE_CELL_ICON = (
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 14" fill="none">
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M14 8H8V14H6V8H0V6H6V0H8V6H14V8Z"
+      fill="#988E99"
+    />
+  </svg>
+);
+
+const STORYBOARD_CELL_STYLE: React.CSSProperties = {
+  display: 'flex',
+  width: 100,
+  height: 100,
+  justifyContent: 'center',
+  alignItems: 'center',
+  flexShrink: 0,
+  borderRadius: 8,
+  border: '1px solid var(--Surface-Elevated, #2C2830)',
+  background: 'var(--Surface-Card, #1D1A21)',
+  overflow: 'hidden',
+};
+
+const REFERENCE_CELL_STYLE: React.CSSProperties = {
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  aspectRatio: '1 / 1',
+  borderRadius: 12,
+  border: '1px dashed rgba(240, 165, 255, 0.50)',
+  background: 'var(--greyscale-900, #212121)',
+  overflow: 'hidden',
+};
 
 export default function VideoGenerationPage() {
   const location = useLocation();
@@ -40,17 +74,22 @@ export default function VideoGenerationPage() {
   const { model, length, ratio, quality, setModel, setLength, setRatio, setQuality } =
     useVideoGenerationOptionsStore();
   const [prompt, setPrompt] = useState(referenceArt?.prompt ?? '');
-  const [referenceImage, setReferenceImage] = useState<string | undefined>(undefined);
+  const [seedReference, setSeedReference] = useState<SeedReference | null>(null);
+  const [referenceImages, setReferenceImages] = useState<File[]>([]);
+  const [storyboardImage, setStoryboardImage] = useState<File | null>(null);
   const [results, setResults] = useState<VideoGenerationResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedArt, setSelectedArt] = useState<Artwork | null>(null);
-  const [storyboardImages, setStoryboardImages] = useState<StoryboardImage[]>([]);
 
-  useRevokeObjectUrls(storyboardImages.map((img) => img.previewUrl));
+  const referencePreviewUrls = useObjectUrls(referenceImages);
+  const storyboardPreviewUrls = useObjectUrls(storyboardImage ? [storyboardImage] : []);
 
   const capability = getVideoModelCapability(model);
   const availableLengths = getAvailableLengths(model);
+
+  const usedReferenceCount = (seedReference ? 1 : 0) + referenceImages.length;
+  const hasStoryboard = storyboardImage !== null;
 
   useEffect(() => {
     if (!getAvailableLengths(model).includes(length)) {
@@ -74,14 +113,15 @@ export default function VideoGenerationPage() {
   }, [model]);
 
   useEffect(() => {
-    if (!referenceArt?.mediaFileId) {
-      setReferenceImage(undefined);
+    const mediaFileId = referenceArt?.mediaFileId;
+    if (!mediaFileId) {
+      setSeedReference(null);
       return;
     }
     let objectUrl: string | undefined;
-    fetchImageBlobUrl(referenceArt.mediaFileId).then((url) => {
+    fetchImageBlobUrl(mediaFileId).then((url) => {
       objectUrl = url;
-      setReferenceImage(url);
+      setSeedReference({ mediaFileId, previewUrl: url });
     });
     return () => {
       if (objectUrl) URL.revokeObjectURL(objectUrl);
@@ -99,23 +139,27 @@ export default function VideoGenerationPage() {
     toVideoValidationInput(prompt.trim(), { model, length, ratio, quality })
   );
 
+  const handleAddReference = (file: File) => {
+    setReferenceImages((prev) => {
+      const used = (seedReference ? 1 : 0) + prev.length;
+      return used >= capability.maxReferenceImages ? prev : [...prev, file];
+    });
+  };
+
+  const handleRemoveReference = (index: number) => {
+    if (seedReference && index === 0) {
+      setSeedReference(null);
+      return;
+    }
+    const fileIndex = seedReference ? index - 1 : index;
+    setReferenceImages((prev) => prev.filter((_, i) => i !== fileIndex));
+  };
+
   const handleGenerate = async () => {
     if (!prompt.trim() || isLoading || validationError) return;
 
-    if (
-      capability.requiresAtLeastOneImage &&
-      !referenceArt?.mediaFileId &&
-      storyboardImages.length === 0
-    ) {
-      setError('시작 이미지 또는 참조 이미지가 필요해요. 이미지를 추가해주세요.');
-      return;
-    }
-    if (
-      !capability.requiresAtLeastOneImage &&
-      capability.requiresReferenceImages &&
-      storyboardImages.length === 0
-    ) {
-      setError('참조 이미지가 필요해요. 스토리보드에 이미지를 추가해주세요.');
+    if (capability.requiresReferenceImages && usedReferenceCount === 0 && !hasStoryboard) {
+      setError('참조 이미지가 필요해요. 레퍼런스 또는 스토리보드 이미지를 추가해주세요.');
       return;
     }
 
@@ -123,13 +167,29 @@ export default function VideoGenerationPage() {
     setError(null);
 
     try {
-      const referenceMediaFileIds = await Promise.all(
-        storyboardImages.map((img) => uploadReferenceImage(img.file))
-      );
+      let startMediaFileId: number | null = null;
+      let referenceMediaFileIds: number[] = [];
+
+      if (storyboardImage) {
+        referenceMediaFileIds = [await uploadReferenceImage(storyboardImage)];
+      } else {
+        const uploadedIds = await Promise.all(
+          referenceImages.map((file) => uploadReferenceImage(file))
+        );
+        if (seedReference && capability.supportsStartImage) {
+          startMediaFileId = seedReference.mediaFileId;
+          referenceMediaFileIds = uploadedIds;
+        } else if (seedReference) {
+          referenceMediaFileIds = [seedReference.mediaFileId, ...uploadedIds];
+        } else {
+          referenceMediaFileIds = uploadedIds;
+        }
+      }
+
       const result = await generateVideo(
         prompt.trim(),
         { model, length, ratio, quality },
-        referenceArt?.mediaFileId ?? null,
+        startMediaFileId,
         referenceMediaFileIds
       );
       setResults((prev) => [result, ...prev]);
@@ -163,13 +223,37 @@ export default function VideoGenerationPage() {
           <PanelSelect label="품질" value={quality} options={capability.qualityOptions} onChange={setQuality} />
         )}
         {capability.supportsReferenceImages && (
-          <StoryboardUpload images={storyboardImages} onChange={setStoryboardImages} />
-        )}
-        {capability.supportsStartImage && (
           <ReferenceGrid
-            slots={REFERENCE_SLOTS}
-            used={referenceImage ? 1 : 0}
-            images={[referenceImage]}
+            label="스토리보드"
+            slots={['스토리보드 추가']}
+            used={storyboardImage ? 1 : 0}
+            max={1}
+            images={[storyboardPreviewUrls[0]]}
+            onAdd={setStoryboardImage}
+            onRemove={() => setStoryboardImage(null)}
+            disabled={usedReferenceCount > 0}
+            icon={REFERENCE_CELL_ICON}
+            containerClassName="flex"
+            cellClassName="flex items-center justify-center transition-colors"
+            cellStyle={STORYBOARD_CELL_STYLE}
+          />
+        )}
+        {capability.supportsReferenceImages && (
+          <ReferenceGrid
+            slots={Array.from({ length: capability.maxReferenceImages }, () => '레퍼런스 추가')}
+            used={usedReferenceCount}
+            max={capability.maxReferenceImages}
+            images={[...(seedReference ? [seedReference.previewUrl] : []), ...referencePreviewUrls]}
+            onAdd={handleAddReference}
+            onRemove={handleRemoveReference}
+            icon={REFERENCE_CELL_ICON}
+            containerClassName="grid gap-2"
+            containerStyle={{
+              gridTemplateColumns: `repeat(${Math.round(Math.sqrt(capability.maxReferenceImages))}, 1fr)`,
+            }}
+            cellClassName="flex items-center justify-center transition-colors"
+            cellStyle={REFERENCE_CELL_STYLE}
+            disabled={hasStoryboard}
           />
         )}
       </Panel>

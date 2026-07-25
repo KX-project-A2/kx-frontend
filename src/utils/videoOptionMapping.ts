@@ -42,7 +42,7 @@ export interface VideoModelCapability {
   requiresReferenceImages: boolean;
   supportsReferenceImages: boolean;
   supportsStartImage: boolean;
-  requiresAtLeastOneImage: boolean;
+  maxReferenceImages: number;
   ratioOptions: string[];
   qualityOptions: string[];
 }
@@ -52,7 +52,7 @@ const MODEL_CAPABILITIES: Record<string, VideoModelCapability> = {
     requiresReferenceImages: true,
     supportsReferenceImages: true,
     supportsStartImage: true,
-    requiresAtLeastOneImage: true,
+    maxReferenceImages: 4,
     ratioOptions: ['16:9 · 1376×768', '9:16 · 768×1376', '1:1 · 1024×1024'],
     qualityOptions: [],
   },
@@ -60,7 +60,7 @@ const MODEL_CAPABILITIES: Record<string, VideoModelCapability> = {
     requiresReferenceImages: true,
     supportsReferenceImages: true,
     supportsStartImage: false,
-    requiresAtLeastOneImage: false,
+    maxReferenceImages: 9,
     ratioOptions: [
       '16:9 · 1376×768',
       '9:16 · 768×1376',

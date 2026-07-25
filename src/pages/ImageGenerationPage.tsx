@@ -130,6 +130,7 @@ export default function ImageGenerationPage() {
             () => '레퍼런스 추가'
           )}
           used={references.length}
+          max={MAX_REFERENCES}
           images={referencePreviewUrls}
           onAdd={handleAddReference}
           onRemove={handleRemoveReference}
