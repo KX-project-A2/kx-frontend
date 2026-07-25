@@ -1,6 +1,77 @@
 import axiosInstance from './axiosInstance';
 import { fetchImageBlobUrl } from './imageGeneration';
-import { ME, type Artwork } from '../constants/mockData';
+import { ME, simplifyRatio, type Artwork } from '../constants/mockData';
+
+/** BE가 내려주는 원시 모델/품질 id를 화면 표시용 라벨로 매핑 (알 수 없는 값은 그대로 통과) */
+const MODEL_ID_TO_LABEL: Record<string, string> = {
+  'gpt-image-2': 'GPT Image 2.0',
+};
+const QUALITY_ID_TO_LABEL: Record<string, string> = {
+  high: '고화질',
+};
+
+function toDisplayModel(model: string | null): string {
+  if (!model) return '';
+  if (MODEL_ID_TO_LABEL[model]) return MODEL_ID_TO_LABEL[model];
+  // 영상 모델은 "bytedance/seedance-2.0/reference-to-video" 같은 경로 형태로 내려와서
+  // 정확히 일치시키기보다 핵심 이름이 포함돼 있는지로 판단
+  const lower = model.toLowerCase();
+  if (lower.includes('seedance')) return 'seedance 2.0';
+  if (lower.includes('kling')) return 'Kling 3.0';
+  return model;
+}
+
+function toDisplayQuality(quality: string | null): string {
+  if (!quality) return '';
+  return QUALITY_ID_TO_LABEL[quality] ?? quality;
+}
+
+/**
+ * 영상은 file.quality가 비어있고 resolution만 오는 경우가 있어 그걸로 대체 (품질명만 — 해상도 수치는 사이즈 필드에 별도 표시).
+ * 키값은 kx-backend VideoOptionValidator.SEEDANCE_RESOLUTION_VALUES("480p"/"720p"/"1080p"/"4k")와
+ * 확인해 일치시킴 — Kling 계열 모델은 resolution/quality 옵션 자체가 없어 이 매핑과 무관하게 빈 값이 정상.
+ */
+const VIDEO_RESOLUTION_TO_QUALITY_NAME: Record<string, string> = {
+  '480p': '480p',
+  '720p': '표준',
+  '1080p': '고화질',
+  '4k': '4K',
+};
+
+function toDisplayVideoQuality(quality: string | null, resolution: string | null): string {
+  if (quality) return toDisplayQuality(quality);
+  if (resolution && VIDEO_RESOLUTION_TO_QUALITY_NAME[resolution]) {
+    return VIDEO_RESOLUTION_TO_QUALITY_NAME[resolution];
+  }
+  return '';
+}
+
+/**
+ * 영상 resolution 티어("1080p" 등)의 실제 픽셀 치수 — kx-backend에는 이 값이 저장돼 있지 않아서
+ * (VideoOptionValidator가 문자열 티어만 검증) 업계 표준 16:9 기준 관례값 사용. 가로/세로 비율(aspectRatio)이
+ * 세로형이면 폭/높이를 뒤바꿔서 실제 방향에 맞춘다.
+ */
+const VIDEO_RESOLUTION_TO_PIXELS: Record<string, { width: number; height: number }> = {
+  '480p': { width: 854, height: 480 },
+  '720p': { width: 1280, height: 720 },
+  '1080p': { width: 1920, height: 1080 },
+  '4k': { width: 3840, height: 2160 },
+};
+
+function isPortraitRatio(aspectRatio: string | null): boolean {
+  if (!aspectRatio) return false;
+  const [w, h] = aspectRatio.split(':').map(Number);
+  return !!w && !!h && h > w;
+}
+
+function resolutionToPixelSize(resolution: string | null, aspectRatio: string | null): string | null {
+  const dims = resolution ? VIDEO_RESOLUTION_TO_PIXELS[resolution] : undefined;
+  if (!dims) return null;
+  const { width, height } = isPortraitRatio(aspectRatio)
+    ? { width: dims.height, height: dims.width }
+    : dims;
+  return `${width}×${height}`;
+}
 
 interface ApiResponse<T> {
   message: string;
@@ -15,7 +86,10 @@ interface MediaFile {
   quality: string | null;
   aspectRatio: string | null;
   resolution: string | null;
+  /** 별도 "역프롬프트" 기능(ReversePrompt) 결과 — 생성에 쓴 프롬프트가 아니므로 prompt 매핑에 쓰지 않음 */
   reversedPrompt: string | null;
+  /** 생성에 실제로 쓴 프롬프트 (BE GeneratePrompt.content) */
+  generatePromptContent: string | null;
   tags: string[];
   favorite: boolean;
   createdAt: string;
@@ -37,10 +111,20 @@ export function parseAspect(aspectRatio: string | null): number {
   return w && h ? w / h : 1;
 }
 
-/** 둘 다 null이면 빈 문자열을 반환 - Library.tsx에서 해당 표시 줄을 숨김 */
+/** aspectRatio가 없으면 resolution("WIDTHxHEIGHT")에서 역산 — BE가 aspectRatio를 안 내려주는 항목 대응 */
+function deriveRatioFromResolution(resolution: string | null): string | null {
+  if (!resolution) return null;
+  const [w, h] = resolution.split('x').map(Number);
+  return w && h ? simplifyRatio(w, h) : null;
+}
+
+/** 둘 다 없으면 빈 문자열을 반환 - Library.tsx에서 해당 표시 줄을 숨김 */
 export function composeRatio(aspectRatio: string | null, resolution: string | null): string {
-  if (aspectRatio && resolution) return `${aspectRatio} · ${resolution}`;
-  return aspectRatio ?? resolution ?? '';
+  const ratio = aspectRatio ?? deriveRatioFromResolution(resolution);
+  // 영상 resolution 티어("1080p" 등)는 실제 픽셀 치수로, 이미지 resolution("1024x1024")은 그대로 사용
+  const displaySize = resolutionToPixelSize(resolution, aspectRatio) ?? resolution;
+  if (ratio && displaySize) return `${ratio} · ${displaySize}`;
+  return ratio ?? displaySize ?? '';
 }
 
 async function fetchMediaPage(
@@ -64,13 +148,13 @@ export async function toImageArtwork(file: MediaFile): Promise<Artwork> {
     type: 'image',
     url,
     thumb: url,
-    prompt: file.reversedPrompt ?? '',
+    prompt: file.generatePromptContent ?? '',
     creator: ME,
     likes: 0,
     liked: file.favorite,
     favorite: file.favorite,
-    model: file.model ?? '',
-    quality: file.quality ?? '',
+    model: toDisplayModel(file.model),
+    quality: toDisplayQuality(file.quality),
     ratio: composeRatio(file.aspectRatio, file.resolution),
     createdAt: file.createdAt,
     aspect: parseAspect(file.aspectRatio),
@@ -85,13 +169,13 @@ function toImageErrorPlaceholderArtwork(file: MediaFile): Artwork {
     type: 'image',
     url: '',
     thumb: '',
-    prompt: file.reversedPrompt ?? '',
+    prompt: file.generatePromptContent ?? '',
     creator: ME,
     likes: 0,
     liked: file.favorite,
     favorite: file.favorite,
-    model: file.model ?? '',
-    quality: file.quality ?? '',
+    model: toDisplayModel(file.model),
+    quality: toDisplayQuality(file.quality),
     ratio: composeRatio(file.aspectRatio, file.resolution),
     createdAt: file.createdAt,
     aspect: parseAspect(file.aspectRatio),
@@ -114,13 +198,13 @@ export async function toVideoArtwork(file: MediaFile): Promise<Artwork> {
     type: 'video',
     url,
     thumb: '',
-    prompt: file.reversedPrompt ?? '',
+    prompt: file.generatePromptContent ?? '',
     creator: ME,
     likes: 0,
     liked: file.favorite,
     favorite: file.favorite,
-    model: file.model ?? '',
-    quality: file.quality ?? '',
+    model: toDisplayModel(file.model),
+    quality: toDisplayVideoQuality(file.quality, file.resolution),
     ratio: composeRatio(file.aspectRatio, file.resolution),
     createdAt: file.createdAt,
     aspect: parseAspect(file.aspectRatio),
@@ -135,13 +219,13 @@ function toVideoPlaceholderArtwork(file: MediaFile): Artwork {
     type: 'video',
     url: '',
     thumb: '',
-    prompt: file.reversedPrompt ?? '',
+    prompt: file.generatePromptContent ?? '',
     creator: ME,
     likes: 0,
     liked: file.favorite,
     favorite: file.favorite,
-    model: file.model ?? '',
-    quality: file.quality ?? '',
+    model: toDisplayModel(file.model),
+    quality: toDisplayVideoQuality(file.quality, file.resolution),
     ratio: composeRatio(file.aspectRatio, file.resolution),
     createdAt: file.createdAt,
     aspect: parseAspect(file.aspectRatio),
@@ -192,7 +276,7 @@ interface RecentJob {
   items: RecentJobItem[];
 }
 
-/** job.prompt(reversedPrompt 없음) + item을 기존 MediaFile 형태로 합쳐서 toImageArtwork/toVideoArtwork 재사용 */
+/** job.prompt(item엔 없음) + item을 기존 MediaFile 형태로 합쳐서 toImageArtwork/toVideoArtwork 재사용 */
 function toRecentMediaFile(job: RecentJob, item: RecentJobItem): MediaFile {
   return {
     id: item.mediaFileId,
@@ -202,7 +286,8 @@ function toRecentMediaFile(job: RecentJob, item: RecentJobItem): MediaFile {
     quality: item.quality,
     aspectRatio: item.aspectRatio,
     resolution: item.resolution,
-    reversedPrompt: job.prompt,
+    reversedPrompt: null,
+    generatePromptContent: job.prompt,
     tags: [],
     favorite: item.favorite,
     createdAt: item.createdAt,

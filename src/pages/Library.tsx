@@ -15,6 +15,7 @@ import { generateImage } from '@/services/imageGeneration';
 import { generateVideo } from '@/services/videoGeneration';
 import { fetchLibraryItems } from '@/services/library';
 import { downloadFile } from '@/utils/downloadFile';
+import { formatDate } from '@/utils/formatDate';
 import { toGenGroup, toVideoGenGroup } from '@/utils/generationAdapter';
 
 const SORTS = ['최신순', '오래된순', '좋아요순'];
@@ -71,7 +72,10 @@ export default function Library() {
           ['모델', selected.model],
           ['품질', selected.quality],
           ['비율', selected.ratio],
-          ['생성 일자', selected.createdAt],
+          ...(selected.type === 'video' && selected.duration
+            ? ([['길이', selected.duration]] as [string, string][])
+            : []),
+          ['생성 일자', formatDate(selected.createdAt)],
         ] as [string, string][]
       ).filter(([, v]) => v)
     : [];
@@ -232,7 +236,7 @@ export default function Library() {
             </div>
           </div>
 
-          <p className="mt-4 text-body text-content">{selected.prompt}</p>
+          <p className="mt-4 line-clamp-3 text-body text-content">{selected.prompt}</p>
 
           <div
             className="mt-5 flex flex-col rounded-field"

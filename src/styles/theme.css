@@ -82,6 +82,9 @@
   --surface-2: var(--md-surface-container);
   --surface-3: var(--md-surface-container-high);
 
+  /* Greyscale — literal (non-tinted) values called out explicitly by Figma specs */
+  --greyscale-000: #000;
+
   /* Brand semantic (mapped to M3 primary role) + gradient */
   --brand-light: var(--md-primary);
   --brand: var(--md-primary);

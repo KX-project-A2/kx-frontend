@@ -29,7 +29,7 @@ const RATIO_TO_SIZE: Record<string, string> = {
 };
 
 const QUALITY_TO_BE: Record<string, string> = {
-  '2K': 'standard',
+  '표준(Standard)': 'standard',
   '4K': 'high',
 };
 

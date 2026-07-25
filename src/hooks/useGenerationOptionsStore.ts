@@ -9,9 +9,9 @@ interface GenerationOptionsStore extends GenerationOptions {
 }
 
 export const useGenerationOptionsStore = create<GenerationOptionsStore>((set) => ({
-  model: '제미나이',
+  model: 'GPT Image 2.0',
   ratio: '1:1',
-  quality: '4K',
+  quality: '표준(Standard)',
   quantity: 1,
   setModel: (model) => set({ model }),
   setRatio: (ratio) => set({ ratio }),
