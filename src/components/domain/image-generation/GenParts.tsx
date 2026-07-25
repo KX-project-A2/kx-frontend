@@ -101,7 +101,11 @@ export function PurposeTabs({
             className="flex flex-1 items-center justify-center whitespace-nowrap rounded-full px-4 py-2.5 text-[14px] transition-colors"
             style={
               active
-                ? { background: 'rgba(240,165,255,0.3)', border: '1px solid #f5c0ff', color: '#f8d6ff' }
+                ? {
+                    background: 'rgba(240,165,255,0.3)',
+                    border: '1px solid #f5c0ff',
+                    color: '#f8d6ff',
+                  }
                 : { border: '1px solid rgba(255,255,255,0.15)', color: '#e9e0e9' }
             }
           >
@@ -165,7 +169,9 @@ export function PanelSelect({
                 className="flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-[16px] text-content-secondary hover:bg-surface-2 hover:text-content"
               >
                 <span className="truncate text-left">{opt}</span>
-                {opt === value && <Check size={15} strokeWidth={2} style={{ color: 'var(--brand-light)' }} />}
+                {opt === value && (
+                  <Check size={15} strokeWidth={2} style={{ color: 'var(--brand-light)' }} />
+                )}
               </button>
             ))}
           </div>
@@ -217,17 +223,33 @@ export function QuantityStepper({
 export function ReferenceGrid({
   slots,
   used = 2,
+  max,
   images = [],
   onAdd,
   onRemove,
   layout = 'grid',
+  label = '레퍼런스',
+  disabled = false,
+  icon,
+  containerClassName,
+  containerStyle,
+  cellClassName,
+  cellStyle,
 }: {
   slots: string[];
   used?: number;
+  max: number;
   images?: (string | undefined)[];
   onAdd?: (file: File) => void;
   onRemove?: (index: number) => void;
   layout?: 'grid' | 'row';
+  label?: string;
+  disabled?: boolean;
+  icon?: React.ReactNode;
+  containerClassName?: string;
+  containerStyle?: React.CSSProperties;
+  cellClassName?: string;
+  cellStyle?: React.CSSProperties;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -240,8 +262,10 @@ export function ReferenceGrid({
   return (
     <div className="flex flex-col gap-2.5">
       <div className="flex items-center justify-between">
-        <span className="text-[14px] leading-[20px] text-content-secondary">레퍼런스</span>
-        <span className="font-num text-[12px] leading-[16px] text-content-secondary">{used}/8</span>
+        <span className="text-[14px] leading-[20px] text-content-secondary">{label}</span>
+        <span className="font-num text-[12px] leading-[16px] text-content-secondary">
+          {used}/{max}
+        </span>
       </div>
       <input
         ref={inputRef}
@@ -250,33 +274,54 @@ export function ReferenceGrid({
         className="hidden"
         onChange={handleFileChange}
       />
-      <div className={layout === 'row' ? 'grid grid-cols-4 gap-2' : 'grid grid-cols-2 gap-2'}>
-        {slots.map((label, i) => {
+      <div
+        className={
+          containerClassName ??
+          (layout === 'row' ? 'grid grid-cols-4 gap-2' : 'grid grid-cols-2 gap-2')
+        }
+        style={containerStyle}
+      >
+        {slots.map((slotLabel, i) => {
           const filled = i < used;
           const image = images[i];
+          const addDisabled = !filled && disabled;
           return (
             <button
               key={i}
               type="button"
-              aria-label={label}
+              aria-label={slotLabel}
+              disabled={addDisabled}
               onClick={() => (filled ? onRemove?.(i) : inputRef.current?.click())}
-              className="flex aspect-square items-center justify-center overflow-hidden rounded-[12px] transition-colors hover:border-selected-border"
-              style={{
-                background: filled ? 'var(--selected-bg)' : '#212121',
-                border: `1px dashed ${filled ? 'var(--selected-border)' : 'rgba(240,165,255,0.5)'}`,
-              }}
+              className={`${
+                cellClassName ??
+                'flex aspect-square items-center justify-center overflow-hidden rounded-[12px] transition-colors'
+              } ${addDisabled ? 'cursor-not-allowed opacity-50' : !cellClassName ? 'hover:border-selected-border' : ''}`}
+              style={
+                cellStyle ?? {
+                  background: filled ? 'var(--selected-bg)' : '#212121',
+                  border: `1px dashed ${filled ? 'var(--selected-border)' : 'rgba(240,165,255,0.5)'}`,
+                }
+              }
             >
               {image ? (
-                <img src={image} alt={label} className="h-full w-full object-cover" />
+                <img src={image} alt={slotLabel} className="h-full w-full object-cover" />
               ) : (
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M19 13H13V19H11V13H5V11H11V5H13V11H19V13Z"
-                    fill="#F8D6FF"
-                  />
-                </svg>
+                (icon ?? (
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      clipRule="evenodd"
+                      d="M19 13H13V19H11V13H5V11H11V5H13V11H19V13Z"
+                      fill="#F8D6FF"
+                    />
+                  </svg>
+                ))
               )}
             </button>
           );
@@ -335,7 +380,11 @@ export function PromptComposer({
             </div>
           )}
           {chips.map((c) => (
-            <Chip key={c} selected style={{ borderRadius: '100px', background: 'var(--surface-1)', border: 'none' }}>
+            <Chip
+              key={c}
+              selected
+              style={{ borderRadius: '100px', background: 'var(--surface-1)', border: 'none' }}
+            >
               {c} <span className="text-content-muted">▾</span>
             </Chip>
           ))}
