@@ -32,12 +32,27 @@ export async function fetchMe(): Promise<AuthProfile> {
   return response.data.data;
 }
 
-export async function signupEmailMock(email: string): Promise<{ success: true }> {
-  if (!isValidEmail(email)) {
-    throw new Error('올바른 이메일 형식이 아닙니다.');
-  }
+export interface EmailDuplicateCheck {
+  email: string;
+  duplicated: boolean;
+  available: boolean;
+}
 
-  return { success: true };
+export async function checkEmailDuplicate(email: string): Promise<EmailDuplicateCheck> {
+  try {
+    const response = await axiosInstance.get<ApiResponse<EmailDuplicateCheck>>(
+      '/api/auth/email/check',
+      {
+        params: { email },
+      }
+    );
+    return response.data.data;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.data?.message) {
+      throw new Error(error.response.data.message, { cause: error });
+    }
+    throw new Error('이메일 확인에 실패했습니다. 다시 시도해주세요.', { cause: error });
+  }
 }
 
 export async function signup(
