@@ -22,8 +22,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [isReturning] = useState(() => localStorage.getItem(HAS_LOGGED_IN_BEFORE_KEY) === 'true');
 
-  // 슬라이드 2,3은 아직 이미지 파일이 없음 — src가 null이면 그 슬라이드로 자동 전환하지 않음.
-  // 나중에 경로만 채우면 3장 순환이 자동으로 동작함.
+  // src가 null이면 그 슬라이드로 자동 전환하지 않음 (향후 슬라이드 추가 시에도 안전).
   const slides = useMemo(
     () => [
       {
@@ -31,8 +30,8 @@ export default function Login() {
         src: isReturning ? '/assets/auth/after.png' : '/assets/auth/hero.png',
         alt: isReturning ? '다시 오신 것을 환영합니다' : '생성 레퍼런스',
       },
-      { label: 'Seedance 2.0', src: null, alt: '' }, // TODO: 슬라이드 2 이미지 경로
-      { label: 'GPT Image 2.0', src: null, alt: '' }, // TODO: 슬라이드 3 이미지 경로
+      { label: 'Seedance 2.0', src: '/assets/video/login2.mp4', alt: '' },
+      { label: 'GPT Image 2.0', src: '/assets/auth/login3.png', alt: '' },
     ],
     [isReturning]
   );
@@ -68,7 +67,7 @@ export default function Login() {
 
   // slide 1 — first-visit: hero.png offset 430.2px in from the card's left edge (119 + 430.2 = 549.2px),
   // underlapping the translucent card by ~130px. Returning-visit: after.png, full-bleed cover. Slides 2/3
-  // fall back to a plain full-bleed <img> once their src is filled in.
+  // are plain full-bleed (image or video, AuthBackground branches on the extension).
   const heroSrc =
     activeSlide === 0
       ? isReturning

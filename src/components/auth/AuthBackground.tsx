@@ -1,5 +1,11 @@
 import Logo from '../common/Logo';
 
+const VIDEO_SRC_EXTENSIONS = ['.mp4', '.webm', '.mov'];
+
+function isVideoSrc(src: string): boolean {
+  return VIDEO_SRC_EXTENSIONS.some((ext) => src.toLowerCase().endsWith(ext));
+}
+
 interface AuthBackgroundProps {
   heroSrc?: string | null;
   heroAlt?: string;
@@ -83,7 +89,19 @@ export default function AuthBackground({
         }}
       />
 
-      {heroSrc && <img src={heroSrc} alt={heroAlt} className={heroClassName} style={heroStyle} />}
+      {heroSrc &&
+        (isVideoSrc(heroSrc) ? (
+          <video
+            src={heroSrc}
+            autoPlay
+            muted
+            playsInline
+            className={heroClassName}
+            style={heroStyle}
+          />
+        ) : (
+          <img src={heroSrc} alt={heroAlt} className={heroClassName} style={heroStyle} />
+        ))}
 
       {slideIndicator}
 

@@ -79,13 +79,25 @@ interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> 
   tone?: 'default' | 'danger';
 }
 
-export function IconButton({ size = 28, active, tone = 'default', className, children, style, ...props }: IconButtonProps) {
+export function IconButton({
+  size = 28,
+  active,
+  tone = 'default',
+  className,
+  children,
+  style,
+  ...props
+}: IconButtonProps) {
   return (
     <button
       className={cn(
         'inline-flex items-center justify-center rounded-full backdrop-blur transition-colors',
-        active ? 'text-white' : tone === 'danger' ? 'text-content-secondary hover:text-danger' : 'text-content-secondary hover:text-content',
-        className,
+        active
+          ? 'text-white'
+          : tone === 'danger'
+            ? 'text-content-secondary hover:text-danger'
+            : 'text-content-secondary hover:text-content',
+        className
       )}
       style={{
         width: size,
@@ -123,7 +135,7 @@ export function TextField({ label, hint, numeric, className, id, ...props }: Tex
           'h-11 w-full rounded-field px-3.5 text-body text-content placeholder:text-content-muted outline-none transition-colors',
           'focus:border-selected-border',
           numeric && 'font-num',
-          className,
+          className
         )}
         style={{ background: 'var(--surface-2)', border: '1px solid var(--stroke-strong)' }}
         {...props}
@@ -139,7 +151,14 @@ interface SurfaceProps extends React.HTMLAttributes<HTMLDivElement> {
   bordered?: boolean;
 }
 
-export function Panel({ level = 2, bordered = true, className, style, children, ...props }: SurfaceProps) {
+export function Panel({
+  level = 2,
+  bordered = true,
+  className,
+  style,
+  children,
+  ...props
+}: SurfaceProps) {
   const glass = level === 1 ? 'glass-1' : level === 3 ? 'glass-3' : 'glass-2';
   return (
     <div
@@ -162,7 +181,7 @@ export function Chip({ selected, className, children, style, as = 'button', ...p
   const cls = cn(
     'inline-flex items-center gap-1.5 rounded-chip px-3 h-8 text-caption transition-colors',
     as === 'button' && 'hover:border-selected-border cursor-pointer',
-    className,
+    className
   );
   const st: React.CSSProperties = {
     background: selected ? 'var(--selected-bg)' : 'var(--surface-3)',
@@ -206,7 +225,10 @@ export function Badge({
   const c = map[tone];
   return (
     <span
-      className={cn('inline-flex items-center gap-1 rounded-chip px-2 h-6 text-label font-num', className)}
+      className={cn(
+        'inline-flex items-center gap-1 rounded-chip px-2 h-6 text-label font-num',
+        className
+      )}
       style={{ background: c.bg, color: c.fg }}
     >
       {children}
@@ -243,7 +265,7 @@ export function LikePill({
       onClick={onToggle}
       className={cn(
         'inline-flex items-center gap-1 rounded-chip backdrop-blur transition-colors',
-        size === 'sm' ? 'h-6 px-2' : 'h-7 px-2.5',
+        size === 'sm' ? 'h-6 px-2' : 'h-7 px-2.5'
       )}
       style={{ background: 'rgba(11, 9, 18, 0.6)', border: '1px solid var(--stroke-strong)' }}
     >
@@ -255,7 +277,10 @@ export function LikePill({
           fill: liked ? 'var(--danger)' : 'transparent',
         }}
       />
-      <span className="text-label font-num" style={{ color: liked ? 'var(--content)' : 'var(--content-secondary)' }}>
+      <span
+        className="text-label font-num"
+        style={{ color: liked ? 'var(--content)' : 'var(--content-secondary)' }}
+      >
         {count.toLocaleString()}
       </span>
     </button>
@@ -301,12 +326,14 @@ export function Select({
           className={cn(
             'flex h-10 w-full items-center justify-between rounded-field px-3 text-body text-content transition-colors',
             !disabled && 'hover:border-selected-border',
-            disabled && 'opacity-60 cursor-not-allowed',
+            disabled && 'opacity-60 cursor-not-allowed'
           )}
           style={{ background: 'var(--surface-2)', border: '1px solid var(--stroke-strong)' }}
         >
           <span className="truncate">{value}</span>
-          {!disabled && <ChevronDown size={16} strokeWidth={2} className="text-content-muted shrink-0" />}
+          {!disabled && (
+            <ChevronDown size={16} strokeWidth={2} className="text-content-muted shrink-0" />
+          )}
         </button>
         {open && (
           <div
@@ -324,7 +351,9 @@ export function Select({
                 className="flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-body text-content-secondary hover:bg-surface-2 hover:text-content"
               >
                 <span className="truncate text-left">{opt}</span>
-                {opt === value && <Check size={15} strokeWidth={2} style={{ color: 'var(--brand-light)' }} />}
+                {opt === value && (
+                  <Check size={15} strokeWidth={2} style={{ color: 'var(--brand-light)' }} />
+                )}
               </button>
             ))}
           </div>
@@ -421,7 +450,11 @@ export function Checkbox({
   children?: React.ReactNode;
 }) {
   return (
-    <button type="button" onClick={() => onChange?.(!checked)} className="inline-flex items-center gap-2.5 text-left">
+    <button
+      type="button"
+      onClick={() => onChange?.(!checked)}
+      className="inline-flex items-center gap-2.5 text-left"
+    >
       <span
         className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md transition-colors"
         style={{
@@ -441,15 +474,21 @@ export function Tabs({
   tabs,
   value,
   onChange,
+  containerClassName,
+  containerStyle,
 }: {
   tabs: { id: string; label: string }[];
   value: string;
   onChange?: (id: string) => void;
+  containerClassName?: string;
+  containerStyle?: React.CSSProperties;
 }) {
   return (
     <div
-      className="inline-flex items-center gap-1 rounded-chip p-1"
-      style={{ background: 'var(--surface-2)', border: '1px solid var(--stroke-soft)' }}
+      className={containerClassName ?? 'inline-flex items-center gap-1 rounded-chip p-1'}
+      style={
+        containerStyle ?? { background: 'var(--surface-2)', border: '1px solid var(--stroke-soft)' }
+      }
     >
       {tabs.map((t) => {
         const active = t.id === value;
@@ -457,7 +496,10 @@ export function Tabs({
           <button
             key={t.id}
             onClick={() => onChange?.(t.id)}
-            className={cn('rounded-chip px-4 h-8 text-caption transition-colors', active ? 'text-white' : 'text-content-secondary hover:text-content')}
+            className={cn(
+              'rounded-chip px-4 h-8 text-caption transition-colors',
+              active ? 'text-white' : 'text-content-secondary hover:text-content'
+            )}
             style={active ? { background: 'var(--brand)' } : undefined}
           >
             {t.label}
