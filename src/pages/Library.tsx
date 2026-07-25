@@ -217,7 +217,11 @@ export default function Library() {
                   onOpen={() => setSelected(art)}
                   showToVideo={art.type === 'image'}
                   onCopyPrompt={() => navigator.clipboard.writeText(art.prompt)}
-                  onReedit={() => navigate(art.type === 'video' ? '/video' : '/image')}
+                  onReedit={() =>
+                    navigate(art.type === 'video' ? '/video' : '/image', {
+                      state: { editArt: art },
+                    })
+                  }
                   onToVideo={() => navigate('/video', { state: { referenceArt: art } })}
                   onRegenerate={() => handleRegenerate(art)}
                   isRegenerating={regeneratingId === art.id}
@@ -320,7 +324,15 @@ export default function Library() {
           </div>
 
           <div className="mt-5 flex flex-col gap-2">
-            <Button block leftIcon={<Pencil size={16} />} onClick={() => navigate('/image')}>
+            <Button
+              block
+              leftIcon={<Pencil size={16} />}
+              onClick={() =>
+                navigate(selected.type === 'video' ? '/video' : '/image', {
+                  state: { editArt: selected },
+                })
+              }
+            >
               재편집
             </Button>
             <div className="grid grid-cols-2 gap-2">

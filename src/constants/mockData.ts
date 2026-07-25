@@ -31,6 +31,17 @@ export interface Artwork {
   mediaFileId?: number;
   /** BE의 favorite(찜) 상태 - 라이브러리 API 전용 */
   favorite?: boolean;
+  /**
+   * 재편집 복원 전용 - BE 원본 aspectRatio 값(예: "16:9", "1:1").
+   * ratio 필드는 DetailModal 표시용으로 픽셀 해상도까지 합쳐놓은 문자열("16:9 · 1376×768")이라
+   * 생성 화면의 비율 옵션 목록과 그대로 매칭되지 않는다.
+   */
+  aspectRatioRaw?: string;
+  /**
+   * 재편집 복원 전용 - BE 원본 품질 관련 값(영상: resolution 티어 "1080p" 등 / 이미지: quality 코드 "standard"/"high").
+   * quality 필드는 표시용 축약 라벨이라 생성 화면의 품질 옵션 목록과 그대로 매칭되지 않는다.
+   */
+  qualityRaw?: string;
   /** presets_catalog.json 원본 데이터의 실제 로컬 에셋 경로 */
   localPath?: string;
   /** presets_catalog.json 원본 데이터 - 임시 목업(교체 예정) 여부 */
