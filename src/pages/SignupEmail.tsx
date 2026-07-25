@@ -5,7 +5,7 @@ import ErrorMessage from '../components/common/ErrorMessage';
 import AuthBackground from '../components/auth/AuthBackground';
 import AuthCard from '../components/auth/AuthCard';
 import AuthStepLabel from '../components/auth/AuthStepLabel';
-import { signupEmailMock } from '../services/auth';
+import { checkEmailDuplicate, isValidEmail } from '../services/auth';
 
 export default function SignupEmail() {
   const navigate = useNavigate();
@@ -18,10 +18,20 @@ export default function SignupEmail() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    if (!isValidEmail(email)) {
+      setError('올바른 이메일 형식이 아닙니다.');
+      return;
+    }
+
     setLoading(true);
 
     try {
-      await signupEmailMock(email);
+      const { available } = await checkEmailDuplicate(email);
+      if (!available) {
+        setError('이미 가입된 이메일입니다.');
+        return;
+      }
       navigate('/signup/nickname', { state: { email } });
     } catch (err) {
       setError((err as Error).message);
