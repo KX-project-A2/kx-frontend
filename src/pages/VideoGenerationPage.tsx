@@ -180,7 +180,7 @@ export default function VideoGenerationPage() {
 
     const qualityOption = findOptionForRestore(
       capability.qualityOptions,
-      editArt.qualityRaw,
+     editArt.qualityRaw,
       mapQualityToResolution
     );
     if (qualityOption) setQuality(qualityOption);
