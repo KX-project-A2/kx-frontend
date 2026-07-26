@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Download, Link2, Pencil, Play, Trash2, Video as VideoIcon } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Badge, Button, Select, Tabs } from '@/components/common/ui';
 import { ResultCard } from '@/components/domain/library/ResultCard';
 import ImageWithFallback from '@/components/common/ImageWithFallback';
@@ -29,8 +29,10 @@ const SCOPES: { id: 'mine' | 'liked'; label: string }[] = [
 
 export default function Library() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const initialTab = (location.state as { tab?: string } | null)?.tab;
   const [scope, setScope] = useState<'mine' | 'liked'>('mine');
-  const [tab, setTab] = useState('all');
+  const [tab, setTab] = useState(initialTab ?? 'all');
   const [sort, setSort] = useState(SORTS[0]);
   const [selected, setSelected] = useState<Artwork | null>(null);
   const [items, setItems] = useState<Artwork[]>([]);

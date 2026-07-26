@@ -73,7 +73,7 @@ export default function Sidebar() {
         <div className="flex flex-col gap-3">
           <button
             type="button"
-            onClick={() => navigate('/library')}
+            onClick={() => navigate('/profile')}
             className={`flex items-center text-left transition-colors hover:bg-surface-2 ${
               collapsed
                 ? 'justify-center rounded-[var(--radius-btn)] p-2'

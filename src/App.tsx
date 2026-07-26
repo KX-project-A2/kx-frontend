@@ -7,6 +7,7 @@ import ImageGenerationPage from '@/pages/ImageGenerationPage';
 import VideoGenerationPage from '@/pages/VideoGenerationPage';
 import ReversePromptPage from '@/pages/ReversePromptPage';
 import Library from '@/pages/Library';
+import ProfilePage from '@/pages/ProfilePage';
 import Login from '@/pages/Login';
 import SignupEmail from '@/pages/SignupEmail';
 import SignupNickname from '@/pages/SignupNickname';
@@ -52,6 +53,7 @@ function App() {
           <Route path="/video" element={<VideoGenerationPage />} />
           <Route path="/reverse-prompt" element={<ReversePromptPage />} />
           <Route path="/library" element={<Library />} />
+          <Route path="/profile" element={<ProfilePage />} />
         </Route>
       </Routes>
     </>
