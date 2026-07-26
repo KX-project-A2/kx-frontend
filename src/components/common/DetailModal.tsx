@@ -57,6 +57,7 @@ export function DetailModal({ art, onClose }: { art: Artwork | null; onClose: ()
       ? ([['길이', art.duration]] as [string, string][])
       : []),
     ['생성 일자', formatDate(art.createdAt)],
+    ['작업 ID', art.id],
   ];
 
   return (

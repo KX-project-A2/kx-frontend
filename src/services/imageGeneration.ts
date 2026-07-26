@@ -109,11 +109,11 @@ export async function generateImage(
         '[generateImage] job status response',
         JSON.stringify(statusResponse.data, null, 2)
       );
-      const { status, resultImages } = statusResponse.data.data;
+      const { status, resultImages, errorMessage } = statusResponse.data.data;
 
-      return { status, data: resultImages };
+      return { status, data: resultImages, errorMessage: errorMessage ?? undefined };
     },
-    { intervalMs: 5000, timeoutMs: 900000 }
+    { intervalMs: 5000, timeoutMs: 900000, jobId }
   );
 
   const images = await Promise.all(
@@ -190,11 +190,11 @@ export async function characterConceptSheet(
         '[characterConceptSheet] job status response',
         JSON.stringify(statusResponse.data, null, 2)
       );
-      const { status } = statusResponse.data.data;
+      const { status, errorMessage } = statusResponse.data.data;
 
-      return { status, data: statusResponse.data.data };
+      return { status, data: statusResponse.data.data, errorMessage: errorMessage ?? undefined };
     },
-    { intervalMs: 5000, timeoutMs: 900000 }
+    { intervalMs: 5000, timeoutMs: 900000, jobId }
   );
 
   const images = await Promise.all(
