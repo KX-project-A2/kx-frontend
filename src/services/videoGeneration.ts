@@ -88,16 +88,22 @@ export async function generateVideo(
   console.log('[generateVideo] create response', JSON.stringify(createResponse.data, null, 2));
   const { id: jobId } = createResponse.data.data;
 
-  const job = await pollJob<GenerateVideoJob>(async () => {
-    const statusResponse = await axiosInstance.get<ApiResponse<GenerateVideoJob>>(
-      `/api/generate/videos/jobs/${jobId}`
-    );
+  const job = await pollJob<GenerateVideoJob>(
+    async () => {
+      const statusResponse = await axiosInstance.get<ApiResponse<GenerateVideoJob>>(
+        `/api/generate/videos/jobs/${jobId}`
+      );
 
-    console.log('[generateVideo] job status response', JSON.stringify(statusResponse.data, null, 2));
-    const jobData = statusResponse.data.data;
+      console.log(
+        '[generateVideo] job status response',
+        JSON.stringify(statusResponse.data, null, 2)
+      );
+      const jobData = statusResponse.data.data;
 
-    return { status: jobData.status, data: jobData };
-  }, { intervalMs: 5000, timeoutMs: 900000 });
+      return { status: jobData.status, data: jobData };
+    },
+    { intervalMs: 5000, timeoutMs: 900000, jobId }
+  );
 
   console.log('[generateVideo] COMPLETED job - url candidates', {
     falResponseUrl: job.falResponseUrl,
