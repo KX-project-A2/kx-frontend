@@ -181,6 +181,7 @@ interface PresetCatalogEntry {
     width?: number;
     height?: number;
     localPath: string;
+    displayedCreatorHandle?: string;
   };
 }
 
@@ -212,7 +213,7 @@ function toPresetArtwork(entry: PresetCatalogEntry): Artwork {
     prompt: entry.prompt,
     creator: {
       id: entry.creatorId,
-      handle: `@${entry.originalArtist.replace(/\s+/g, '_')}`,
+      handle: `@${entry.extra.displayedCreatorHandle ?? '탐색자'}`,
       avatar: u(IMG.p2, 96),
     },
     likes: 0,
