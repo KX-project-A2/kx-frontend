@@ -13,7 +13,6 @@ import ErrorMessage from '@/components/common/ErrorMessage';
 import EmptyState from '@/components/common/EmptyState';
 import { useObjectUrls } from '@/hooks/useObjectUrls';
 import { useRevokeObjectUrls } from '@/hooks/useRevokeObjectUrls';
-<<<<<<< HEAD
 import {
   extractReversePrompt,
   regenerateFromReversePrompt,
@@ -28,13 +27,6 @@ const PURPOSE_OPTIONS: { id: 'CHARACTER' | 'BACKGROUND'; label: string }[] = [
   { id: 'CHARACTER', label: '캐릭터' },
   { id: 'BACKGROUND', label: '배경' },
 ];
-=======
-import { extractReversePrompt } from '@/services/reversePrompt';
-import { validateImageFile } from '@/utils/validateImageFile';
-
-const RATIO_OPTIONS = ['auto', '1:1', '16:9', '9:16'];
-const REFERENCE_IMAGE_MAX_MB = 10;
->>>>>>> main
 
 interface ReversePromptItem {
   id: number;

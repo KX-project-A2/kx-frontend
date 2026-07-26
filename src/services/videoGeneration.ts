@@ -101,15 +101,11 @@ export async function generateVideo(
       );
       const jobData = statusResponse.data.data;
 
-<<<<<<< HEAD
-      return { status: jobData.status, data: jobData };
-=======
       return {
         status: jobData.status,
         data: jobData,
         errorMessage: jobData.errorMessage ?? undefined,
       };
->>>>>>> main
     },
     { intervalMs: 5000, timeoutMs: 900000, jobId }
   );
@@ -120,9 +116,9 @@ export async function generateVideo(
   });
   let videoUrl = '';
   if (job.resultMediaFileId) {
-    const downloadResponse = await axiosInstance.get<ApiResponse<{ downloadUrl: string; expiresInSeconds: number }>>(
-      `/api/media/files/${job.resultMediaFileId}/download-url`
-    );
+    const downloadResponse = await axiosInstance.get<
+      ApiResponse<{ downloadUrl: string; expiresInSeconds: number }>
+    >(`/api/media/files/${job.resultMediaFileId}/download-url`);
     videoUrl = downloadResponse.data.data.downloadUrl;
   }
 
