@@ -5,6 +5,7 @@ import ProtectedRoute from '@/components/common/ProtectedRoute';
 import Home from '@/pages/Home';
 import ImageGenerationPage from '@/pages/ImageGenerationPage';
 import VideoGenerationPage from '@/pages/VideoGenerationPage';
+import ReversePromptPage from '@/pages/ReversePromptPage';
 import Library from '@/pages/Library';
 import Login from '@/pages/Login';
 import SignupEmail from '@/pages/SignupEmail';
@@ -49,6 +50,7 @@ function App() {
           <Route path="/home" element={<Home />} />
           <Route path="/image" element={<ImageGenerationPage />} />
           <Route path="/video" element={<VideoGenerationPage />} />
+          <Route path="/reverse-prompt" element={<ReversePromptPage />} />
           <Route path="/library" element={<Library />} />
         </Route>
       </Routes>
