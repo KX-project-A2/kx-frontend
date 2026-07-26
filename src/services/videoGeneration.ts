@@ -116,9 +116,9 @@ export async function generateVideo(
   });
   let videoUrl = '';
   if (job.resultMediaFileId) {
-    const downloadResponse = await axiosInstance.get<ApiResponse<{ downloadUrl: string; expiresInSeconds: number }>>(
-      `/api/media/files/${job.resultMediaFileId}/download-url`
-    );
+    const downloadResponse = await axiosInstance.get<
+      ApiResponse<{ downloadUrl: string; expiresInSeconds: number }>
+    >(`/api/media/files/${job.resultMediaFileId}/download-url`);
     videoUrl = downloadResponse.data.data.downloadUrl;
   }
 
