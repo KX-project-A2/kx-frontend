@@ -27,7 +27,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/01/사이버펑크_01_네온_야시장.png"
+      "localPath": "public/assets/presets/images/gpt/01/사이버펑크_01_네온_야시장.png",
+      "displayedCreatorHandle": "LunarBriar"
     }
   },
   {
@@ -58,7 +59,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/01/사이버펑크_02_옥상_배달원.png"
+      "localPath": "public/assets/presets/images/gpt/01/사이버펑크_02_옥상_배달원.png",
+      "displayedCreatorHandle": "AshVerity"
     }
   },
   {
@@ -89,7 +91,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/01/사이버펑크_03_지하철_플랫폼.png"
+      "localPath": "public/assets/presets/images/gpt/01/사이버펑크_03_지하철_플랫폼.png",
+      "displayedCreatorHandle": "WrenGlacier"
     }
   },
   {
@@ -120,7 +123,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/01/사이버펑크_04_골목_정비소.png"
+      "localPath": "public/assets/presets/images/gpt/01/사이버펑크_04_골목_정비소.png",
+      "displayedCreatorHandle": "TidalMuse"
     }
   },
   {
@@ -151,7 +155,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/01/사이버펑크_05_데이터_정원.png"
+      "localPath": "public/assets/presets/images/gpt/01/사이버펑크_05_데이터_정원.png",
+      "displayedCreatorHandle": "EmberQuinn"
     }
   },
   {
@@ -182,7 +187,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/01/사이버펑크_06_공중정거장.png"
+      "localPath": "public/assets/presets/images/gpt/01/사이버펑크_06_공중정거장.png",
+      "displayedCreatorHandle": "VaultRhys"
     }
   },
   {
@@ -213,7 +219,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/01/사이버펑크_07_네온_세탁소.png"
+      "localPath": "public/assets/presets/images/gpt/01/사이버펑크_07_네온_세탁소.png",
+      "displayedCreatorHandle": "PetalKestrel"
     }
   },
   {
@@ -244,7 +251,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/01/사이버펑크_08_드론_항구.png"
+      "localPath": "public/assets/presets/images/gpt/01/사이버펑크_08_드론_항구.png",
+      "displayedCreatorHandle": "GraniteFox"
     }
   },
   {
@@ -275,7 +283,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/01/사이버펑크_09_야간_클리닉.png"
+      "localPath": "public/assets/presets/images/gpt/01/사이버펑크_09_야간_클리닉.png",
+      "displayedCreatorHandle": "WillowShade"
     }
   },
   {
@@ -306,7 +315,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/01/사이버펑크_10_우천_시장.png"
+      "localPath": "public/assets/presets/images/gpt/01/사이버펑크_10_우천_시장.png",
+      "displayedCreatorHandle": "CopperLyric"
     }
   },
   {
@@ -337,7 +347,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/01/사이버펑크_11_서버_성당.png"
+      "localPath": "public/assets/presets/images/gpt/01/사이버펑크_11_서버_성당.png",
+      "displayedCreatorHandle": "SlateHaven"
     }
   },
   {
@@ -368,7 +379,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/01/사이버펑크_12_새벽_교차로.png"
+      "localPath": "public/assets/presets/images/gpt/01/사이버펑크_12_새벽_교차로.png",
+      "displayedCreatorHandle": "DuskRaven"
     }
   },
   {
@@ -399,7 +411,8 @@
       "height": 1086,
       "ratio": "4:3",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/02/제품광고컷_01_세라믹_스피커.png"
+      "localPath": "public/assets/presets/images/gpt/02/제품광고컷_01_세라믹_스피커.png",
+      "displayedCreatorHandle": "MarbleWisp"
     }
   },
   {
@@ -430,7 +443,8 @@
       "height": 1086,
       "ratio": "4:3",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/02/제품광고컷_02_무광_향수병.png"
+      "localPath": "public/assets/presets/images/gpt/02/제품광고컷_02_무광_향수병.png",
+      "displayedCreatorHandle": "FableStorm"
     }
   },
   {
@@ -461,7 +475,8 @@
       "height": 1086,
       "ratio": "4:3",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/02/제품광고컷_03_투명_헤드폰.png"
+      "localPath": "public/assets/presets/images/gpt/02/제품광고컷_03_투명_헤드폰.png",
+      "displayedCreatorHandle": "HollowJasper"
     }
   },
   {
@@ -492,7 +507,8 @@
       "height": 1086,
       "ratio": "4:3",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/02/제품광고컷_04_스테인리스_텀블러.png"
+      "localPath": "public/assets/presets/images/gpt/02/제품광고컷_04_스테인리스_텀블러.png",
+      "displayedCreatorHandle": "BriskOtter"
     }
   },
   {
@@ -523,7 +539,8 @@
       "height": 1086,
       "ratio": "4:3",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/02/제품광고컷_05_유리_스킨케어.png"
+      "localPath": "public/assets/presets/images/gpt/02/제품광고컷_05_유리_스킨케어.png",
+      "displayedCreatorHandle": "VelvetCairn"
     }
   },
   {
@@ -554,7 +571,8 @@
       "height": 1086,
       "ratio": "4:3",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/02/제품광고컷_06_러닝화.png"
+      "localPath": "public/assets/presets/images/gpt/02/제품광고컷_06_러닝화.png",
+      "displayedCreatorHandle": "NimbusRoe"
     }
   },
   {
@@ -585,7 +603,8 @@
       "height": 1086,
       "ratio": "4:3",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/02/제품광고컷_07_스마트워치.png"
+      "localPath": "public/assets/presets/images/gpt/02/제품광고컷_07_스마트워치.png",
+      "displayedCreatorHandle": "CedarLyric"
     }
   },
   {
@@ -616,7 +635,8 @@
       "height": 1086,
       "ratio": "4:3",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/02/제품광고컷_08_무선_조명.png"
+      "localPath": "public/assets/presets/images/gpt/02/제품광고컷_08_무선_조명.png",
+      "displayedCreatorHandle": "FrostPetal"
     }
   },
   {
@@ -647,7 +667,8 @@
       "height": 1086,
       "ratio": "4:3",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/02/제품광고컷_09_티포트.png"
+      "localPath": "public/assets/presets/images/gpt/02/제품광고컷_09_티포트.png",
+      "displayedCreatorHandle": "OpalDrift"
     }
   },
   {
@@ -678,7 +699,8 @@
       "height": 1086,
       "ratio": "4:3",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/02/제품광고컷_10_미러리스_카메라.png"
+      "localPath": "public/assets/presets/images/gpt/02/제품광고컷_10_미러리스_카메라.png",
+      "displayedCreatorHandle": "ThornEcho"
     }
   },
   {
@@ -709,7 +731,8 @@
       "height": 1086,
       "ratio": "4:3",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/02/제품광고컷_11_기계식_키보드.png"
+      "localPath": "public/assets/presets/images/gpt/02/제품광고컷_11_기계식_키보드.png",
+      "displayedCreatorHandle": "LucentFinch"
     }
   },
   {
@@ -740,7 +763,8 @@
       "height": 1086,
       "ratio": "4:3",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/02/제품광고컷_12_무선_이어버드.png"
+      "localPath": "public/assets/presets/images/gpt/02/제품광고컷_12_무선_이어버드.png",
+      "displayedCreatorHandle": "SableGrove"
     }
   },
   {
@@ -771,7 +795,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/03/판타지_배경시트_01_부유섬_항구.png"
+      "localPath": "public/assets/presets/images/gpt/03/판타지_배경시트_01_부유섬_항구.png",
+      "displayedCreatorHandle": "WrenFable"
     }
   },
   {
@@ -802,7 +827,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/03/판타지_배경시트_02_수정동굴_도서관.png"
+      "localPath": "public/assets/presets/images/gpt/03/판타지_배경시트_02_수정동굴_도서관.png",
+      "displayedCreatorHandle": "GlassMeridian"
     }
   },
   {
@@ -833,7 +859,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/03/판타지_배경시트_03_거목_마을.png"
+      "localPath": "public/assets/presets/images/gpt/03/판타지_배경시트_03_거목_마을.png",
+      "displayedCreatorHandle": "AlderMuse"
     }
   },
   {
@@ -864,7 +891,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/03/판타지_배경시트_04_사막_별관측소.png"
+      "localPath": "public/assets/presets/images/gpt/03/판타지_배경시트_04_사막_별관측소.png",
+      "displayedCreatorHandle": "RavenQuill"
     }
   },
   {
@@ -895,7 +923,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/03/판타지_배경시트_05_빙하_성소.png"
+      "localPath": "public/assets/presets/images/gpt/03/판타지_배경시트_05_빙하_성소.png",
+      "displayedCreatorHandle": "BrackenLuma"
     }
   },
   {
@@ -926,7 +955,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/03/판타지_배경시트_06_연꽃_수상도시.png"
+      "localPath": "public/assets/presets/images/gpt/03/판타지_배경시트_06_연꽃_수상도시.png",
+      "displayedCreatorHandle": "MossFable"
     }
   },
   {
@@ -957,7 +987,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/03/판타지_배경시트_07_용암_대장간.png"
+      "localPath": "public/assets/presets/images/gpt/03/판타지_배경시트_07_용암_대장간.png",
+      "displayedCreatorHandle": "hana.jung"
     }
   },
   {
@@ -988,7 +1019,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/03/판타지_배경시트_08_달빛_습지.png"
+      "localPath": "public/assets/presets/images/gpt/03/판타지_배경시트_08_달빛_습지.png",
+      "displayedCreatorHandle": "minsoo.baek"
     }
   },
   {
@@ -1019,7 +1051,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/03/판타지_배경시트_09_구름폭포_수도원.png"
+      "localPath": "public/assets/presets/images/gpt/03/판타지_배경시트_09_구름폭포_수도원.png",
+      "displayedCreatorHandle": "yerin.oh"
     }
   },
   {
@@ -1050,7 +1083,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/03/판타지_배경시트_10_산호_궁전.png"
+      "localPath": "public/assets/presets/images/gpt/03/판타지_배경시트_10_산호_궁전.png",
+      "displayedCreatorHandle": "daehyun.ko"
     }
   },
   {
@@ -1081,7 +1115,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/03/판타지_배경시트_11_가을_마법시장.png"
+      "localPath": "public/assets/presets/images/gpt/03/판타지_배경시트_11_가을_마법시장.png",
+      "displayedCreatorHandle": "subin.cho"
     }
   },
   {
@@ -1112,7 +1147,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/03/판타지_배경시트_12_천문_기차역.png"
+      "localPath": "public/assets/presets/images/gpt/03/판타지_배경시트_12_천문_기차역.png",
+      "displayedCreatorHandle": "woojin.ha"
     }
   },
   {
@@ -1143,7 +1179,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/04/시네마틱_랜드스케이프_01_검은모래_해변.png"
+      "localPath": "public/assets/presets/images/gpt/04/시네마틱_랜드스케이프_01_검은모래_해변.png",
+      "displayedCreatorHandle": "haeun.moon"
     }
   },
   {
@@ -1174,7 +1211,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/04/시네마틱_랜드스케이프_02_안개_침엽수림.png"
+      "localPath": "public/assets/presets/images/gpt/04/시네마틱_랜드스케이프_02_안개_침엽수림.png",
+      "displayedCreatorHandle": "taeyang.im"
     }
   },
   {
@@ -1205,7 +1243,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/04/시네마틱_랜드스케이프_03_소금사막_폭풍.png"
+      "localPath": "public/assets/presets/images/gpt/04/시네마틱_랜드스케이프_03_소금사막_폭풍.png",
+      "displayedCreatorHandle": "eunji.seo"
     }
   },
   {
@@ -1236,7 +1275,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/04/시네마틱_랜드스케이프_04_빙하호수_오로라.png"
+      "localPath": "public/assets/presets/images/gpt/04/시네마틱_랜드스케이프_04_빙하호수_오로라.png",
+      "displayedCreatorHandle": "gyuri.nam"
     }
   },
   {
@@ -1267,7 +1307,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/04/시네마틱_랜드스케이프_05_붉은협곡_비.png"
+      "localPath": "public/assets/presets/images/gpt/04/시네마틱_랜드스케이프_05_붉은협곡_비.png",
+      "displayedCreatorHandle": "kai_rho88"
     }
   },
   {
@@ -1298,7 +1339,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/04/시네마틱_랜드스케이프_06_화산평원_새벽.png"
+      "localPath": "public/assets/presets/images/gpt/04/시네마틱_랜드스케이프_06_화산평원_새벽.png",
+      "displayedCreatorHandle": "luna_vex21"
     }
   },
   {
@@ -1329,7 +1371,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/04/시네마틱_랜드스케이프_07_벚나무_언덕.png"
+      "localPath": "public/assets/presets/images/gpt/04/시네마틱_랜드스케이프_07_벚나무_언덕.png",
+      "displayedCreatorHandle": "zeph_moor19"
     }
   },
   {
@@ -1360,7 +1403,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/04/시네마틱_랜드스케이프_08_열대폭포_정오.png"
+      "localPath": "public/assets/presets/images/gpt/04/시네마틱_랜드스케이프_08_열대폭포_정오.png",
+      "displayedCreatorHandle": "rin_kalo07"
     }
   },
   {
@@ -1391,7 +1435,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/04/시네마틱_랜드스케이프_09_사구_월출.png"
+      "localPath": "public/assets/presets/images/gpt/04/시네마틱_랜드스케이프_09_사구_월출.png",
+      "displayedCreatorHandle": "noa_bex34"
     }
   },
   {
@@ -1422,7 +1467,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/04/시네마틱_랜드스케이프_10_초원_뇌우.png"
+      "localPath": "public/assets/presets/images/gpt/04/시네마틱_랜드스케이프_10_초원_뇌우.png",
+      "displayedCreatorHandle": "sae_lumi12"
     }
   },
   {
@@ -1453,7 +1499,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/04/시네마틱_랜드스케이프_11_겨울_자작나무숲.png"
+      "localPath": "public/assets/presets/images/gpt/04/시네마틱_랜드스케이프_11_겨울_자작나무숲.png",
+      "displayedCreatorHandle": "iro_vantt45"
     }
   },
   {
@@ -1484,7 +1531,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/04/시네마틱_랜드스케이프_12_해안절벽_등불.png"
+      "localPath": "public/assets/presets/images/gpt/04/시네마틱_랜드스케이프_12_해안절벽_등불.png",
+      "displayedCreatorHandle": "juno_reyk09"
     }
   },
   {
@@ -1515,7 +1563,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/05/2/캐릭터_시트_01_사막정찰자.png"
+      "localPath": "public/assets/presets/images/gpt/05/2/캐릭터_시트_01_사막정찰자.png",
+      "displayedCreatorHandle": "cy_marlo77"
     }
   },
   {
@@ -1546,7 +1595,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/05/2/캐릭터_시트_02_해양기술자.png"
+      "localPath": "public/assets/presets/images/gpt/05/2/캐릭터_시트_02_해양기술자.png",
+      "displayedCreatorHandle": "ori_haze23"
     }
   },
   {
@@ -1577,7 +1627,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/05/2/캐릭터_시트_03_산악우편원.png"
+      "localPath": "public/assets/presets/images/gpt/05/2/캐릭터_시트_03_산악우편원.png",
+      "displayedCreatorHandle": "teo_brix58"
     }
   },
   {
@@ -1608,7 +1659,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/05/2/캐릭터_시트_04_야간식물학자.png"
+      "localPath": "public/assets/presets/images/gpt/05/2/캐릭터_시트_04_야간식물학자.png",
+      "displayedCreatorHandle": "ivy_norr14"
     }
   },
   {
@@ -1639,7 +1691,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/05/2/캐릭터_시트_05_극지조리사.png"
+      "localPath": "public/assets/presets/images/gpt/05/2/캐릭터_시트_05_극지조리사.png",
+      "displayedCreatorHandle": "hazywillow"
     }
   },
   {
@@ -1670,7 +1723,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/05/2/캐릭터_시트_06_도시기록가.png"
+      "localPath": "public/assets/presets/images/gpt/05/2/캐릭터_시트_06_도시기록가.png",
+      "displayedCreatorHandle": "duskmarrow"
     }
   },
   {
@@ -1701,7 +1755,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/05/2/캐릭터_시트_07_온실생태학자.png"
+      "localPath": "public/assets/presets/images/gpt/05/2/캐릭터_시트_07_온실생태학자.png",
+      "displayedCreatorHandle": "palefinch"
     }
   },
   {
@@ -1732,7 +1787,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/05/2/캐릭터_시트_08_심해구조사.png"
+      "localPath": "public/assets/presets/images/gpt/05/2/캐릭터_시트_08_심해구조사.png",
+      "displayedCreatorHandle": "moltensky"
     }
   },
   {
@@ -1763,7 +1819,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/05/2/캐릭터_시트_09_하늘섬지도사.png"
+      "localPath": "public/assets/presets/images/gpt/05/2/캐릭터_시트_09_하늘섬지도사.png",
+      "displayedCreatorHandle": "quietember"
     }
   },
   {
@@ -1794,7 +1851,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/05/2/캐릭터_시트_10_사막유물보존가.png"
+      "localPath": "public/assets/presets/images/gpt/05/2/캐릭터_시트_10_사막유물보존가.png",
+      "displayedCreatorHandle": "saltmoss"
     }
   },
   {
@@ -1825,7 +1883,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/05/2/캐릭터_시트_11_달빛약제사.png"
+      "localPath": "public/assets/presets/images/gpt/05/2/캐릭터_시트_11_달빛약제사.png",
+      "displayedCreatorHandle": "dimhollow"
     }
   },
   {
@@ -1856,7 +1915,8 @@
       "height": 941,
       "ratio": "16:9",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/05/2/캐릭터_시트_12_소형로봇정비사.png"
+      "localPath": "public/assets/presets/images/gpt/05/2/캐릭터_시트_12_소형로봇정비사.png",
+      "displayedCreatorHandle": "fadedcairn"
     }
   },
   {
@@ -1887,7 +1947,8 @@
       "height": 1619,
       "ratio": "3:5",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/05/1/캐릭터_단일_01_사막정찰자.png"
+      "localPath": "public/assets/presets/images/gpt/05/1/캐릭터_단일_01_사막정찰자.png",
+      "displayedCreatorHandle": "driftlume"
     }
   },
   {
@@ -1918,7 +1979,8 @@
       "height": 1402,
       "ratio": "4:5",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/05/1/캐릭터_단일_02_해양기술자.png"
+      "localPath": "public/assets/presets/images/gpt/05/1/캐릭터_단일_02_해양기술자.png",
+      "displayedCreatorHandle": "lowtidevox"
     }
   },
   {
@@ -1949,7 +2011,8 @@
       "height": 1808,
       "ratio": "1:2",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/05/1/캐릭터_단일_03_산악우편원.png"
+      "localPath": "public/assets/presets/images/gpt/05/1/캐릭터_단일_03_산악우편원.png",
+      "displayedCreatorHandle": "brackglow"
     }
   },
   {
@@ -1980,7 +2043,8 @@
       "height": 1619,
       "ratio": "3:5",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/05/1/캐릭터_단일_04_야간식물학자.png"
+      "localPath": "public/assets/presets/images/gpt/05/1/캐릭터_단일_04_야간식물학자.png",
+      "displayedCreatorHandle": "mutedopal"
     }
   },
   {
@@ -2011,7 +2075,8 @@
       "height": 1402,
       "ratio": "4:5",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/05/1/캐릭터_단일_05_극지조리사.png"
+      "localPath": "public/assets/presets/images/gpt/05/1/캐릭터_단일_05_극지조리사.png",
+      "displayedCreatorHandle": "paperkestrel"
     }
   },
   {
@@ -2042,7 +2107,8 @@
       "height": 1402,
       "ratio": "4:5",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/05/1/캐릭터_단일_06_도시기록가.png"
+      "localPath": "public/assets/presets/images/gpt/05/1/캐릭터_단일_06_도시기록가.png",
+      "displayedCreatorHandle": "hushvantt"
     }
   },
   {
@@ -2073,7 +2139,8 @@
       "height": 1402,
       "ratio": "4:5",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/05/1/캐릭터_단일_07_온실생태학자.png"
+      "localPath": "public/assets/presets/images/gpt/05/1/캐릭터_단일_07_온실생태학자.png",
+      "displayedCreatorHandle": "glasswren"
     }
   },
   {
@@ -2104,7 +2171,8 @@
       "height": 1787,
       "ratio": "1:2",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/05/1/캐릭터_단일_08_심해구조사.png"
+      "localPath": "public/assets/presets/images/gpt/05/1/캐릭터_단일_08_심해구조사.png",
+      "displayedCreatorHandle": "sootpetal"
     }
   },
   {
@@ -2135,7 +2203,8 @@
       "height": 1402,
       "ratio": "4:5",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/05/1/캐릭터_단일_09_하늘섬지도사.png"
+      "localPath": "public/assets/presets/images/gpt/05/1/캐릭터_단일_09_하늘섬지도사.png",
+      "displayedCreatorHandle": "thinember"
     }
   },
   {
@@ -2166,7 +2235,8 @@
       "height": 1402,
       "ratio": "4:5",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/05/1/캐릭터_단일_10_사막유물보존가.png"
+      "localPath": "public/assets/presets/images/gpt/05/1/캐릭터_단일_10_사막유물보존가.png",
+      "displayedCreatorHandle": "wanefable"
     }
   },
   {
@@ -2197,7 +2267,8 @@
       "height": 1402,
       "ratio": "4:5",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/05/1/캐릭터_단일_11_달빛약제사.png"
+      "localPath": "public/assets/presets/images/gpt/05/1/캐릭터_단일_11_달빛약제사.png",
+      "displayedCreatorHandle": "coldlyric"
     }
   },
   {
@@ -2228,7 +2299,8 @@
       "height": 1402,
       "ratio": "4:5",
       "hasExternalSourceUrl": false,
-      "localPath": "public/assets/presets/images/gpt/05/1/캐릭터_단일_12_소형로봇정비사.png"
+      "localPath": "public/assets/presets/images/gpt/05/1/캐릭터_단일_12_소형로봇정비사.png",
+      "displayedCreatorHandle": "graymuse"
     }
   },
   {
