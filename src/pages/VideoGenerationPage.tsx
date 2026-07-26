@@ -30,6 +30,9 @@ import {
 import { KLING_REFERENCE_TO_VIDEO, validateVideoOptions } from '@/utils/videoOptionValidator';
 import { VIDEO_MODELS, type Artwork } from '@/constants/mockData';
 import { findOptionForRestore } from '@/utils/restoreOption';
+import { validateImageFile } from '@/utils/validateImageFile';
+
+const REFERENCE_IMAGE_MAX_MB = 50;
 
 const REFERENCE_CELL_ICON = (
   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -188,10 +191,27 @@ export default function VideoGenerationPage() {
     toVideoValidationInput(prompt.trim(), { model, length, ratio, quality })
   );
 
-  const handleAddReference = (file: File) => {
+const handleAddStoryboardImage = async (file: File) => {
+    const validation = await validateImageFile(file, REFERENCE_IMAGE_MAX_MB);
+    if (!validation.valid) {
+      setError(validation.reason);
+      return;
+    }
+    setError(null);
+    setStoryboardImage(file);
+  };
+
+  const handleAddReference = async (file: File) => {
+    const validation = await validateImageFile(file, REFERENCE_IMAGE_MAX_MB);
+    if (!validation.valid) {
+      setError(validation.reason);
+      return;
+    }
+    setError(null);
     const used = (seedReference ? 1 : 0) + referenceImages.length;
     if (used >= capability.maxReferenceImages) return;
     addReferenceImage(file);
+  };
   };
 
   const handleRemoveReference = (index: number) => {
@@ -287,7 +307,7 @@ export default function VideoGenerationPage() {
             used={storyboardImage ? 1 : 0}
             max={1}
             images={[storyboardPreviewUrls[0]]}
-            onAdd={setStoryboardImage}
+            onAdd={handleAddStoryboardImage}
             onRemove={() => setStoryboardImage(null)}
             disabled={usedReferenceCount > 0}
             icon={REFERENCE_CELL_ICON}

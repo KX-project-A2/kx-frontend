@@ -26,9 +26,11 @@ import { characterConceptSheet, generateImage, mapQualityToBE } from '@/services
 import type { GenerationResult } from '@/types/generation';
 import { toGenGroup } from '@/utils/generationAdapter';
 import { findOptionForRestore } from '@/utils/restoreOption';
+import { validateImageFile } from '@/utils/validateImageFile';
 import { IMAGE_QUALITIES, type Artwork } from '@/constants/mockData';
 
 const RATIO_OPTIONS = ['1:1', '4:3', '3:4'];
+const REFERENCE_IMAGE_MAX_MB = 50;
 const PURPOSE_TABS = [
   { id: '캐릭터', label: '캐릭터' },
   { id: '배경', label: '배경' },
@@ -90,9 +92,16 @@ export default function ImageGenerationPage() {
   useRevokeObjectUrls(results.flatMap((result) => result.images.map((image) => image.url)));
   const referencePreviewUrls = useObjectUrls(references);
 
-  const handleAddReference = (file: File) => {
+const handleAddReference = async (file: File) => {
+    const validation = await validateImageFile(file, REFERENCE_IMAGE_MAX_MB);
+    if (!validation.valid) {
+      setError(validation.reason);
+      return;
+    }
+    setError(null);
     if (references.length >= MAX_REFERENCES) return;
     addReference(file);
+  };
   };
 
   const handleRemoveReference = (index: number) => {

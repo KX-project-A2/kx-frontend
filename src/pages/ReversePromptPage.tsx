@@ -14,8 +14,10 @@ import EmptyState from '@/components/common/EmptyState';
 import { useObjectUrls } from '@/hooks/useObjectUrls';
 import { useRevokeObjectUrls } from '@/hooks/useRevokeObjectUrls';
 import { extractReversePrompt } from '@/services/reversePrompt';
+import { validateImageFile } from '@/utils/validateImageFile';
 
 const RATIO_OPTIONS = ['auto', '1:1', '16:9', '9:16'];
+const REFERENCE_IMAGE_MAX_MB = 10;
 
 interface ReversePromptItem {
   id: number;
@@ -88,7 +90,13 @@ export default function ReversePromptPage() {
   const referencePreviewUrls = useObjectUrls(references);
   useRevokeObjectUrls(results.map((r) => r.imageUrl));
 
-  const handleAddReference = (file: File) => {
+  const handleAddReference = async (file: File) => {
+    const validation = await validateImageFile(file, REFERENCE_IMAGE_MAX_MB);
+    if (!validation.valid) {
+      setError(validation.reason);
+      return;
+    }
+    setError(null);
     setReferences([file]);
   };
 
