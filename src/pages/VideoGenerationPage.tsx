@@ -13,6 +13,7 @@ import ErrorMessage from '@/components/common/ErrorMessage';
 import EmptyState from '@/components/common/EmptyState';
 import { DetailModal } from '@/components/common/DetailModal';
 import { useVideoGenerationOptionsStore } from '@/hooks/useVideoGenerationOptionsStore';
+import { useVideoDraftStore } from '@/hooks/useVideoDraftStore';
 import { useObjectUrls } from '@/hooks/useObjectUrls';
 import { fetchImageBlobUrl } from '@/services/imageGeneration';
 import { generateVideo, uploadReferenceImage } from '@/services/videoGeneration';
@@ -29,11 +30,10 @@ import {
 import { KLING_REFERENCE_TO_VIDEO, validateVideoOptions } from '@/utils/videoOptionValidator';
 import { VIDEO_MODELS, type Artwork } from '@/constants/mockData';
 import { findOptionForRestore } from '@/utils/restoreOption';
+import { JobFailedError } from '@/utils/pollJob';
+import { validateImageFile } from '@/utils/validateImageFile';
 
-interface SeedReference {
-  mediaFileId: number;
-  previewUrl: string;
-}
+const REFERENCE_IMAGE_MAX_MB = 50;
 
 const REFERENCE_CELL_ICON = (
   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -79,13 +79,21 @@ export default function VideoGenerationPage() {
     useVideoGenerationOptionsStore();
   // length(길이)는 BE에 저장되지 않아 재편집 시 복원하지 않고 기본값으로 시작한다.
   // BE에 length 저장이 추가되면 복원 로직도 추가.
-  const [prompt, setPrompt] = useState(referenceArt?.prompt ?? editArt?.prompt ?? '');
-  const [seedReference, setSeedReference] = useState<SeedReference | null>(null);
-  const [referenceImages, setReferenceImages] = useState<File[]>([]);
-  const [storyboardImage, setStoryboardImage] = useState<File | null>(null);
+  const {
+    prompt,
+    referenceImages,
+    storyboardImage,
+    seedReference,
+    setPrompt,
+    setStoryboardImage,
+    setSeedReference,
+    addReferenceImage,
+    removeReferenceImage,
+  } = useVideoDraftStore();
   const [results, setResults] = useState<VideoGenerationResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errorJobId, setErrorJobId] = useState<number | undefined>(undefined);
   const [selectedArt, setSelectedArt] = useState<Artwork | null>(null);
 
   const referencePreviewUrls = useObjectUrls(referenceImages);
@@ -127,24 +135,32 @@ export default function VideoGenerationPage() {
   }, [model]);
 
   useEffect(() => {
+    // referenceArt("동영상 만들기")로 진입한 경우에만 seedReference를 설정한다. 순수 네비게이션
+    // (referenceArt 없음)으로는 이 effect가 재실행되지 않아 기존 draft가 유지된다. 이미 같은
+    // mediaFileId의 seedReference를 draft로 갖고 있으면(화면 이동 후 복귀) 재요청하지 않는다.
+    // blob URL 정리는 setSeedReference 내부에서 처리하므로 여기서는 revoke하지 않는다.
     const mediaFileId = referenceArt?.mediaFileId;
-    if (!mediaFileId) {
-      setSeedReference(null);
-      return;
-    }
-    let objectUrl: string | undefined;
+    if (!mediaFileId || mediaFileId === seedReference?.mediaFileId) return;
     fetchImageBlobUrl(mediaFileId).then((url) => {
-      objectUrl = url;
       setSeedReference({ mediaFileId, previewUrl: url });
     });
-    return () => {
-      if (objectUrl) URL.revokeObjectURL(objectUrl);
-    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- referenceArt.mediaFileId 변경 시에만 실행
   }, [referenceArt?.mediaFileId]);
 
   useEffect(() => {
+    // editArt로 들어온 경우에만 draft의 prompt를 덮어쓴다. referenceArt("동영상 만들기")는
+    // 새 영상용 프롬프트를 새로 작성해야 하는 플로우라 의도적으로 비워둔다(seedReference만 세팅).
+    // 뒤로가기 등 순수 네비게이션으로는 이 effect가 재실행되지 않아 기존 draft가 유지된다.
+    if (editArt?.prompt !== undefined) setPrompt(editArt.prompt);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- editArt로 진입 시에만 실행
+  }, [editArt?.id]);
+
+  useEffect(() => {
     if (referenceArt?.mediaFileId) {
-      setModel(VIDEO_MODELS.find((m) => mapModelToModelId(m) === KLING_REFERENCE_TO_VIDEO) ?? VIDEO_MODELS[0]);
+      setModel(
+        VIDEO_MODELS.find((m) => mapModelToModelId(m) === KLING_REFERENCE_TO_VIDEO) ??
+          VIDEO_MODELS[0]
+      );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- referenceArt.mediaFileId 변경(새로 "동영상 만들기"로 진입) 시에만 실행
   }, [referenceArt?.mediaFileId]);
@@ -177,11 +193,26 @@ export default function VideoGenerationPage() {
     toVideoValidationInput(prompt.trim(), { model, length, ratio, quality })
   );
 
-  const handleAddReference = (file: File) => {
-    setReferenceImages((prev) => {
-      const used = (seedReference ? 1 : 0) + prev.length;
-      return used >= capability.maxReferenceImages ? prev : [...prev, file];
-    });
+  const handleAddStoryboardImage = async (file: File) => {
+    const validation = await validateImageFile(file, REFERENCE_IMAGE_MAX_MB);
+    if (!validation.valid) {
+      setError(validation.reason);
+      return;
+    }
+    setError(null);
+    setStoryboardImage(file);
+  };
+
+  const handleAddReference = async (file: File) => {
+    const validation = await validateImageFile(file, REFERENCE_IMAGE_MAX_MB);
+    if (!validation.valid) {
+      setError(validation.reason);
+      return;
+    }
+    setError(null);
+    const used = (seedReference ? 1 : 0) + referenceImages.length;
+    if (used >= capability.maxReferenceImages) return;
+    addReferenceImage(file);
   };
 
   const handleRemoveReference = (index: number) => {
@@ -190,7 +221,7 @@ export default function VideoGenerationPage() {
       return;
     }
     const fileIndex = seedReference ? index - 1 : index;
-    setReferenceImages((prev) => prev.filter((_, i) => i !== fileIndex));
+    removeReferenceImage(fileIndex);
   };
 
   const handleGenerate = async () => {
@@ -198,11 +229,13 @@ export default function VideoGenerationPage() {
 
     if (capability.requiresReferenceImages && usedReferenceCount === 0 && !hasStoryboard) {
       setError('참조 이미지가 필요해요. 레퍼런스 또는 스토리보드 이미지를 추가해주세요.');
+      setErrorJobId(undefined);
       return;
     }
 
     setIsLoading(true);
     setError(null);
+    setErrorJobId(undefined);
 
     try {
       let startMediaFileId: number | null = null;
@@ -231,8 +264,13 @@ export default function VideoGenerationPage() {
         referenceMediaFileIds
       );
       setResults((prev) => [result, ...prev]);
-    } catch {
-      setError('영상 생성에 실패했어요. 다시 시도해주세요.');
+    } catch (err) {
+      if (err instanceof JobFailedError) {
+        setError(err.message);
+        setErrorJobId(err.jobId);
+      } else {
+        setError('영상 생성에 실패했어요. 다시 시도해주세요.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -255,10 +293,20 @@ export default function VideoGenerationPage() {
         <PanelSelect label="모델" value={model} options={VIDEO_MODELS} onChange={setModel} />
         <PanelSelect label="길이" value={length} options={availableLengths} onChange={setLength} />
         {capability.ratioOptions.length > 0 && (
-          <PanelSelect label="비율" value={ratio} options={capability.ratioOptions} onChange={setRatio} />
+          <PanelSelect
+            label="비율"
+            value={ratio}
+            options={capability.ratioOptions}
+            onChange={setRatio}
+          />
         )}
         {capability.qualityOptions.length > 0 && (
-          <PanelSelect label="품질" value={quality} options={capability.qualityOptions} onChange={setQuality} />
+          <PanelSelect
+            label="품질"
+            value={quality}
+            options={capability.qualityOptions}
+            onChange={setQuality}
+          />
         )}
         {capability.supportsReferenceImages && (
           <ReferenceGrid
@@ -267,7 +315,7 @@ export default function VideoGenerationPage() {
             used={storyboardImage ? 1 : 0}
             max={1}
             images={[storyboardPreviewUrls[0]]}
-            onAdd={setStoryboardImage}
+            onAdd={handleAddStoryboardImage}
             onRemove={() => setStoryboardImage(null)}
             disabled={usedReferenceCount > 0}
             icon={REFERENCE_CELL_ICON}
@@ -312,7 +360,7 @@ export default function VideoGenerationPage() {
           disabled={isLoading || (!!prompt.trim() && !!validationError)}
         />
 
-        {error && <ErrorMessage message={error} onRetry={handleGenerate} />}
+        {error && <ErrorMessage message={error} jobId={errorJobId} onRetry={handleGenerate} />}
         {!error && prompt.trim() && validationError && <ErrorMessage message={validationError} />}
 
         {isLoading && (

@@ -19,15 +19,19 @@ import EmptyState from '@/components/common/EmptyState';
 import { DetailModal } from '@/components/common/DetailModal';
 import { CharacterSheetModal } from '@/components/domain/image-generation/CharacterSheetModal';
 import { useGenerationOptionsStore } from '@/hooks/useGenerationOptionsStore';
+import { useImageDraftStore } from '@/hooks/useImageDraftStore';
 import { useRevokeObjectUrls } from '@/hooks/useRevokeObjectUrls';
 import { useObjectUrls } from '@/hooks/useObjectUrls';
 import { characterConceptSheet, generateImage, mapQualityToBE } from '@/services/imageGeneration';
 import type { GenerationResult } from '@/types/generation';
 import { toGenGroup } from '@/utils/generationAdapter';
 import { findOptionForRestore } from '@/utils/restoreOption';
+import { JobFailedError } from '@/utils/pollJob';
+import { validateImageFile } from '@/utils/validateImageFile';
 import { IMAGE_QUALITIES, type Artwork } from '@/constants/mockData';
 
 const RATIO_OPTIONS = ['1:1', '4:3', '3:4'];
+const REFERENCE_IMAGE_MAX_MB = 50;
 const PURPOSE_TABS = [
   { id: '캐릭터', label: '캐릭터' },
   { id: '배경', label: '배경' },
@@ -46,13 +50,21 @@ export default function ImageGenerationPage() {
     useGenerationOptionsStore();
   // purpose(유형: 캐릭터/배경/캐릭터시트)는 BE 응답에 해당 데이터가 없어 재편집 시 복원하지 않고
   // 항상 기본값(첫 번째 탭)으로 시작한다. BE에 purpose 노출 요청 필요, 노출되면 복원 로직 추가.
-  const [purpose, setPurpose] = useState(PURPOSE_TABS[0].id);
-  const [prompt, setPrompt] = useState(editArt?.prompt ?? initialPrompt ?? '');
-  const [correction, setCorrection] = useState(false);
-  const [references, setReferences] = useState<File[]>([]);
+  const {
+    prompt,
+    purpose,
+    correction,
+    references,
+    setPrompt,
+    setPurpose,
+    setCorrection,
+    addReference,
+    removeReference,
+  } = useImageDraftStore();
   const [results, setResults] = useState<GenerationResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errorJobId, setErrorJobId] = useState<number | undefined>(undefined);
   const [selectedArt, setSelectedArt] = useState<Artwork | null>(null);
   const [isCharacterModalOpen, setIsCharacterModalOpen] = useState(false);
 
@@ -70,15 +82,31 @@ export default function ImageGenerationPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- editArt로 재편집 진입 시에만 실행
   }, [editArt?.id]);
 
+  useEffect(() => {
+    // editArt(재편집) 또는 initialPrompt(홈에서 프롬프트를 들고 진입)로 들어온 경우에만 draft의
+    // prompt를 덮어쓴다. 뒤로가기 등 순수 네비게이션으로는 이 effect가 재실행되지 않아 기존
+    // draft가 유지된다.
+    const nextPrompt = editArt?.prompt ?? initialPrompt;
+    if (nextPrompt !== undefined) setPrompt(nextPrompt);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- editArt/initialPrompt로 진입 시에만 실행
+  }, [editArt?.id, initialPrompt]);
+
   useRevokeObjectUrls(results.flatMap((result) => result.images.map((image) => image.url)));
   const referencePreviewUrls = useObjectUrls(references);
 
-  const handleAddReference = (file: File) => {
-    setReferences((prev) => (prev.length >= MAX_REFERENCES ? prev : [...prev, file]));
+  const handleAddReference = async (file: File) => {
+    const validation = await validateImageFile(file, REFERENCE_IMAGE_MAX_MB);
+    if (!validation.valid) {
+      setError(validation.reason);
+      return;
+    }
+    setError(null);
+    if (references.length >= MAX_REFERENCES) return;
+    addReference(file);
   };
 
   const handleRemoveReference = (index: number) => {
-    setReferences((prev) => prev.filter((_, i) => i !== index));
+    removeReference(index);
   };
 
   const handleGenerate = async () => {
@@ -86,6 +114,7 @@ export default function ImageGenerationPage() {
 
     setIsLoading(true);
     setError(null);
+    setErrorJobId(undefined);
 
     try {
       const result = await generateImage(
@@ -94,8 +123,13 @@ export default function ImageGenerationPage() {
         { purpose, promptCorrectionEnabled: correction, references }
       );
       setResults((prev) => [result, ...prev]);
-    } catch {
-      setError('이미지 생성에 실패했어요. 다시 시도해주세요.');
+    } catch (err) {
+      if (err instanceof JobFailedError) {
+        setError(err.message);
+        setErrorJobId(err.jobId);
+      } else {
+        setError('이미지 생성에 실패했어요. 다시 시도해주세요.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -108,7 +142,12 @@ export default function ImageGenerationPage() {
   return (
     <div className="flex h-full">
       {/* left settings panel */}
-      <Panel level={1} bordered={false} className="flex w-[300px] shrink-0 flex-col gap-8 overflow-y-auto p-6" style={{ borderRadius: 0 }}>
+      <Panel
+        level={1}
+        bordered={false}
+        className="flex w-[300px] shrink-0 flex-col gap-8 overflow-y-auto p-6"
+        style={{ borderRadius: 0 }}
+      >
         <ModeTabs variant="image" />
         <SettingSection title="모델">
           <ModelField name={model} />
@@ -143,7 +182,12 @@ export default function ImageGenerationPage() {
         <PanelSelect label="품질" value={quality} options={IMAGE_QUALITIES} onChange={setQuality} />
         <div className="flex items-center justify-between">
           <span className="text-[14px] leading-[20px] text-content-secondary">수량</span>
-          <QuantityStepper value={quantity} min={MIN_QUANTITY} max={MAX_QUANTITY} onChange={setQuantity} />
+          <QuantityStepper
+            value={quantity}
+            min={MIN_QUANTITY}
+            max={MAX_QUANTITY}
+            onChange={setQuantity}
+          />
         </div>
         <ReferenceGrid
           layout="row"
@@ -172,7 +216,7 @@ export default function ImageGenerationPage() {
           disabled={purpose === '캐릭터시트'}
         />
 
-        {error && <ErrorMessage message={error} onRetry={handleGenerate} />}
+        {error && <ErrorMessage message={error} jobId={errorJobId} onRetry={handleGenerate} />}
 
         {isLoading && (
           <div className="flex flex-col items-center justify-center gap-3 py-4">
@@ -207,13 +251,19 @@ export default function ImageGenerationPage() {
         onGenerate={async (data) => {
           setIsLoading(true);
           setError(null);
+          setErrorJobId(undefined);
 
           try {
             const result = await characterConceptSheet(data, { model, ratio, quality, quantity });
             setResults((prev) => [result, ...prev]);
             setIsCharacterModalOpen(false);
-          } catch {
-            setError('캐릭터 생성에 실패했어요. 다시 시도해주세요.');
+          } catch (err) {
+            if (err instanceof JobFailedError) {
+              setError(err.message);
+              setErrorJobId(err.jobId);
+            } else {
+              setError('캐릭터 생성에 실패했어요. 다시 시도해주세요.');
+            }
           } finally {
             setIsLoading(false);
           }

@@ -20,6 +20,7 @@ interface GenerateVideoJob {
   falResponseUrl: string | null;
   inputMediaFileId: number;
   resultMediaFileId: number | null;
+  errorMessage: string | null;
   submittedAt: string | null;
   completedAt: string | null;
   createdAt: string;
@@ -100,7 +101,15 @@ export async function generateVideo(
       );
       const jobData = statusResponse.data.data;
 
+<<<<<<< HEAD
       return { status: jobData.status, data: jobData };
+=======
+      return {
+        status: jobData.status,
+        data: jobData,
+        errorMessage: jobData.errorMessage ?? undefined,
+      };
+>>>>>>> main
     },
     { intervalMs: 5000, timeoutMs: 900000, jobId }
   );
