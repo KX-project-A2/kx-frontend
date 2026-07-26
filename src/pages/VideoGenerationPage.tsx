@@ -30,6 +30,7 @@ import {
 import { KLING_REFERENCE_TO_VIDEO, validateVideoOptions } from '@/utils/videoOptionValidator';
 import { VIDEO_MODELS, type Artwork } from '@/constants/mockData';
 import { findOptionForRestore } from '@/utils/restoreOption';
+import { JobFailedError } from '@/utils/pollJob';
 import { validateImageFile } from '@/utils/validateImageFile';
 
 const REFERENCE_IMAGE_MAX_MB = 50;
@@ -92,6 +93,7 @@ export default function VideoGenerationPage() {
   const [results, setResults] = useState<VideoGenerationResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errorJobId, setErrorJobId] = useState<number | undefined>(undefined);
   const [selectedArt, setSelectedArt] = useState<Artwork | null>(null);
 
   const referencePreviewUrls = useObjectUrls(referenceImages);
@@ -180,7 +182,7 @@ export default function VideoGenerationPage() {
 
     const qualityOption = findOptionForRestore(
       capability.qualityOptions,
-     editArt.qualityRaw,
+      editArt.qualityRaw,
       mapQualityToResolution
     );
     if (qualityOption) setQuality(qualityOption);
@@ -191,7 +193,7 @@ export default function VideoGenerationPage() {
     toVideoValidationInput(prompt.trim(), { model, length, ratio, quality })
   );
 
-const handleAddStoryboardImage = async (file: File) => {
+  const handleAddStoryboardImage = async (file: File) => {
     const validation = await validateImageFile(file, REFERENCE_IMAGE_MAX_MB);
     if (!validation.valid) {
       setError(validation.reason);
@@ -212,7 +214,6 @@ const handleAddStoryboardImage = async (file: File) => {
     if (used >= capability.maxReferenceImages) return;
     addReferenceImage(file);
   };
-  };
 
   const handleRemoveReference = (index: number) => {
     if (seedReference && index === 0) {
@@ -228,11 +229,13 @@ const handleAddStoryboardImage = async (file: File) => {
 
     if (capability.requiresReferenceImages && usedReferenceCount === 0 && !hasStoryboard) {
       setError('참조 이미지가 필요해요. 레퍼런스 또는 스토리보드 이미지를 추가해주세요.');
+      setErrorJobId(undefined);
       return;
     }
 
     setIsLoading(true);
     setError(null);
+    setErrorJobId(undefined);
 
     try {
       let startMediaFileId: number | null = null;
@@ -261,8 +264,13 @@ const handleAddStoryboardImage = async (file: File) => {
         referenceMediaFileIds
       );
       setResults((prev) => [result, ...prev]);
-    } catch {
-      setError('영상 생성에 실패했어요. 다시 시도해주세요.');
+    } catch (err) {
+      if (err instanceof JobFailedError) {
+        setError(err.message);
+        setErrorJobId(err.jobId);
+      } else {
+        setError('영상 생성에 실패했어요. 다시 시도해주세요.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -352,7 +360,7 @@ const handleAddStoryboardImage = async (file: File) => {
           disabled={isLoading || (!!prompt.trim() && !!validationError)}
         />
 
-        {error && <ErrorMessage message={error} onRetry={handleGenerate} />}
+        {error && <ErrorMessage message={error} jobId={errorJobId} onRetry={handleGenerate} />}
         {!error && prompt.trim() && validationError && <ErrorMessage message={validationError} />}
 
         {isLoading && (

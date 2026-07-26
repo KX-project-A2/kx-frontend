@@ -26,6 +26,7 @@ import { characterConceptSheet, generateImage, mapQualityToBE } from '@/services
 import type { GenerationResult } from '@/types/generation';
 import { toGenGroup } from '@/utils/generationAdapter';
 import { findOptionForRestore } from '@/utils/restoreOption';
+import { JobFailedError } from '@/utils/pollJob';
 import { validateImageFile } from '@/utils/validateImageFile';
 import { IMAGE_QUALITIES, type Artwork } from '@/constants/mockData';
 
@@ -63,6 +64,7 @@ export default function ImageGenerationPage() {
   const [results, setResults] = useState<GenerationResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errorJobId, setErrorJobId] = useState<number | undefined>(undefined);
   const [selectedArt, setSelectedArt] = useState<Artwork | null>(null);
   const [isCharacterModalOpen, setIsCharacterModalOpen] = useState(false);
 
@@ -92,7 +94,7 @@ export default function ImageGenerationPage() {
   useRevokeObjectUrls(results.flatMap((result) => result.images.map((image) => image.url)));
   const referencePreviewUrls = useObjectUrls(references);
 
-const handleAddReference = async (file: File) => {
+  const handleAddReference = async (file: File) => {
     const validation = await validateImageFile(file, REFERENCE_IMAGE_MAX_MB);
     if (!validation.valid) {
       setError(validation.reason);
@@ -101,7 +103,6 @@ const handleAddReference = async (file: File) => {
     setError(null);
     if (references.length >= MAX_REFERENCES) return;
     addReference(file);
-  };
   };
 
   const handleRemoveReference = (index: number) => {
@@ -113,6 +114,7 @@ const handleAddReference = async (file: File) => {
 
     setIsLoading(true);
     setError(null);
+    setErrorJobId(undefined);
 
     try {
       const result = await generateImage(
@@ -121,8 +123,13 @@ const handleAddReference = async (file: File) => {
         { purpose, promptCorrectionEnabled: correction, references }
       );
       setResults((prev) => [result, ...prev]);
-    } catch {
-      setError('이미지 생성에 실패했어요. 다시 시도해주세요.');
+    } catch (err) {
+      if (err instanceof JobFailedError) {
+        setError(err.message);
+        setErrorJobId(err.jobId);
+      } else {
+        setError('이미지 생성에 실패했어요. 다시 시도해주세요.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -209,7 +216,7 @@ const handleAddReference = async (file: File) => {
           disabled={purpose === '캐릭터시트'}
         />
 
-        {error && <ErrorMessage message={error} onRetry={handleGenerate} />}
+        {error && <ErrorMessage message={error} jobId={errorJobId} onRetry={handleGenerate} />}
 
         {isLoading && (
           <div className="flex flex-col items-center justify-center gap-3 py-4">
@@ -244,13 +251,19 @@ const handleAddReference = async (file: File) => {
         onGenerate={async (data) => {
           setIsLoading(true);
           setError(null);
+          setErrorJobId(undefined);
 
           try {
             const result = await characterConceptSheet(data, { model, ratio, quality, quantity });
             setResults((prev) => [result, ...prev]);
             setIsCharacterModalOpen(false);
-          } catch {
-            setError('캐릭터 생성에 실패했어요. 다시 시도해주세요.');
+          } catch (err) {
+            if (err instanceof JobFailedError) {
+              setError(err.message);
+              setErrorJobId(err.jobId);
+            } else {
+              setError('캐릭터 생성에 실패했어요. 다시 시도해주세요.');
+            }
           } finally {
             setIsLoading(false);
           }
