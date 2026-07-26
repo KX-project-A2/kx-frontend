@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Plus } from 'lucide-react';
 import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 import { useNavigate } from 'react-router-dom';
@@ -12,6 +12,7 @@ import EmptyState from '@/components/common/EmptyState';
 import { EXPLORE_CATEGORY_CHIPS, PRESET_CATALOG, type Artwork } from '@/constants/mockData';
 import { fetchRecentWorks } from '@/services/library';
 import { downloadFile } from '@/utils/downloadFile';
+import { shuffle } from '@/utils/shuffle';
 
 const INTRO_POSTER =
   'https://images.unsplash.com/photo-1530318893805-e7e1d466bd40?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1600';
@@ -34,7 +35,8 @@ export default function Home() {
   const [recentError, setRecentError] = useState<string | null>(null);
   const heroRef = useRef<HTMLElement>(null);
 
-  const items = PRESET_CATALOG.filter((art) => art.type === tab);
+  const shuffledPresetCatalog = useMemo(() => shuffle(PRESET_CATALOG), []);
+  const items = shuffledPresetCatalog.filter((art) => art.type === tab);
   const filteredItems =
     selectedCategory === null ? items : items.filter((art) => art.category === selectedCategory);
   const visibleItems = filteredItems.slice(0, visibleCount);
