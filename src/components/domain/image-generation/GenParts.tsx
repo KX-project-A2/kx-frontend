@@ -37,7 +37,7 @@ export function ModeTabs({ variant }: { variant: 'image' | 'video' }) {
       id: 'prompt' as const,
       label: variant === 'image' ? '역프롬프트' : '프롬프트',
       icon: PenLine,
-      to: null,
+      to: variant === 'image' ? '/reverse-prompt' : null,
     },
   ];
 
