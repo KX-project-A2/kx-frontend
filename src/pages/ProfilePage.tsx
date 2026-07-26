@@ -23,8 +23,10 @@ import {
   type GenerationSummary,
 } from '@/services/me';
 import { formatDate } from '@/utils/formatDate';
+import { validateImageFile } from '@/utils/validateImageFile';
 
 const DEFAULT_AVATAR = '/assets/profile/mock-avatar.png';
+const PROFILE_IMAGE_MAX_MB = 10;
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -68,8 +70,14 @@ export default function ProfilePage() {
     e.target.value = '';
     if (!file) return;
 
-    setIsUploadingImage(true);
     setProfileError(null);
+    const validation = await validateImageFile(file, PROFILE_IMAGE_MAX_MB);
+    if (!validation.valid) {
+      setProfileError(validation.reason);
+      return;
+    }
+
+    setIsUploadingImage(true);
     try {
       const updated = await uploadProfileImage(file);
       setAuthenticated(updated);
