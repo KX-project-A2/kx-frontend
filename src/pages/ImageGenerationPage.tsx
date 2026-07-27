@@ -22,7 +22,13 @@ import { useGenerationOptionsStore } from '@/hooks/useGenerationOptionsStore';
 import { useImageDraftStore } from '@/hooks/useImageDraftStore';
 import { useRevokeObjectUrls } from '@/hooks/useRevokeObjectUrls';
 import { useObjectUrls } from '@/hooks/useObjectUrls';
-import { characterConceptSheet, generateImage, mapQualityToBE } from '@/services/imageGeneration';
+import {
+  characterConceptSheet,
+  fetchActiveImageJob,
+  generateImage,
+  mapQualityToBE,
+  resumeImageJob,
+} from '@/services/imageGeneration';
 import type { GenerationResult } from '@/types/generation';
 import { toGenGroup } from '@/utils/generationAdapter';
 import { findOptionForRestore } from '@/utils/restoreOption';
@@ -90,6 +96,41 @@ export default function ImageGenerationPage() {
     if (nextPrompt !== undefined) setPrompt(nextPrompt);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- editArt/initialPrompt로 진입 시에만 실행
   }, [editArt?.id, initialPrompt]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchActiveImageJob().then((activeJob) => {
+      if (!activeJob || cancelled) return;
+
+      setIsLoading(true);
+      setError(null);
+      setErrorJobId(undefined);
+
+      resumeImageJob(activeJob.jobId, activeJob.prompt)
+        .then((result) => {
+          if (cancelled) return;
+          setResults((prev) => [result, ...prev]);
+        })
+        .catch((err) => {
+          if (cancelled) return;
+          if (err instanceof JobFailedError) {
+            setError(err.message);
+            setErrorJobId(err.jobId);
+          } else {
+            setError('이미지 생성에 실패했어요. 다시 시도해주세요.');
+          }
+        })
+        .finally(() => {
+          if (cancelled) return;
+          setIsLoading(false);
+        });
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useRevokeObjectUrls(results.flatMap((result) => result.images.map((image) => image.url)));
   const referencePreviewUrls = useObjectUrls(references);

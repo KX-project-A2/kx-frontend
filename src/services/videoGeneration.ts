@@ -53,6 +53,54 @@ export async function uploadReferenceImage(file: File): Promise<number> {
   return response.data.data.mediaFileId;
 }
 
+async function pollVideoJobToResult(
+  jobId: number,
+  prompt: string,
+  duration: string
+): Promise<VideoGenerationResult> {
+  const job = await pollJob<GenerateVideoJob>(
+    async () => {
+      const statusResponse = await axiosInstance.get<ApiResponse<GenerateVideoJob>>(
+        `/api/generate/videos/jobs/${jobId}`
+      );
+
+      console.log(
+        '[pollVideoJobToResult] job status response',
+        JSON.stringify(statusResponse.data, null, 2)
+      );
+      const jobData = statusResponse.data.data;
+
+      return {
+        status: jobData.status,
+        data: jobData,
+        errorMessage: jobData.errorMessage ?? undefined,
+      };
+    },
+    { intervalMs: 5000, timeoutMs: 900000, jobId }
+  );
+
+  console.log('[pollVideoJobToResult] COMPLETED job - url candidates', {
+    falResponseUrl: job.falResponseUrl,
+    resultFilePath: job.resultFilePath,
+  });
+  let videoUrl = '';
+  if (job.resultMediaFileId) {
+    const downloadResponse = await axiosInstance.get<
+      ApiResponse<{ downloadUrl: string; expiresInSeconds: number }>
+    >(`/api/media/files/${job.resultMediaFileId}/download-url`);
+    videoUrl = downloadResponse.data.data.downloadUrl;
+  }
+
+  return {
+    id: String(jobId),
+    prompt,
+    videoUrl,
+    duration,
+    createdAt: new Date().toISOString(),
+    mediaFileId: job.resultMediaFileId ?? undefined,
+  };
+}
+
 export async function generateVideo(
   prompt: string,
   options: VideoGenerationOptions,
@@ -89,45 +137,20 @@ export async function generateVideo(
   console.log('[generateVideo] create response', JSON.stringify(createResponse.data, null, 2));
   const { id: jobId } = createResponse.data.data;
 
-  const job = await pollJob<GenerateVideoJob>(
-    async () => {
-      const statusResponse = await axiosInstance.get<ApiResponse<GenerateVideoJob>>(
-        `/api/generate/videos/jobs/${jobId}`
-      );
+  return pollVideoJobToResult(jobId, prompt, toDuration(options.length));
+}
 
-      console.log(
-        '[generateVideo] job status response',
-        JSON.stringify(statusResponse.data, null, 2)
-      );
-      const jobData = statusResponse.data.data;
-
-      return {
-        status: jobData.status,
-        data: jobData,
-        errorMessage: jobData.errorMessage ?? undefined,
-      };
-    },
-    { intervalMs: 5000, timeoutMs: 900000, jobId }
+export async function fetchActiveVideoJob(): Promise<{ jobId: number; prompt: string } | null> {
+  const response = await axiosInstance.get<ApiResponse<{ id: number; prompt: string }[]>>(
+    '/api/generate/videos/jobs/active'
   );
+  const jobs = response.data.data;
+  if (jobs.length === 0) return null;
 
-  console.log('[generateVideo] COMPLETED job - url candidates', {
-    falResponseUrl: job.falResponseUrl,
-    resultFilePath: job.resultFilePath,
-  });
-  let videoUrl = '';
-  if (job.resultMediaFileId) {
-    const downloadResponse = await axiosInstance.get<
-      ApiResponse<{ downloadUrl: string; expiresInSeconds: number }>
-    >(`/api/media/files/${job.resultMediaFileId}/download-url`);
-    videoUrl = downloadResponse.data.data.downloadUrl;
-  }
+  const { id: jobId, prompt } = jobs[0];
+  return { jobId, prompt };
+}
 
-  return {
-    id: String(jobId),
-    prompt,
-    videoUrl,
-    duration: toDuration(options.length),
-    createdAt: new Date().toISOString(),
-    mediaFileId: job.resultMediaFileId ?? undefined,
-  };
+export async function resumeVideoJob(jobId: number, prompt: string): Promise<VideoGenerationResult> {
+  return pollVideoJobToResult(jobId, prompt, '');
 }

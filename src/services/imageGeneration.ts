@@ -66,6 +66,39 @@ export async function fetchImageBlobUrl(mediaFileId: number): Promise<string> {
   }
 }
 
+async function pollImageJobToResult(jobId: number, prompt: string): Promise<GenerationResult> {
+  const resultImages = await pollJob<{ mediaFileId: number; filePath: string }[]>(
+    async () => {
+      const statusResponse = await axiosInstance.get<ApiResponse<GenerateImageJob>>(
+        `/api/generate/images/jobs/${jobId}`
+      );
+
+      console.log(
+        '[pollImageJobToResult] job status response',
+        JSON.stringify(statusResponse.data, null, 2)
+      );
+      const { status, resultImages, errorMessage } = statusResponse.data.data;
+
+      return { status, data: resultImages, errorMessage: errorMessage ?? undefined };
+    },
+    { intervalMs: 5000, timeoutMs: 900000, jobId }
+  );
+
+  const images = await Promise.all(
+    resultImages.map(async (image) => ({
+      url: await fetchImageBlobUrl(image.mediaFileId),
+      mediaFileId: image.mediaFileId,
+    }))
+  );
+
+  return {
+    id: String(jobId),
+    prompt,
+    images,
+    createdAt: new Date().toISOString(),
+  };
+}
+
 export async function generateImage(
   prompt: string,
   options: GenerationOptions,
@@ -99,36 +132,22 @@ export async function generateImage(
   console.log('[generateImage] create response', JSON.stringify(createResponse.data, null, 2));
   const { jobId } = createResponse.data.data;
 
-  const resultImages = await pollJob<{ mediaFileId: number; filePath: string }[]>(
-    async () => {
-      const statusResponse = await axiosInstance.get<ApiResponse<GenerateImageJob>>(
-        `/api/generate/images/jobs/${jobId}`
-      );
+  return pollImageJobToResult(jobId, prompt);
+}
 
-      console.log(
-        '[generateImage] job status response',
-        JSON.stringify(statusResponse.data, null, 2)
-      );
-      const { status, resultImages, errorMessage } = statusResponse.data.data;
-
-      return { status, data: resultImages, errorMessage: errorMessage ?? undefined };
-    },
-    { intervalMs: 5000, timeoutMs: 900000, jobId }
+export async function fetchActiveImageJob(): Promise<{ jobId: number; prompt: string } | null> {
+  const response = await axiosInstance.get<ApiResponse<{ jobId: number; prompt: string }[]>>(
+    '/api/generate/images/jobs/active'
   );
+  const jobs = response.data.data;
+  if (jobs.length === 0) return null;
 
-  const images = await Promise.all(
-    resultImages.map(async (image) => ({
-      url: await fetchImageBlobUrl(image.mediaFileId),
-      mediaFileId: image.mediaFileId,
-    }))
-  );
+  const { jobId, prompt } = jobs[0];
+  return { jobId, prompt };
+}
 
-  return {
-    id: String(jobId),
-    prompt,
-    images,
-    createdAt: new Date().toISOString(),
-  };
+export async function resumeImageJob(jobId: number, prompt: string): Promise<GenerationResult> {
+  return pollImageJobToResult(jobId, prompt);
 }
 
 export async function characterConceptSheet(

@@ -16,7 +16,12 @@ import { useVideoGenerationOptionsStore } from '@/hooks/useVideoGenerationOption
 import { useVideoDraftStore } from '@/hooks/useVideoDraftStore';
 import { useObjectUrls } from '@/hooks/useObjectUrls';
 import { fetchImageBlobUrl } from '@/services/imageGeneration';
-import { generateVideo, uploadReferenceImage } from '@/services/videoGeneration';
+import {
+  fetchActiveVideoJob,
+  generateVideo,
+  resumeVideoJob,
+  uploadReferenceImage,
+} from '@/services/videoGeneration';
 import type { VideoGenerationResult } from '@/types/generation';
 import { toVideoGenGroup } from '@/utils/generationAdapter';
 import {
@@ -188,6 +193,41 @@ export default function VideoGenerationPage() {
     if (qualityOption) setQuality(qualityOption);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- editArt로 재편집 진입 시에만 실행
   }, [editArt?.id]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchActiveVideoJob().then((activeJob) => {
+      if (!activeJob || cancelled) return;
+
+      setIsLoading(true);
+      setError(null);
+      setErrorJobId(undefined);
+
+      resumeVideoJob(activeJob.jobId, activeJob.prompt)
+        .then((result) => {
+          if (cancelled) return;
+          setResults((prev) => [result, ...prev]);
+        })
+        .catch((err) => {
+          if (cancelled) return;
+          if (err instanceof JobFailedError) {
+            setError(err.message);
+            setErrorJobId(err.jobId);
+          } else {
+            setError('영상 생성에 실패했어요. 다시 시도해주세요.');
+          }
+        })
+        .finally(() => {
+          if (cancelled) return;
+          setIsLoading(false);
+        });
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const validationError = validateVideoOptions(
     toVideoValidationInput(prompt.trim(), { model, length, ratio, quality })
@@ -364,8 +404,11 @@ export default function VideoGenerationPage() {
         {!error && prompt.trim() && validationError && <ErrorMessage message={validationError} />}
 
         {isLoading && (
-          <div className="flex justify-center py-4">
+          <div className="flex flex-col items-center justify-center gap-3 py-4">
             <LoadingSpinner size="md" />
+            <p className="text-body text-content-secondary">
+              영상 생성 중입니다. 최대 10분 정도 걸릴 수 있어요.
+            </p>
           </div>
         )}
 
