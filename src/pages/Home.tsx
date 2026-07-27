@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Plus } from 'lucide-react';
+import { ChevronDown, ChevronUp, Plus } from 'lucide-react';
 import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 import { useNavigate } from 'react-router-dom';
 import { Button, Chip, Panel, Tabs } from '@/components/common/ui';
@@ -21,11 +21,45 @@ const INTRO_POSTER =
 const EXPLORE_GRID_COLUMNS = 3;
 const EXPLORE_PAGE_SIZE = EXPLORE_GRID_COLUMNS * 4;
 
+const SECTION_IDS = ['hero', 'explore', 'tutorial', 'recent'] as const;
+type SectionId = (typeof SECTION_IDS)[number];
+
+/** 각 섹션 자체의 상/하단 경계에 붙는 스크롤 화살표. 현재 뷰포트에 있는 섹션의 화살표만 보인다. */
+function ScrollArrow({
+  direction,
+  visible,
+  onClick,
+  offsetClassName,
+}: {
+  direction: 'up' | 'down';
+  visible: boolean;
+  onClick: () => void;
+  /** 기본 top-4/bottom-4 대신 쓸 위치 클래스 — 섹션 안에 다른 요소와 겹치는 경우에만 지정 */
+  offsetClassName?: string;
+}) {
+  if (!visible) return null;
+  const Icon = direction === 'up' ? ChevronUp : ChevronDown;
+
+  return (
+    <button
+      type="button"
+      aria-label={direction === 'up' ? '이전 섹션으로 스크롤' : '다음 섹션으로 스크롤'}
+      onClick={onClick}
+      className={`absolute left-1/2 z-10 flex h-11 w-11 -translate-x-1/2 items-center justify-center rounded-full transition-all duration-200 hover:scale-110 hover:border-[#f5c0ff] hover:text-[#f5c0ff] ${
+        offsetClassName ?? (direction === 'up' ? 'top-4' : 'bottom-4')
+      }`}
+      style={{ border: '1px solid rgba(255,255,255,0.3)', background: 'rgba(1,1,1,0.4)' }}
+    >
+      <Icon size={22} />
+    </button>
+  );
+}
+
 export default function Home() {
   const navigate = useNavigate();
   const [tab, setTab] = useState('image');
   const [prompt, setPrompt] = useState('');
-  const [heroInView, setHeroInView] = useState(true);
+  const [activeSection, setActiveSection] = useState<SectionId>('hero');
 
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [visibleCount, setVisibleCount] = useState(EXPLORE_PAGE_SIZE);
@@ -34,6 +68,15 @@ export default function Home() {
   const [recentLoading, setRecentLoading] = useState(true);
   const [recentError, setRecentError] = useState<string | null>(null);
   const heroRef = useRef<HTMLElement>(null);
+  const exploreRef = useRef<HTMLElement>(null);
+  const tutorialRef = useRef<HTMLElement>(null);
+  const recentRef = useRef<HTMLElement>(null);
+  const sectionRefs: Record<SectionId, React.RefObject<HTMLElement | null>> = {
+    hero: heroRef,
+    explore: exploreRef,
+    tutorial: tutorialRef,
+    recent: recentRef,
+  };
 
   const shuffledPresetCatalog = useMemo(() => shuffle(PRESET_CATALOG), []);
   const items = shuffledPresetCatalog.filter((art) => art.type === tab);
@@ -46,6 +89,10 @@ export default function Home() {
 
   const handleOpen = (art: Artwork) => {
     setSelectedArt(art);
+  };
+
+  const scrollToSection = (id: SectionId) => {
+    sectionRefs[id].current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   useEffect(() => {
@@ -68,21 +115,59 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const node = heroRef.current;
-    if (!node) return;
-    // 히어로 섹션이 뷰포트에서 완전히 벗어나면(스크롤로 지나가면) fixed 배경 영상을 숨김
-    const observer = new IntersectionObserver(([entry]) => setHeroInView(entry.isIntersecting), {
-      threshold: 0,
-    });
-    observer.observe(node);
-    return () => observer.disconnect();
+    const nodes = SECTION_IDS.map((id) => [id, sectionRefs[id].current] as const).filter(
+      ([, node]) => node
+    );
+    const scrollContainer = heroRef.current?.closest('main');
+
+    // 마지막(또는 첫) 섹션이 뷰포트 절반보다 짧으면 중앙 감지선이 그 섹션을 절대 지나가지 못할
+    // 수 있다(예: "최근 생성한 작품" 결과가 적어 섹션이 짧은 경우) — 스크롤 맨 끝/처음에서는
+    // 감지선 판정보다 이 경계값을 우선한다. observer 콜백과 scroll 리스너 양쪽에서 똑같이
+    // 확인해서, 둘 중 어느 게 나중에 실행되더라도 결과가 엇갈리지 않게 한다.
+    const resolveBoundaryOverride = (): SectionId | null => {
+      if (!scrollContainer) return null;
+      const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
+      if (scrollTop + clientHeight >= scrollHeight - 2) return 'recent';
+      if (scrollTop <= 0) return 'hero';
+      return null;
+    };
+
+    // rootMargin으로 뷰포트 중앙에 높이 0인 감지선을 만들어, 섹션 높이가 뷰포트보다 크거나
+    // 작아도 "화면 중앙에 걸쳐 있는 섹션 하나"만 명확히 판별한다(스크롤스파이 패턴).
+    const observer = new IntersectionObserver(
+      (observedEntries) => {
+        const boundary = resolveBoundaryOverride();
+        if (boundary) {
+          setActiveSection(boundary);
+          return;
+        }
+        const hit = observedEntries.find((entry) => entry.isIntersecting);
+        if (!hit) return;
+        const match = nodes.find(([, node]) => node === hit.target);
+        if (match) setActiveSection(match[0]);
+      },
+      { rootMargin: '-50% 0px -50% 0px' }
+    );
+    nodes.forEach(([, node]) => observer.observe(node as Element));
+
+    const handleScroll = () => {
+      const boundary = resolveBoundaryOverride();
+      if (boundary) setActiveSection(boundary);
+    };
+    scrollContainer?.addEventListener('scroll', handleScroll, { passive: true });
+
+    return () => {
+      observer.disconnect();
+      scrollContainer?.removeEventListener('scroll', handleScroll);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- 섹션 ref는 마운트 후 고정, 최초 1회만 관찰 시작
   }, []);
 
   return (
     <>
       {/* 홈 전용 풀스크린 배경 영상 — fixed(사이드바 뒤 full-bleed 유지) + 히어로 섹션이 뷰포트에서
           벗어나면 IntersectionObserver로 숨겨서 "1화면만 채우고 스크롤하면 사라짐" 구현 */}
-      {heroInView && (
+      {activeSection === 'hero' && (
         <div className="fixed inset-0 -z-10">
           <video
             className="absolute inset-0 h-full w-full object-cover"
@@ -117,7 +202,7 @@ export default function Home() {
         {/* ① hero + prompt */}
         <section
           ref={heroRef}
-          className="flex h-screen flex-col items-center gap-14 py-75 text-center"
+          className="relative flex h-screen flex-col items-center gap-14 py-75 text-center"
         >
           <div className="relative z-10 flex flex-col items-center gap-6">
             <div className="flex items-center gap-2">
@@ -165,10 +250,16 @@ export default function Home() {
               생성
             </Button>
           </div>
+
+          <ScrollArrow
+            direction="down"
+            visible={activeSection === 'hero'}
+            onClick={() => scrollToSection('explore')}
+          />
         </section>
 
         {/* ② 탐색하기 */}
-        <section className="flex flex-col gap-6">
+        <section ref={exploreRef} className="relative flex flex-col gap-6">
           <div className="flex items-center gap-4">
             <h2 className="text-h1-section text-content">탐색하기</h2>
             <Tabs
@@ -258,10 +349,23 @@ export default function Home() {
               )}
             </div>
           )}
+
+          <ScrollArrow
+            direction="up"
+            visible={activeSection === 'explore'}
+            onClick={() => scrollToSection('hero')}
+          />
+          <ScrollArrow
+            direction="down"
+            visible={activeSection === 'explore'}
+            onClick={() => scrollToSection('tutorial')}
+            // "더보기" 버튼(bottom-6, 높이 48px)과 겹치지 않도록 그만큼 더 아래로(섹션 밖 여백으로) 내림
+            offsetClassName="-bottom-8"
+          />
         </section>
 
         {/* ③ 서비스 소개 영상 */}
-        <section className="flex flex-col gap-6">
+        <section ref={tutorialRef} className="relative flex flex-col gap-6">
           <h2 className="text-h1-section text-content">AI 튜토리얼</h2>
           <Panel level={1} bordered className="relative overflow-hidden">
             <ImageWithFallback
@@ -271,10 +375,21 @@ export default function Home() {
               style={{ aspectRatio: '16 / 9' }}
             />
           </Panel>
+
+          <ScrollArrow
+            direction="up"
+            visible={activeSection === 'tutorial'}
+            onClick={() => scrollToSection('explore')}
+          />
+          <ScrollArrow
+            direction="down"
+            visible={activeSection === 'tutorial'}
+            onClick={() => scrollToSection('recent')}
+          />
         </section>
 
         {/* ④ 최근 생성한 작품 */}
-        <section className="flex flex-col gap-6">
+        <section ref={recentRef} className="relative flex flex-col gap-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <h2 className="text-h1-section text-content">최근 생성한 작품</h2>
@@ -319,6 +434,12 @@ export default function Home() {
               ))}
             </div>
           )}
+
+          <ScrollArrow
+            direction="up"
+            visible={activeSection === 'recent'}
+            onClick={() => scrollToSection('tutorial')}
+          />
         </section>
 
         <DetailModal art={selectedArt} onClose={() => setSelectedArt(null)} />
