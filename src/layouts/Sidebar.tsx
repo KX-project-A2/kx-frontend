@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { Home, Image as ImageIcon, Library, Video } from 'lucide-react';
-import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import Logo from '@/components/common/Logo';
 import { useAuthStore } from '@/hooks/useAuthStore';
 
@@ -12,39 +13,42 @@ const NAV = [
 
 const DEFAULT_AVATAR = '/assets/profile/mock-avatar.png';
 
-// 이미지/영상 생성 화면은 캔버스 자리를 확보하기 위해 사이드바를 자동으로 접는다.
-const COLLAPSE_ROUTES = ['/image', '/video'];
-
 export default function Sidebar() {
   const navigate = useNavigate();
-  const { pathname } = useLocation();
-  const collapsed = COLLAPSE_ROUTES.includes(pathname);
+  const [collapsed, setCollapsed] = useState(true);
   const profile = useAuthStore((state) => state.profile);
 
   return (
     <aside
+      onMouseEnter={() => setCollapsed(false)}
+      onMouseLeave={() => setCollapsed(true)}
       className={`relative h-screen shrink-0 transition-[width] ${
-        collapsed ? 'w-[121px] duration-200 ease-out' : 'w-[332px] duration-150 ease-[cubic-bezier(0.16,1,0.3,1)]'
+        collapsed ? 'w-[121px] duration-300 ease-out' : 'w-[332px] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]'
       }`}
     >
       <div
-        className={`absolute flex flex-col justify-between rounded-[40px] border border-stroke-soft px-5 py-10 shadow-[0_2px_2px_0_rgba(255,255,255,0.15)_inset,0_2px_10px_0_rgba(0,0,0,0.25)] ${
+        className={`absolute flex flex-col justify-between rounded-[40px] border border-stroke-soft px-5 py-10 shadow-[0_2px_2px_0_rgba(255,255,255,0.15)_inset,0_2px_10px_0_rgba(0,0,0,0.25)] transition-all ${
           collapsed
-            ? 'left-[25px] top-[45px] h-[990px] w-[96px] bg-black'
-            : 'left-[31px] top-[43px] h-[990px] w-[300px] bg-[rgba(1,1,1,0.30)]'
+            ? 'left-[25px] top-[45px] bottom-[45px] w-[96px] bg-black duration-300 ease-out'
+            : 'left-[31px] top-[43px] bottom-[43px] w-[300px] bg-[rgba(1,1,1,0.30)] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]'
         }`}
       >
         <div className="flex flex-col gap-8">
+          {/* 로고 영역은 접힘/펼침에서 서로 다른 에셋(작은 아이콘 vs 워드마크)을 쓰지만,
+              nav가 항상 같은 위치에서 시작하도록 두 상태 모두 h-[60px]로 높이를 맞춘다. */}
           {collapsed ? (
-            <div className="flex justify-center">
+            <div className="flex h-[60px] items-center justify-center">
               <img src="/assets/logo/small.png" alt="GeNova" className="h-9 w-9" />
             </div>
           ) : (
-            <div className="px-1.5">
+            <div className="flex h-[60px] items-center px-1.5">
               <Logo />
             </div>
           )}
-          <nav className="flex flex-col gap-1">
+          {/* 접힘 상태의 nav 아이템(h-11)은 펼침 상태(h-[60px])보다 낮아 gap-1이 동일해도
+              행 간 실제 간격(pitch)이 좁아 보인다. gap-[25px]는 펼침 상태 기준 pitch(63.5px)에
+              맞춘 보정값. */}
+          <nav className={`flex flex-col ${collapsed ? 'gap-[25px]' : 'gap-1'}`}>
             {NAV.map(({ to, label, icon: Icon }) => (
               <NavLink
                 key={to}
