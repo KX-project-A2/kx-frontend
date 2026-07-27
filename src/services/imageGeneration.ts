@@ -164,6 +164,7 @@ export async function characterConceptSheet(
     hairColor: string;
     expression: string;
     eyeColor: string;
+    eyeCharacteristic: string;
     outfitGenre: string;
     outfitColor: string;
     accessories: string[];
@@ -181,6 +182,7 @@ export async function characterConceptSheet(
     hairStyle: data.hairStyle,
     hairColor: data.hairColor,
     eyeColor: data.eyeColor,
+    eyeCharacteristic: data.eyeCharacteristic,
     expression: data.expression,
     outfitGenre: data.outfitGenre,
     outfitColor: data.outfitColor,
