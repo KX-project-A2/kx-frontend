@@ -255,6 +255,7 @@ export default function Home() {
             direction="down"
             visible={activeSection === 'hero'}
             onClick={() => scrollToSection('explore')}
+            offsetClassName="bottom-16"
           />
         </section>
 
