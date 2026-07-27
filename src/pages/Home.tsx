@@ -11,7 +11,7 @@ import ErrorMessage from '@/components/common/ErrorMessage';
 import EmptyState from '@/components/common/EmptyState';
 import { EXPLORE_CATEGORY_CHIPS, PRESET_CATALOG, type Artwork } from '@/constants/mockData';
 import { fetchRecentWorks } from '@/services/library';
-import { downloadFile } from '@/utils/downloadFile';
+import { buildDownloadFilename, downloadFile } from '@/utils/downloadFile';
 import { shuffle } from '@/utils/shuffle';
 
 const INTRO_POSTER =
@@ -311,7 +311,9 @@ export default function Home() {
                   onOpen={() => handleOpen(art)}
                   showToVideo={art.type === 'image'}
                   onDownload={
-                    art.type === 'image' ? () => downloadFile(art.url, `${art.id}.jpg`) : undefined
+                    art.type === 'image'
+                      ? () => downloadFile(art.url, buildDownloadFilename(art))
+                      : undefined
                   }
                 />
               ))}

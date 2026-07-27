@@ -1,12 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Download, Link2, Pencil, Play, Trash2, Video as VideoIcon } from 'lucide-react';
+import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Badge, Button, Select, Tabs } from '@/components/common/ui';
 import { ResultCard } from '@/components/domain/library/ResultCard';
 import ImageWithFallback from '@/components/common/ImageWithFallback';
-import VideoWithFallback, {
-  type VideoWithFallbackHandle,
-} from '@/components/common/VideoWithFallback';
+import VideoWithFallback from '@/components/common/VideoWithFallback';
 import { DetailModal } from '@/components/common/DetailModal';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
@@ -17,11 +16,11 @@ import { generateImage } from '@/services/imageGeneration';
 import { generateVideo } from '@/services/videoGeneration';
 import { deleteMediaFile, fetchLibraryItems } from '@/services/library';
 import { useLikesStore } from '@/stores/useLikesStore';
-import { downloadFile } from '@/utils/downloadFile';
+import { buildDownloadFilename, downloadFile } from '@/utils/downloadFile';
 import { formatDate } from '@/utils/formatDate';
 import { toGenGroup, toVideoGenGroup } from '@/utils/generationAdapter';
 
-const SORTS = ['최신순', '오래된순', '좋아요순'];
+const SORTS = ['최신순', '오래된순'];
 const SCOPES: { id: 'mine' | 'liked'; label: string }[] = [
   { id: 'mine', label: '내 작업' },
   { id: 'liked', label: '찜한 목록' },
@@ -40,8 +39,6 @@ export default function Library() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [regeneratingId, setRegeneratingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const videoRef = useRef<VideoWithFallbackHandle>(null);
-  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const likeOverrides = useLikesStore((s) => s.overrides);
 
@@ -64,10 +61,6 @@ export default function Library() {
     };
   }, []);
 
-  useEffect(() => {
-    setIsVideoPlaying(false);
-  }, [selected?.id]);
-
   useRevokeObjectUrls(items.filter((a) => a.url.startsWith('blob:')).map((a) => a.url));
 
   const isLiked = (a: Artwork) => likeOverrides[a.id]?.liked ?? a.favorite ?? a.liked ?? false;
@@ -78,7 +71,6 @@ export default function Library() {
     .sort((a, b) => {
       if (sort === '오래된순')
         return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-      if (sort === '좋아요순') return (b.likes ?? 0) - (a.likes ?? 0);
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(); // 최신순 기본
     });
 
@@ -203,41 +195,43 @@ export default function Library() {
         ) : visibleItems.length === 0 ? (
           <EmptyState message="아직 항목이 없어요" description="이미지나 영상을 생성해보세요" />
         ) : (
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-            {visibleItems.map((art) => (
-              <div
-                key={art.id}
-                className="rounded-card"
-                style={
-                  art.id === selected?.id
-                    ? { outline: '2px solid var(--selected-border)', outlineOffset: 2 }
-                    : undefined
-                }
-              >
-                <ResultCard
-                  art={art}
-                  onOpen={() => setSelected(art)}
-                  showToVideo={art.type === 'image'}
-                  onCopyPrompt={() => navigator.clipboard.writeText(art.prompt)}
-                  onReedit={() =>
-                    navigate(art.type === 'video' ? '/video' : '/image', {
-                      state: { editArt: art },
-                    })
-                  }
-                  onToVideo={() => navigate('/video', { state: { referenceArt: art } })}
-                  onRegenerate={() => handleRegenerate(art)}
-                  isRegenerating={regeneratingId === art.id}
-                  onDownload={
-                    art.url
-                      ? () =>
-                          downloadFile(art.url, `${art.id}.${art.type === 'video' ? 'mp4' : 'jpg'}`)
+          <ResponsiveMasonry columnsCountBreakPoints={{ 0: 2, 768: 3 }}>
+            <Masonry gutter="16px">
+              {visibleItems.map((art) => (
+                <div
+                  key={art.id}
+                  className="rounded-card"
+                  style={
+                    art.id === selected?.id
+                      ? { outline: '2px solid var(--selected-border)', outlineOffset: 2 }
                       : undefined
                   }
-                  onDelete={() => handleDelete(art)}
-                />
-              </div>
-            ))}
-          </div>
+                >
+                  <ResultCard
+                    art={art}
+                    onOpen={() => {
+                      setSelected(art);
+                      setShowDetailModal(true);
+                    }}
+                    showToVideo={art.type === 'image'}
+                    onCopyPrompt={() => navigator.clipboard.writeText(art.prompt)}
+                    onReedit={() =>
+                      navigate(art.type === 'video' ? '/video' : '/image', {
+                        state: { editArt: art },
+                      })
+                    }
+                    onToVideo={() => navigate('/video', { state: { referenceArt: art } })}
+                    onRegenerate={() => handleRegenerate(art)}
+                    isRegenerating={regeneratingId === art.id}
+                    onDownload={
+                      art.url ? () => downloadFile(art.url, buildDownloadFilename(art)) : undefined
+                    }
+                    onDelete={() => handleDelete(art)}
+                  />
+                </div>
+              ))}
+            </Masonry>
+          </ResponsiveMasonry>
         )}
       </div>
 
@@ -268,13 +262,11 @@ export default function Library() {
                 </div>
               ) : selected.type === 'video' ? (
                 <VideoWithFallback
-                  ref={videoRef}
                   src={selected.url}
                   poster={selected.thumb}
                   alt={selected.prompt}
                   className="w-full object-cover"
                   style={{ aspectRatio: '16 / 9' }}
-                  onPlayingChange={setIsVideoPlaying}
                   disableClickToggle
                 />
               ) : (
@@ -286,14 +278,14 @@ export default function Library() {
                 />
               )}
             </button>
-            {selected.type === 'video' && selected.url && !isVideoPlaying && (
+            {selected.type === 'video' && selected.url && (
               <span
                 className="absolute left-1/2 top-1/2 flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full"
                 style={{
                   background: 'rgba(11,9,18,0.55)',
                   border: '1px solid var(--stroke-strong)',
                 }}
-                onClick={() => videoRef.current?.togglePlay()}
+                onClick={() => setShowDetailModal(true)}
               >
                 <Play size={18} className="translate-x-0.5 text-white" fill="white" />
               </span>
@@ -353,11 +345,9 @@ export default function Library() {
                 className={selected.type === 'video' ? 'col-span-2' : undefined}
                 disabled={selected.type === 'video' && !selected.url}
                 onClick={
-                  selected.type === 'image'
-                    ? () => downloadFile(selected.url, `${selected.id}.jpg`)
-                    : selected.type === 'video' && selected.url
-                      ? () => downloadFile(selected.url, `${selected.id}.mp4`)
-                      : undefined
+                  selected.type === 'image' || (selected.type === 'video' && selected.url)
+                    ? () => downloadFile(selected.url, buildDownloadFilename(selected))
+                    : undefined
                 }
               >
                 다운로드
