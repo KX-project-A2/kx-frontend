@@ -22,10 +22,12 @@ interface GenerateImageJob {
   completedAt: string | null;
 }
 
+/** GPT Image는 정사각/가로/세로 3가지 픽셀 크기만 지원. 1536×1024와 1024×1536은 실제로는
+ * 3:2·2:3 비율이라 라벨도 그에 맞춘다. */
 const RATIO_TO_SIZE: Record<string, string> = {
   '1:1': '1024x1024',
-  '4:3': '1536x1024',
-  '3:4': '1024x1536',
+  '3:2': '1536x1024',
+  '2:3': '1024x1536',
 };
 
 const QUALITY_TO_BE: Record<string, string> = {
@@ -162,9 +164,11 @@ export async function characterConceptSheet(
     hairColor: string;
     expression: string;
     eyeColor: string;
+    eyeCharacteristic: string;
     outfitGenre: string;
     outfitColor: string;
     accessories: string[];
+    additionalPrompt: string;
   },
   options: GenerationOptions
 ): Promise<GenerationResult> {
@@ -178,10 +182,12 @@ export async function characterConceptSheet(
     hairStyle: data.hairStyle,
     hairColor: data.hairColor,
     eyeColor: data.eyeColor,
+    eyeCharacteristic: data.eyeCharacteristic,
     expression: data.expression,
     outfitGenre: data.outfitGenre,
     outfitColor: data.outfitColor,
     accessories: data.accessories,
+    additionalPrompt: data.additionalPrompt,
     imageCount: options.quantity,
     size: mapRatioToSize(options.ratio),
     quality: mapQualityToBE(options.quality),

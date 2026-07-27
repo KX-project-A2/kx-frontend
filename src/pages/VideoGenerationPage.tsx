@@ -282,10 +282,10 @@ export default function VideoGenerationPage() {
       let referenceMediaFileIds: number[] = [];
 
       if (storyboardImage) {
-        referenceMediaFileIds = [await uploadReferenceImage(storyboardImage)];
+        referenceMediaFileIds = [await uploadReferenceImage(storyboardImage, 'storyboard')];
       } else {
         const uploadedIds = await Promise.all(
-          referenceImages.map((file) => uploadReferenceImage(file))
+          referenceImages.map((file) => uploadReferenceImage(file, 'video_reference'))
         );
         if (seedReference && capability.supportsStartImage) {
           startMediaFileId = seedReference.mediaFileId;

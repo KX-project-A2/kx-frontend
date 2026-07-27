@@ -35,7 +35,7 @@ export function ModeTabs({ variant }: { variant: 'image' | 'video' }) {
     { id: 'video' as const, label: '영상', icon: Video, to: '/video' },
     {
       id: 'prompt' as const,
-      label: variant === 'image' ? '역프롬프트' : '프롬프트',
+      label: '역프롬프트',
       icon: PenLine,
       to: variant === 'image' ? '/reverse-prompt' : null,
     },
@@ -46,7 +46,6 @@ export function ModeTabs({ variant }: { variant: 'image' | 'video' }) {
       <div className="flex items-center justify-between">
         {items.map((item) => {
           const active = item.id === variant;
-          const big = variant === 'video' && active;
           return (
             <button
               key={item.id}
@@ -54,22 +53,13 @@ export function ModeTabs({ variant }: { variant: 'image' | 'video' }) {
               disabled={!item.to}
               onClick={() => item.to && navigate(item.to)}
               className={cn(
-                'flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg transition-colors',
-                big ? 'px-4 py-2' : 'px-3 py-2',
+                'flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-2 transition-colors',
                 !item.to && 'cursor-not-allowed opacity-50'
               )}
-              style={
-                active
-                  ? variant === 'video'
-                    ? { background: '#f5c0ff', color: '#4d0071' }
-                    : { background: 'var(--surface-3)', color: '#f5c0ff' }
-                  : { color: '#988e99' }
-              }
+              style={active ? { background: 'var(--surface-3)', color: '#f5c0ff' } : { color: '#988e99' }}
             >
-              <item.icon size={big ? 18 : 16} strokeWidth={2} />
-              <span className={big ? 'text-[16px] font-medium' : 'text-[14px] font-medium'}>
-                {item.label}
-              </span>
+              <item.icon size={16} strokeWidth={2} />
+              <span className="text-[14px] font-medium">{item.label}</span>
             </button>
           );
         })}
@@ -332,6 +322,8 @@ export function ReferenceGrid({
 }
 
 /* Prompt composer: chips (editable settings) + AI correction toggle + generate */
+type PromptChip = string | { label: string; noArrow?: boolean };
+
 export function PromptComposer({
   value,
   onChange,
@@ -344,7 +336,7 @@ export function PromptComposer({
 }: {
   value: string;
   onChange: (v: string) => void;
-  chips: string[];
+  chips: PromptChip[];
   correction?: boolean;
   onCorrectionChange?: (v: boolean) => void;
   onGenerate: () => void;
@@ -379,15 +371,18 @@ export function PromptComposer({
               <Toggle checked={!!correction} onChange={onCorrectionChange} />
             </div>
           )}
-          {chips.map((c) => (
-            <Chip
-              key={c}
-              selected
-              style={{ borderRadius: '100px', background: 'var(--surface-1)', border: 'none' }}
-            >
-              {c} <span className="text-content-muted">▾</span>
-            </Chip>
-          ))}
+          {chips.map((c) => {
+            const chip = typeof c === 'string' ? { label: c, noArrow: false } : c;
+            return (
+              <Chip
+                key={chip.label}
+                selected
+                style={{ borderRadius: '100px', background: 'var(--surface-1)', border: 'none' }}
+              >
+                {chip.label} {!chip.noArrow && <span className="text-content-muted">▾</span>}
+              </Chip>
+            );
+          })}
         </div>
         <Button leftIcon={<Sparkles size={16} />} onClick={onGenerate} disabled={disabled}>
           생성

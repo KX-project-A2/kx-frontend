@@ -49,10 +49,12 @@ const BODY_TYPE_OPTIONS = ['슬림', '보통', '근육질', '통통'] as const;
 const HAIR_LENGTH_OPTIONS = ['숏컷', '단발', '중단발', '장발'] as const;
 const HAIR_STYLE_OPTIONS = ['스트레이트', '웨이브', '컬', '포니테일', '트윈테일'] as const;
 const EXPRESSION_OPTIONS = ['무표정', '미소', '활짝 웃음', '진지함', '놀람'] as const;
+const EYE_CHARACTERISTIC_OPTIONS = ['큰 눈', '날카로운 눈매', '처진 눈', '고양이눈', '둥근 눈'] as const;
 const STYLE_OPTIONS = ['일러스트', '3D', '애니메이션', '실사', '만화'] as const;
 const WORLD_SETTING_OPTIONS = ['현대도시', '판타지', 'SF', '사이버펑크', '동양풍'] as const;
 const OUTFIT_GENRE_OPTIONS = ['캐주얼', 'SF/사이버펑크', '판타지', '스쿨', '밀리터리'] as const;
 const ACCESSORY_OPTIONS = ['안경', '모자', '귀걸이', '목걸이', '스카프'] as const;
+const ADDITIONAL_PROMPT_MAX_LENGTH = 2000;
 
 export interface CharacterSheetFormData {
   gender: (typeof GENDER_OPTIONS)[number];
@@ -65,9 +67,11 @@ export interface CharacterSheetFormData {
   hairColor: string;
   expression: (typeof EXPRESSION_OPTIONS)[number];
   eyeColor: string;
+  eyeCharacteristic: (typeof EYE_CHARACTERISTIC_OPTIONS)[number];
   outfitGenre: (typeof OUTFIT_GENRE_OPTIONS)[number];
   outfitColor: string;
   accessories: (typeof ACCESSORY_OPTIONS)[number][];
+  additionalPrompt: string;
 }
 
 const DEFAULT_FORM_DATA: CharacterSheetFormData = {
@@ -81,9 +85,11 @@ const DEFAULT_FORM_DATA: CharacterSheetFormData = {
   hairColor: '#E36EFF',
   expression: '미소',
   eyeColor: '#EAFB2F',
+  eyeCharacteristic: '큰 눈',
   outfitGenre: 'SF/사이버펑크',
   outfitColor: '#000000',
   accessories: [],
+  additionalPrompt: '',
 };
 
 /* ------------------------------------------------------------------ */
@@ -385,6 +391,13 @@ export function CharacterSheetModal({ open, onClose, onGenerate }: CharacterShee
             <FieldRow label="눈 색상">
               <ColorField value={form.eyeColor} onChange={(v) => update('eyeColor', v)} />
             </FieldRow>
+            <FieldRow label="눈 특성">
+              <FieldSelect
+                value={form.eyeCharacteristic}
+                options={EYE_CHARACTERISTIC_OPTIONS}
+                onChange={(v) => update('eyeCharacteristic', v)}
+              />
+            </FieldRow>
           </div>
 
           <Divider />
@@ -406,6 +419,27 @@ export function CharacterSheetModal({ open, onClose, onGenerate }: CharacterShee
                 options={ACCESSORY_OPTIONS}
                 onChange={(v) => update('accessories', v)}
               />
+            </FieldRow>
+          </div>
+
+          <Divider />
+
+          <div className="flex flex-col gap-4">
+            <FieldRow label="추가 프롬프트">
+              <div className="flex w-full flex-col gap-1.5">
+                <textarea
+                  value={form.additionalPrompt}
+                  onChange={(e) => update('additionalPrompt', e.target.value)}
+                  rows={3}
+                  maxLength={ADDITIONAL_PROMPT_MAX_LENGTH}
+                  placeholder="추가로 반영하고 싶은 내용을 자유롭게 입력해주세요"
+                  className="w-full resize-none rounded-lg px-3 py-2.5 text-content outline-none placeholder:text-content-muted"
+                  style={{ ...TEXT_VALUE, background: 'var(--surface-3)', border: '1px solid rgba(255,255,255,0.15)' }}
+                />
+                <span className="self-end font-num text-[12px] leading-[16px] text-content-muted">
+                  {form.additionalPrompt.length}/{ADDITIONAL_PROMPT_MAX_LENGTH}
+                </span>
+              </div>
             </FieldRow>
           </div>
         </div>
