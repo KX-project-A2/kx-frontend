@@ -27,6 +27,17 @@ export async function login(email: string, password: string): Promise<void> {
   }
 }
 
+export async function logout(): Promise<void> {
+  try {
+    await axiosInstance.post('/api/auth/logout');
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.data?.message) {
+      throw new Error(error.response.data.message, { cause: error });
+    }
+    throw new Error('로그아웃에 실패했습니다.', { cause: error });
+  }
+}
+
 export async function fetchMe(): Promise<AuthProfile> {
   const response = await axiosInstance.get<ApiResponse<AuthProfile>>('/api/me/profile');
   return response.data.data;

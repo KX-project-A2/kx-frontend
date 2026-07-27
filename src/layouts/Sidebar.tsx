@@ -3,6 +3,7 @@ import { Home, Image as ImageIcon, Library, Video } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import Logo from '@/components/common/Logo';
 import { useAuthStore } from '@/hooks/useAuthStore';
+import { logout } from '@/services/auth';
 
 const NAV = [
   { to: '/home', label: '홈', icon: Home },
@@ -17,13 +18,31 @@ export default function Sidebar() {
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(true);
   const profile = useAuthStore((state) => state.profile);
+  const setUnauthenticated = useAuthStore((state) => state.setUnauthenticated);
+
+  const handleLogout = async () => {
+    if (!window.confirm('로그아웃 하시겠어요?')) {
+      return;
+    }
+
+    try {
+      await logout();
+    } catch {
+      // 서버 호출이 실패해도 클라이언트 세션은 정리한다.
+    } finally {
+      setUnauthenticated();
+      navigate('/login', { replace: true });
+    }
+  };
 
   return (
     <aside
       onMouseEnter={() => setCollapsed(false)}
       onMouseLeave={() => setCollapsed(true)}
       className={`relative h-screen shrink-0 transition-[width] ${
-        collapsed ? 'w-[121px] duration-300 ease-out' : 'w-[332px] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]'
+        collapsed
+          ? 'w-[121px] duration-300 ease-out'
+          : 'w-[332px] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]'
       }`}
     >
       <div
@@ -74,7 +93,7 @@ export default function Sidebar() {
           </nav>
         </div>
 
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           <button
             type="button"
             onClick={() => navigate('/profile')}
@@ -104,6 +123,16 @@ export default function Sidebar() {
               </div>
             )}
           </button>
+
+          {!collapsed && (
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="flex w-full items-center justify-center gap-2 rounded-full bg-white/4 px-4 py-3 text-[14px] font-medium text-[#d6d6d6] transition-colors hover:bg-surface-2"
+            >
+              로그아웃
+            </button>
+          )}
         </div>
       </div>
     </aside>
