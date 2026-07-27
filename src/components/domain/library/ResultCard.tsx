@@ -140,7 +140,7 @@ export function ResultCard({
         <IconButton
           active={liked}
           onClick={() => {
-            toggleLike(art.id, liked, likes);
+            toggleLike(art.id, liked, likes, art.mediaFileId);
             onFavorite?.();
           }}
           aria-label="찜"

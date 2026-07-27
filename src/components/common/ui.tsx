@@ -250,12 +250,10 @@ export function Avatar({ src, size = 28, alt = '' }: { src: string; size?: numbe
 
 /* ---------------------------------------------------------------- LikePill */
 export function LikePill({
-  count,
   liked,
   onToggle,
   size = 'md',
 }: {
-  count: number;
   liked: boolean;
   onToggle?: (e: React.MouseEvent) => void;
   size?: 'sm' | 'md';
@@ -264,8 +262,8 @@ export function LikePill({
     <button
       onClick={onToggle}
       className={cn(
-        'inline-flex items-center gap-1 rounded-chip backdrop-blur transition-colors',
-        size === 'sm' ? 'h-6 px-2' : 'h-7 px-2.5'
+        'inline-flex items-center justify-center rounded-chip backdrop-blur transition-colors',
+        size === 'sm' ? 'h-6 w-6' : 'h-7 w-7'
       )}
       style={{ background: 'rgba(11, 9, 18, 0.6)', border: '1px solid var(--stroke-strong)' }}
     >
@@ -277,12 +275,6 @@ export function LikePill({
           fill: liked ? 'var(--danger)' : 'transparent',
         }}
       />
-      <span
-        className="text-label font-num"
-        style={{ color: liked ? 'var(--content)' : 'var(--content-secondary)' }}
-      >
-        {count.toLocaleString()}
-      </span>
     </button>
   );
 }

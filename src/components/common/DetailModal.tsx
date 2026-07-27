@@ -16,7 +16,7 @@ import { Avatar, Button, IconButton, LikePill } from './ui';
 import ImageWithFallback from './ImageWithFallback';
 import VideoWithFallback, { type VideoWithFallbackHandle } from './VideoWithFallback';
 import { useLikesStore } from '../../stores/useLikesStore';
-import { downloadFile } from '../../utils/downloadFile';
+import { buildDownloadFilename, downloadFile } from '../../utils/downloadFile';
 import { formatDate } from '../../utils/formatDate';
 
 function formatTime(seconds: number): string {
@@ -68,7 +68,12 @@ export function DetailModal({ art, onClose }: { art: Artwork | null; onClose: ()
     >
       <div
         className="glass-1 flex h-[80vh] w-fit max-w-[calc(100vw-3rem)] overflow-hidden rounded-card"
-        style={{ boxShadow: 'var(--shadow-card)' }}
+        style={{
+          boxShadow: 'var(--shadow-card)',
+          // glass-1 기본값(50%)보다 불투명하게 — 공유 클래스를 바꾸면 사이드바/다른 모달에도
+          // 영향을 주므로 이 모달 패널에만 인라인으로 덮어씀.
+          background: 'color-mix(in srgb, var(--surface-1) 80%, transparent)',
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         <div
@@ -165,9 +170,8 @@ export function DetailModal({ art, onClose }: { art: Artwork | null; onClose: ()
             </div>
             <div className="flex items-center gap-2">
               <LikePill
-                count={likes}
                 liked={liked}
-                onToggle={() => toggleLike(art.id, liked, likes)}
+                onToggle={() => toggleLike(art.id, liked, likes, art.mediaFileId)}
               />
               <button className="text-content-muted hover:text-content" onClick={onClose}>
                 <X size={20} />
@@ -268,11 +272,9 @@ export function DetailModal({ art, onClose }: { art: Artwork | null; onClose: ()
               leftIcon={<Download size={16} />}
               disabled={art.type === 'video' && !art.url}
               onClick={
-                art.type === 'image'
-                  ? () => downloadFile(art.url, `${art.id}.jpg`)
-                  : art.type === 'video' && art.url
-                    ? () => downloadFile(art.url, `${art.id}.mp4`)
-                    : undefined
+                art.type === 'image' || (art.type === 'video' && art.url)
+                  ? () => downloadFile(art.url, buildDownloadFilename(art))
+                  : undefined
               }
             >
               다운로드

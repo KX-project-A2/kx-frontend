@@ -72,10 +72,10 @@ export function GalleryCard({ art, onOpen }: { art: Artwork; onOpen?: () => void
         className="absolute right-2.5 top-2.5 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
         onClick={(e) => {
           e.stopPropagation();
-          toggleLike(art.id, liked, likes);
+          toggleLike(art.id, liked, likes, art.mediaFileId);
         }}
       >
-        <LikePill count={likes} liked={liked} size="sm" />
+        <LikePill liked={liked} size="sm" />
       </div>
     </div>
   );

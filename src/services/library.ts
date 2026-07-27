@@ -247,6 +247,14 @@ export async function deleteMediaFile(mediaFileId: number): Promise<void> {
   await axiosInstance.delete<ApiResponse<null>>(`/api/media/files/${mediaFileId}`);
 }
 
+export async function addFavorite(mediaFileId: number): Promise<void> {
+  await axiosInstance.post<ApiResponse<null>>(`/api/media/files/${mediaFileId}/favorite`);
+}
+
+export async function removeFavorite(mediaFileId: number): Promise<void> {
+  await axiosInstance.delete<ApiResponse<null>>(`/api/media/files/${mediaFileId}/favorite`);
+}
+
 export async function fetchLibraryItems(page = 0, size = 20): Promise<Artwork[]> {
   const [imageFiles, videoFiles] = await Promise.all([
     fetchMediaPage('IMAGE', page, size),
