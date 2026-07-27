@@ -68,6 +68,7 @@ export interface CharacterSheetFormData {
   outfitGenre: (typeof OUTFIT_GENRE_OPTIONS)[number];
   outfitColor: string;
   accessories: (typeof ACCESSORY_OPTIONS)[number][];
+  additionalPrompt: string;
 }
 
 const DEFAULT_FORM_DATA: CharacterSheetFormData = {
@@ -84,6 +85,7 @@ const DEFAULT_FORM_DATA: CharacterSheetFormData = {
   outfitGenre: 'SF/사이버펑크',
   outfitColor: '#000000',
   accessories: [],
+  additionalPrompt: '',
 };
 
 /* ------------------------------------------------------------------ */
@@ -405,6 +407,21 @@ export function CharacterSheetModal({ open, onClose, onGenerate }: CharacterShee
                 value={form.accessories}
                 options={ACCESSORY_OPTIONS}
                 onChange={(v) => update('accessories', v)}
+              />
+            </FieldRow>
+          </div>
+
+          <Divider />
+
+          <div className="flex flex-col gap-4">
+            <FieldRow label="추가 프롬프트">
+              <textarea
+                value={form.additionalPrompt}
+                onChange={(e) => update('additionalPrompt', e.target.value)}
+                rows={3}
+                placeholder="추가로 반영하고 싶은 내용을 자유롭게 입력해주세요"
+                className="w-full resize-none rounded-lg px-3 py-2.5 text-content outline-none placeholder:text-content-muted"
+                style={{ ...TEXT_VALUE, background: 'var(--surface-3)', border: '1px solid rgba(255,255,255,0.15)' }}
               />
             </FieldRow>
           </div>

@@ -41,10 +41,11 @@ function toDuration(length: string): string {
   return `${minutes}:${remainder.toString().padStart(2, '0')}`;
 }
 
-/** 스토리보드 원본 파일을 업로드해 mediaFileId를 받아온다. */
-export async function uploadReferenceImage(file: File): Promise<number> {
+/** 스토리보드/레퍼런스 원본 파일을 업로드해 mediaFileId를 받아온다. */
+export async function uploadReferenceImage(file: File, tags?: string): Promise<number> {
   const formData = new FormData();
   formData.append('file', file);
+  if (tags) formData.append('tags', tags);
   const response = await axiosInstance.post<ApiResponse<{ mediaFileId: number }>>(
     '/api/media/images/upload',
     formData,

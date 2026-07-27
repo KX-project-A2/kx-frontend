@@ -36,7 +36,7 @@ import { JobFailedError } from '@/utils/pollJob';
 import { validateImageFile } from '@/utils/validateImageFile';
 import { IMAGE_QUALITIES, type Artwork } from '@/constants/mockData';
 
-const RATIO_OPTIONS = ['1:1', '4:3', '3:4'];
+const RATIO_OPTIONS = ['1:1', '3:2', '2:3'];
 const REFERENCE_IMAGE_MAX_MB = 50;
 const PURPOSE_TABS = [
   { id: '캐릭터', label: '캐릭터' },
@@ -249,7 +249,12 @@ export default function ImageGenerationPage() {
         <PromptComposer
           value={prompt}
           onChange={setPrompt}
-          chips={[model, quality, ratio.split(' · ')[0], `× ${quantity}장`]}
+          chips={[
+            { label: model, noArrow: true },
+            quality,
+            ratio.split(' · ')[0],
+            `× ${quantity}장`,
+          ]}
           correction={correction}
           onCorrectionChange={setCorrection}
           onGenerate={handleGenerate}
