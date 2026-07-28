@@ -122,14 +122,16 @@ export default function Sidebar() {
                     : 'h-[50px] w-[50px] shrink-0 rounded-full border border-[rgba(255,255,255,0.15)] object-cover'
                 }
               />
-              <div className="min-w-0">
-                <div className="truncate text-[16px] font-bold leading-[24px] text-[#e9e0e9]">
-                  {profile?.nickname}
+              {!collapsed && (
+                <div className="min-w-0">
+                  <div className="truncate text-[16px] font-bold leading-[24px] text-[#e9e0e9]">
+                    {profile?.nickname}
+                  </div>
+                  <div className="truncate font-num text-[12px] leading-[16px] text-[#988e99]">
+                    {profile?.email}
+                  </div>
                 </div>
-                <div className="truncate font-num text-[12px] leading-[16px] text-[#988e99]">
-                  {profile?.email}
-                </div>
-              </div>
+              )}
             </button>
           ) : (
             <button
