@@ -170,7 +170,8 @@ export async function characterConceptSheet(
     accessories: string[];
     additionalPrompt: string;
   },
-  options: GenerationOptions
+  options: GenerationOptions,
+  references?: File[]
 ): Promise<GenerationResult> {
   const requestBody = {
     gender: data.gender,
@@ -193,10 +194,17 @@ export async function characterConceptSheet(
     quality: mapQualityToBE(options.quality),
   };
 
+  const formData = new FormData();
+  formData.append('request', new Blob([JSON.stringify(requestBody)], { type: 'application/json' }));
+  references?.forEach((file) => {
+    formData.append('references', file);
+  });
+
   console.log('[characterConceptSheet] request body', requestBody);
   const createResponse = await axiosInstance.post<ApiResponse<GenerateImageJob>>(
     '/api/generate/images/character-concept-sheet',
-    requestBody
+    formData,
+    { headers: { 'Content-Type': undefined }, timeout: 60000 }
   );
 
   console.log(

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Plus } from 'lucide-react';
+import { Check, Plus } from 'lucide-react';
 import {
   ModeTabs,
   ModelField,
@@ -17,7 +17,12 @@ import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import EmptyState from '@/components/common/EmptyState';
 import { DetailModal } from '@/components/common/DetailModal';
-import { CharacterSheetModal } from '@/components/domain/image-generation/CharacterSheetModal';
+import {
+  CharacterSheetModal,
+  DEFAULT_CHARACTER_SHEET_FORM_DATA,
+  hasSavedCharacterAttributes,
+  type CharacterSheetFormData,
+} from '@/components/domain/image-generation/CharacterSheetModal';
 import { useAuthStore } from '@/hooks/useAuthStore';
 import { useGenerationOptionsStore } from '@/hooks/useGenerationOptionsStore';
 import { useImageDraftStore } from '@/hooks/useImageDraftStore';
@@ -77,6 +82,9 @@ export default function ImageGenerationPage() {
   const [errorJobId, setErrorJobId] = useState<number | undefined>(undefined);
   const [selectedArt, setSelectedArt] = useState<Artwork | null>(null);
   const [isCharacterModalOpen, setIsCharacterModalOpen] = useState(false);
+  const [characterAttributes, setCharacterAttributes] = useState<CharacterSheetFormData>(
+    DEFAULT_CHARACTER_SHEET_FORM_DATA
+  );
 
   useEffect(() => {
     if (!editArt) return;
@@ -167,18 +175,29 @@ export default function ImageGenerationPage() {
     setErrorJobId(undefined);
 
     try {
-      const result = await generateImage(
-        prompt.trim(),
-        { model, ratio, quality, quantity },
-        { purpose, promptCorrectionEnabled: correction, references }
-      );
+      const result =
+        purpose === '캐릭터시트'
+          ? await characterConceptSheet(
+              { ...characterAttributes, additionalPrompt: prompt.trim() },
+              { model, ratio, quality, quantity },
+              references
+            )
+          : await generateImage(
+              prompt.trim(),
+              { model, ratio, quality, quantity },
+              { purpose, promptCorrectionEnabled: correction, references }
+            );
       setResults((prev) => [result, ...prev]);
     } catch (err) {
       if (err instanceof JobFailedError) {
         setError(err.message);
         setErrorJobId(err.jobId);
       } else {
-        setError('이미지 생성에 실패했어요. 다시 시도해주세요.');
+        setError(
+          purpose === '캐릭터시트'
+            ? '캐릭터 생성에 실패했어요. 다시 시도해주세요.'
+            : '이미지 생성에 실패했어요. 다시 시도해주세요.'
+        );
       }
     } finally {
       setIsLoading(false);
@@ -188,6 +207,8 @@ export default function ImageGenerationPage() {
   const handleOpen = (art: Artwork) => {
     setSelectedArt(art);
   };
+
+  const hasSavedCharacterInfo = hasSavedCharacterAttributes(characterAttributes);
 
   return (
     <div className="flex h-full">
@@ -213,8 +234,8 @@ export default function ImageGenerationPage() {
               onClick={() => setIsCharacterModalOpen(true)}
               className="flex items-center justify-center gap-1 rounded-[12px] py-3 transition-colors hover:bg-surface-2"
               style={{
-                background: 'var(--surface-3)',
-                border: '1px solid rgba(255,255,255,0.15)',
+                background: hasSavedCharacterInfo ? 'rgba(240,165,255,0.2)' : 'var(--surface-3)',
+                border: `1px solid ${hasSavedCharacterInfo ? 'var(--primary-300)' : 'rgba(255,255,255,0.15)'}`,
                 color: 'var(--primary-100)',
                 fontFamily: 'var(--font-sans)',
                 fontSize: 16,
@@ -222,8 +243,12 @@ export default function ImageGenerationPage() {
                 lineHeight: '24px',
               }}
             >
-              <Plus size={20} strokeWidth={2} />
-              캐릭터 만들기
+              {hasSavedCharacterInfo ? (
+                <Check size={20} strokeWidth={2} />
+              ) : (
+                <Plus size={20} strokeWidth={2} />
+              )}
+              {hasSavedCharacterInfo ? '캐릭터 정보 저장됨 · 수정하기' : '캐릭터 만들기'}
             </button>
             <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.08)' }} />
           </div>
@@ -268,7 +293,6 @@ export default function ImageGenerationPage() {
           onCorrectionChange={setCorrection}
           onGenerate={handleGenerate}
           placeholder="생성하고 싶은 이미지를 설명해주세요"
-          disabled={purpose === '캐릭터시트'}
         />
 
         {error && <ErrorMessage message={error} jobId={errorJobId} onRetry={handleGenerate} />}
@@ -303,30 +327,10 @@ export default function ImageGenerationPage() {
       <CharacterSheetModal
         open={isCharacterModalOpen}
         onClose={() => setIsCharacterModalOpen(false)}
-        onGenerate={async (data) => {
-          if (!isAuthenticated) {
-            confirmLogin(navigate);
-            return;
-          }
-
-          setIsLoading(true);
-          setError(null);
-          setErrorJobId(undefined);
-
-          try {
-            const result = await characterConceptSheet(data, { model, ratio, quality, quantity });
-            setResults((prev) => [result, ...prev]);
-            setIsCharacterModalOpen(false);
-          } catch (err) {
-            if (err instanceof JobFailedError) {
-              setError(err.message);
-              setErrorJobId(err.jobId);
-            } else {
-              setError('캐릭터 생성에 실패했어요. 다시 시도해주세요.');
-            }
-          } finally {
-            setIsLoading(false);
-          }
+        initialData={characterAttributes}
+        onSave={(data) => {
+          setCharacterAttributes(data);
+          setIsCharacterModalOpen(false);
         }}
       />
     </div>
