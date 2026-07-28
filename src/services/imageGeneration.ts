@@ -154,20 +154,20 @@ export async function resumeImageJob(jobId: number, prompt: string): Promise<Gen
 
 export async function characterConceptSheet(
   data: {
-    gender: string;
-    ageGroup: string;
-    bodyType: string;
-    style: string;
-    worldSetting: string;
-    hairLength: string;
-    hairStyle: string;
-    hairColor: string;
-    expression: string;
-    eyeColor: string;
-    eyeCharacteristic: string;
-    outfitGenre: string;
-    outfitColor: string;
-    accessories: string[];
+    gender?: string;
+    ageGroup?: string;
+    bodyType?: string;
+    style?: string;
+    worldSetting?: string;
+    hairLength?: string;
+    hairStyle?: string;
+    hairColor?: string;
+    expression?: string;
+    eyeColor?: string;
+    eyeCharacteristic?: string;
+    outfitGenre?: string;
+    outfitColor?: string;
+    accessories?: string[];
     additionalPrompt: string;
   },
   options: GenerationOptions,

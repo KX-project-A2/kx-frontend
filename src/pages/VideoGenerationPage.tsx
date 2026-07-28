@@ -416,7 +416,7 @@ export default function VideoGenerationPage() {
           <div className="flex flex-col items-center justify-center gap-3 py-4">
             <LoadingSpinner size="md" />
             <p className="text-body text-content-secondary">
-              영상 생성 중입니다. 최대 10분 정도 걸릴 수 있어요.
+              영상 생성 중이에요. 시간이 조금 소요될 수 있어요. 조금만 기다려 주세요.
             </p>
           </div>
         )}
