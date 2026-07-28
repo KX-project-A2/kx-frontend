@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Check, Plus } from 'lucide-react';
 import {
@@ -90,6 +90,9 @@ export default function ImageGenerationPage() {
   const [characterAttributes, setCharacterAttributes] = useState<CharacterSheetFormData>(
     DEFAULT_CHARACTER_SHEET_FORM_DATA
   );
+  // 캐릭터시트에서 사용자가 비율을 직접 바꾼 적이 있으면 그 뒤로는 자동 세팅을 하지 않는다.
+  const [hasManualRatioInSheet, setHasManualRatioInSheet] = useState(false);
+  const prevPurposeRef = useRef(purpose);
 
   useEffect(() => {
     if (!editArt) return;
@@ -113,6 +116,20 @@ export default function ImageGenerationPage() {
     if (nextPrompt !== undefined) setPrompt(nextPrompt);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- editArt/initialPrompt로 진입 시에만 실행
   }, [editArt?.id, initialPrompt]);
+
+  useEffect(() => {
+    // 다른 유형에서 캐릭터시트로 "전환"되는 순간에만 16:9로 맞춘다 — 캐릭터시트가 처음부터
+    // 선택돼 있던 경우(마운트 시점)나 캐릭터시트 안에서 다른 필드가 바뀌는 경우는 대상이 아님.
+    // 사용자가 캐릭터시트에서 비율을 직접 바꾼 적이 있으면 그 뒤로는 다시 덮어쓰지 않는다.
+    if (
+      purpose === '캐릭터시트' &&
+      prevPurposeRef.current !== '캐릭터시트' &&
+      !hasManualRatioInSheet
+    ) {
+      setRatio('16:9');
+    }
+    prevPurposeRef.current = purpose;
+  }, [purpose, hasManualRatioInSheet, setRatio]);
 
   useEffect(() => {
     let cancelled = false;
@@ -290,7 +307,15 @@ export default function ImageGenerationPage() {
             <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.08)' }} />
           </div>
         )}
-        <PanelSelect label="비율" value={ratio} options={RATIO_OPTIONS} onChange={setRatio} />
+        <PanelSelect
+          label="비율"
+          value={ratio}
+          options={RATIO_OPTIONS}
+          onChange={(v) => {
+            if (purpose === '캐릭터시트') setHasManualRatioInSheet(true);
+            setRatio(v);
+          }}
+        />
         <PanelSelect label="품질" value={quality} options={IMAGE_QUALITIES} onChange={setQuality} />
         <div className="flex items-center justify-between">
           <span className="text-[14px] leading-[20px] text-content-secondary">수량</span>
@@ -322,9 +347,9 @@ export default function ImageGenerationPage() {
           onChange={setPrompt}
           chips={[
             { label: model, noArrow: true },
-            quality,
-            ratio.split(' · ')[0],
-            `× ${quantity}장`,
+            { label: quality, noArrow: true },
+            { label: ratio.split(' · ')[0], noArrow: true },
+            { label: `× ${quantity}장`, noArrow: true },
           ]}
           correction={correction}
           onCorrectionChange={setCorrection}
