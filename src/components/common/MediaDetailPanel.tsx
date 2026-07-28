@@ -15,8 +15,10 @@ import type { Artwork } from '../../constants/mockData';
 import { Avatar, Button, IconButton, LikePill } from './ui';
 import ImageWithFallback from './ImageWithFallback';
 import VideoWithFallback, { type VideoWithFallbackHandle } from './VideoWithFallback';
+import { useAuthStore } from '../../hooks/useAuthStore';
 import { useLikesStore } from '../../stores/useLikesStore';
 import { createShareLink } from '../../services/share';
+import { confirmLogin } from '../../utils/confirmLogin';
 import { buildDownloadFilename, downloadFile } from '../../utils/downloadFile';
 import { formatDate } from '../../utils/formatDate';
 import { formatDuration } from '../../utils/formatDuration';
@@ -45,6 +47,7 @@ export default function MediaDetailPanel({
   isOwnerView = true,
 }: MediaDetailPanelProps) {
   const navigate = useNavigate();
+  const isAuthenticated = useAuthStore((s) => s.status === 'authenticated');
   const [expanded, setExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
   const [shareState, setShareState] = useState<'idle' | 'loading' | 'copied' | 'error'>('idle');
@@ -65,7 +68,20 @@ export default function MediaDetailPanel({
   const liked = overrides[art.id]?.liked ?? art.liked ?? false;
   const likes = overrides[art.id]?.likes ?? art.likes ?? 0;
 
+  const handleToggleLike = () => {
+    if (!isAuthenticated) {
+      confirmLogin(navigate);
+      return;
+    }
+    toggleLike(art.id, liked, likes, art.mediaFileId);
+  };
+
   const handleShare = async () => {
+    if (!isAuthenticated) {
+      confirmLogin(navigate);
+      return;
+    }
+
     if (!art.mediaFileId) {
       setShareState('error');
       setTimeout(() => setShareState('idle'), 2000);
@@ -222,12 +238,7 @@ export default function MediaDetailPanel({
             <span className="font-num text-body-medium text-content-secondary">공유된 미디어</span>
           )}
           <div className="flex items-center gap-2">
-            {isOwnerView && (
-              <LikePill
-                liked={liked}
-                onToggle={() => toggleLike(art.id, liked, likes, art.mediaFileId)}
-              />
-            )}
+            {isOwnerView && <LikePill liked={liked} onToggle={handleToggleLike} />}
             <button className="text-content-muted hover:text-content" onClick={onClose}>
               <X size={20} />
             </button>

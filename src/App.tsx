@@ -43,19 +43,26 @@ function App() {
 
         <Route
           element={
-            <ProtectedRoute>
-              <AppShell>
-                <Outlet />
-              </AppShell>
-            </ProtectedRoute>
+            <AppShell>
+              <Outlet />
+            </AppShell>
           }
         >
           <Route path="/home" element={<Home />} />
           <Route path="/image" element={<ImageGenerationPage />} />
           <Route path="/video" element={<VideoGenerationPage />} />
           <Route path="/reverse-prompt" element={<ReversePromptPage />} />
-          <Route path="/library" element={<Library />} />
-          <Route path="/profile" element={<ProfilePage />} />
+
+          <Route
+            element={
+              <ProtectedRoute>
+                <Outlet />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="/library" element={<Library />} />
+            <Route path="/profile" element={<ProfilePage />} />
+          </Route>
         </Route>
       </Routes>
     </>

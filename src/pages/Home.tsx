@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronDown, ChevronUp, Plus } from 'lucide-react';
 import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Button, Chip, Panel, Tabs } from '@/components/common/ui';
 import { GalleryCard, ResultCard } from '@/components/domain/home/MediaCard';
 import ImageWithFallback from '@/components/common/ImageWithFallback';
@@ -11,6 +11,7 @@ import ErrorMessage from '@/components/common/ErrorMessage';
 import EmptyState from '@/components/common/EmptyState';
 import { EXPLORE_CATEGORY_CHIPS, PRESET_CATALOG, type Artwork } from '@/constants/mockData';
 import { fetchRecentWorks } from '@/services/library';
+import { useAuthStore } from '@/hooks/useAuthStore';
 import { buildDownloadFilename, downloadFile } from '@/utils/downloadFile';
 import { shuffle } from '@/utils/shuffle';
 
@@ -57,6 +58,8 @@ function ScrollArrow({
 
 export default function Home() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const authStatus = useAuthStore((state) => state.status);
   const [tab, setTab] = useState('image');
   const [prompt, setPrompt] = useState('');
   const [activeSection, setActiveSection] = useState<SectionId>('hero');
@@ -96,6 +99,10 @@ export default function Home() {
   };
 
   useEffect(() => {
+    // 인증 확인이 끝나기 전(App.tsx의 fetchMe 진행 중)이거나 비로그인으로 확정된 경우엔
+    // 호출하지 않음 — 비로그인 표시는 아래 렌더링에서 authStatus로 바로 분기한다.
+    if (authStatus !== 'authenticated') return;
+
     let cancelled = false;
 
     fetchRecentWorks(8)
@@ -112,7 +119,7 @@ export default function Home() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [authStatus]);
 
   useEffect(() => {
     const nodes = SECTION_IDS.map((id) => [id, sectionRefs[id].current] as const).filter(
@@ -407,7 +414,14 @@ export default function Home() {
               전체 보기
             </Button>
           </div>
-          {recentLoading ? (
+          {authStatus === 'unauthenticated' ? (
+            <EmptyState
+              message="로그인하면 볼 수 있어요"
+              description="최근 생성한 작품은 로그인 후 확인할 수 있어요."
+              actionLabel="로그인"
+              onAction={() => navigate('/login', { state: { from: location } })}
+            />
+          ) : recentLoading ? (
             <div className="flex justify-center py-12">
               <LoadingSpinner size="lg" />
             </div>

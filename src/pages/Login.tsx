@@ -57,7 +57,7 @@ export default function Login() {
       const profile = await fetchMe();
       localStorage.setItem(HAS_LOGGED_IN_BEFORE_KEY, 'true');
       setAuthenticated(profile);
-      navigate('/home');
+      navigate('/home', { replace: true });
     } catch (err) {
       setError((err as Error).message);
     } finally {

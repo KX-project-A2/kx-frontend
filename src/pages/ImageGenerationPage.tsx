@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Plus } from 'lucide-react';
 import {
   ModeTabs,
@@ -18,6 +18,7 @@ import ErrorMessage from '@/components/common/ErrorMessage';
 import EmptyState from '@/components/common/EmptyState';
 import { DetailModal } from '@/components/common/DetailModal';
 import { CharacterSheetModal } from '@/components/domain/image-generation/CharacterSheetModal';
+import { useAuthStore } from '@/hooks/useAuthStore';
 import { useGenerationOptionsStore } from '@/hooks/useGenerationOptionsStore';
 import { useImageDraftStore } from '@/hooks/useImageDraftStore';
 import { useRevokeObjectUrls } from '@/hooks/useRevokeObjectUrls';
@@ -30,6 +31,7 @@ import {
   resumeImageJob,
 } from '@/services/imageGeneration';
 import type { GenerationResult } from '@/types/generation';
+import { confirmLogin } from '@/utils/confirmLogin';
 import { toGenGroup } from '@/utils/generationAdapter';
 import { findOptionForRestore } from '@/utils/restoreOption';
 import { JobFailedError } from '@/utils/pollJob';
@@ -48,7 +50,9 @@ const MAX_QUANTITY = 4;
 const MAX_REFERENCES = 8;
 
 export default function ImageGenerationPage() {
+  const navigate = useNavigate();
   const location = useLocation();
+  const isAuthenticated = useAuthStore((s) => s.status === 'authenticated');
   const initialPrompt = (location.state as { prompt?: string } | null)?.prompt;
   const editArt = (location.state as { editArt?: Artwork } | null)?.editArt;
 
@@ -152,6 +156,11 @@ export default function ImageGenerationPage() {
 
   const handleGenerate = async () => {
     if (!prompt.trim() || isLoading) return;
+
+    if (!isAuthenticated) {
+      confirmLogin(navigate);
+      return;
+    }
 
     setIsLoading(true);
     setError(null);
@@ -295,6 +304,11 @@ export default function ImageGenerationPage() {
         open={isCharacterModalOpen}
         onClose={() => setIsCharacterModalOpen(false)}
         onGenerate={async (data) => {
+          if (!isAuthenticated) {
+            confirmLogin(navigate);
+            return;
+          }
+
           setIsLoading(true);
           setError(null);
           setErrorJobId(undefined);

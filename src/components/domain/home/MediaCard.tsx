@@ -1,18 +1,41 @@
 import { useEffect, useRef, useState } from 'react';
-import { Copy, Download, Heart, MoreHorizontal, Pencil, Play, RefreshCw, Trash2, Video as VideoIcon } from 'lucide-react';
+import {
+  Copy,
+  Download,
+  Heart,
+  MoreHorizontal,
+  Pencil,
+  Play,
+  RefreshCw,
+  Trash2,
+  Video as VideoIcon,
+} from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import type { Artwork } from '@/constants/mockData';
 import { Avatar, Badge, IconButton, LikePill, cn } from '@/components/common/ui';
 import ImageWithFallback from '@/components/common/ImageWithFallback';
 import VideoWithFallback from '@/components/common/VideoWithFallback';
+import { useAuthStore } from '@/hooks/useAuthStore';
 import { useLikesStore } from '@/stores/useLikesStore';
+import { confirmLogin } from '@/utils/confirmLogin';
 import { formatDuration } from '@/utils/formatDuration';
 
 /* --- Explore gallery card (author + likes on hover, click opens detail) --- */
 export function GalleryCard({ art, onOpen }: { art: Artwork; onOpen?: () => void }) {
+  const navigate = useNavigate();
+  const isAuthenticated = useAuthStore((s) => s.status === 'authenticated');
   const overrides = useLikesStore((s) => s.overrides);
   const toggleLike = useLikesStore((s) => s.toggleLike);
   const liked = overrides[art.id]?.liked ?? art.liked ?? false;
   const likes = overrides[art.id]?.likes ?? art.likes ?? 0;
+
+  const handleToggleLike = () => {
+    if (!isAuthenticated) {
+      confirmLogin(navigate);
+      return;
+    }
+    toggleLike(art.id, liked, likes, art.mediaFileId);
+  };
 
   return (
     <div
@@ -55,11 +78,16 @@ export function GalleryCard({ art, onOpen }: { art: Artwork; onOpen?: () => void
       {/* overlay */}
       <div
         className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
-        style={{ background: 'linear-gradient(to bottom, rgba(11,9,18,0.55), transparent 35%, transparent 60%, rgba(11,9,18,0.55))' }}
+        style={{
+          background:
+            'linear-gradient(to bottom, rgba(11,9,18,0.55), transparent 35%, transparent 60%, rgba(11,9,18,0.55))',
+        }}
       />
       {art.type === 'video' && (
-        <span className="absolute left-1/2 top-1/2 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full"
-          style={{ background: 'rgba(11,9,18,0.55)', border: '1px solid var(--stroke-strong)' }}>
+        <span
+          className="absolute left-1/2 top-1/2 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full"
+          style={{ background: 'rgba(11,9,18,0.55)', border: '1px solid var(--stroke-strong)' }}
+        >
           <Play size={18} className="translate-x-0.5 text-white" fill="white" />
         </span>
       )}
@@ -73,7 +101,7 @@ export function GalleryCard({ art, onOpen }: { art: Artwork; onOpen?: () => void
         className="absolute right-2.5 top-2.5 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
         onClick={(e) => {
           e.stopPropagation();
-          toggleLike(art.id, liked, likes, art.mediaFileId);
+          handleToggleLike();
         }}
       >
         <LikePill liked={liked} size="sm" />
@@ -183,7 +211,14 @@ export function ResultCard({
         style={{ background: 'linear-gradient(to top, rgba(11,9,18,0.7), transparent 45%)' }}
       />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-end gap-1.5 p-2.5 opacity-0 transition-opacity duration-200 group-hover:pointer-events-auto group-hover:opacity-100">
-        <IconButton active={fav} onClick={() => { setFav((f) => !f); onFavorite?.(); }} aria-label="찜">
+        <IconButton
+          active={fav}
+          onClick={() => {
+            setFav((f) => !f);
+            onFavorite?.();
+          }}
+          aria-label="찜"
+        >
           <Heart size={14} strokeWidth={2} fill={fav ? 'currentColor' : 'transparent'} />
         </IconButton>
         <IconButton
@@ -214,7 +249,9 @@ export function ResultCard({
                 fn?.();
                 setMenuOpen(false);
               }}
-              className={cn('flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-caption text-content-secondary hover:bg-surface-2 hover:text-content')}
+              className={cn(
+                'flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-caption text-content-secondary hover:bg-surface-2 hover:text-content'
+              )}
             >
               <Icon size={15} strokeWidth={2} />
               {label}
