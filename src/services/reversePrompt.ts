@@ -19,8 +19,8 @@ interface GenerateImageJobStatus {
 const ASPECT_RATIO_TO_SIZE: Record<string, string> = {
   auto: 'auto',
   '1:1': '1024x1024',
-  '16:9': '1536x1024',
-  '9:16': '1024x1536',
+  '16:9': '1536x864',
+  '9:16': '864x1536',
 };
 
 export async function extractReversePrompt(
