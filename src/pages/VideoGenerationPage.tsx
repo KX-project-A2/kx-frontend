@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   ModeTabs,
   PanelSelect,
@@ -12,6 +12,7 @@ import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import EmptyState from '@/components/common/EmptyState';
 import { DetailModal } from '@/components/common/DetailModal';
+import { useAuthStore } from '@/hooks/useAuthStore';
 import { useVideoGenerationOptionsStore } from '@/hooks/useVideoGenerationOptionsStore';
 import { useVideoDraftStore } from '@/hooks/useVideoDraftStore';
 import { useObjectUrls } from '@/hooks/useObjectUrls';
@@ -23,6 +24,7 @@ import {
   uploadReferenceImage,
 } from '@/services/videoGeneration';
 import type { VideoGenerationResult } from '@/types/generation';
+import { confirmLogin } from '@/utils/confirmLogin';
 import { toVideoGenGroup } from '@/utils/generationAdapter';
 import {
   getAvailableLengths,
@@ -76,7 +78,9 @@ const REFERENCE_CELL_STYLE: React.CSSProperties = {
 };
 
 export default function VideoGenerationPage() {
+  const navigate = useNavigate();
   const location = useLocation();
+  const isAuthenticated = useAuthStore((s) => s.status === 'authenticated');
   const referenceArt = (location.state as { referenceArt?: Artwork } | null)?.referenceArt;
   const editArt = (location.state as { editArt?: Artwork } | null)?.editArt;
 
@@ -266,6 +270,11 @@ export default function VideoGenerationPage() {
 
   const handleGenerate = async () => {
     if (!prompt.trim() || isLoading || validationError) return;
+
+    if (!isAuthenticated) {
+      confirmLogin(navigate);
+      return;
+    }
 
     if (capability.requiresReferenceImages && usedReferenceCount === 0 && !hasStoryboard) {
       setError('참조 이미지가 필요해요. 레퍼런스 또는 스토리보드 이미지를 추가해주세요.');

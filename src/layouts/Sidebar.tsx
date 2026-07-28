@@ -1,15 +1,16 @@
 import { useState } from 'react';
-import { Home, Image as ImageIcon, Library, Video } from 'lucide-react';
+import { Home, Image as ImageIcon, Library, LogIn, Video } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import Logo from '@/components/common/Logo';
 import { useAuthStore } from '@/hooks/useAuthStore';
 import { logout } from '@/services/auth';
+import { confirmLogin } from '@/utils/confirmLogin';
 
 const NAV = [
   { to: '/home', label: '홈', icon: Home },
   { to: '/image', label: '이미지', icon: ImageIcon },
   { to: '/video', label: '영상', icon: Video },
-  { to: '/library', label: '라이브러리', icon: Library },
+  { to: '/library', label: '라이브러리', icon: Library, requiresAuth: true },
 ];
 
 const DEFAULT_AVATAR = '/assets/profile/mock-avatar.png';
@@ -17,8 +18,10 @@ const DEFAULT_AVATAR = '/assets/profile/mock-avatar.png';
 export default function Sidebar() {
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(true);
+  const status = useAuthStore((state) => state.status);
   const profile = useAuthStore((state) => state.profile);
   const setUnauthenticated = useAuthStore((state) => state.setUnauthenticated);
+  const isAuthenticated = status === 'authenticated';
 
   const handleLogout = async () => {
     if (!window.confirm('로그아웃 하시겠어요?')) {
@@ -68,10 +71,16 @@ export default function Sidebar() {
               행 간 실제 간격(pitch)이 좁아 보인다. gap-[25px]는 펼침 상태 기준 pitch(63.5px)에
               맞춘 보정값. */}
           <nav className={`flex flex-col ${collapsed ? 'gap-[25px]' : 'gap-1'}`}>
-            {NAV.map(({ to, label, icon: Icon }) => (
+            {NAV.map(({ to, label, icon: Icon, requiresAuth }) => (
               <NavLink
                 key={to}
                 to={to}
+                onClick={(e) => {
+                  if (requiresAuth && !isAuthenticated) {
+                    e.preventDefault();
+                    confirmLogin(navigate);
+                  }
+                }}
                 className={({ isActive }) =>
                   collapsed
                     ? `flex h-11 items-center justify-center rounded-full border px-0 text-body-medium transition-colors ${
@@ -94,25 +103,25 @@ export default function Sidebar() {
         </div>
 
         <div className="flex flex-col gap-4">
-          <button
-            type="button"
-            onClick={() => navigate('/profile')}
-            className={`flex items-center text-left transition-colors hover:bg-surface-2 ${
-              collapsed
-                ? 'justify-center rounded-[var(--radius-btn)] p-2'
-                : 'gap-[15px] rounded-[11px] p-[10px]'
-            }`}
-          >
-            <img
-              src={profile?.profileImageUrl || DEFAULT_AVATAR}
-              alt=""
-              className={
+          {isAuthenticated ? (
+            <button
+              type="button"
+              onClick={() => navigate('/profile')}
+              className={`flex items-center text-left transition-colors hover:bg-surface-2 ${
                 collapsed
-                  ? 'h-9 w-9 shrink-0 rounded-full'
-                  : 'h-[50px] w-[50px] shrink-0 rounded-full border border-[rgba(255,255,255,0.15)] object-cover'
-              }
-            />
-            {!collapsed && (
+                  ? 'justify-center rounded-[var(--radius-btn)] p-2'
+                  : 'gap-[15px] rounded-[11px] p-[10px]'
+              }`}
+            >
+              <img
+                src={profile?.profileImageUrl || DEFAULT_AVATAR}
+                alt=""
+                className={
+                  collapsed
+                    ? 'h-9 w-9 shrink-0 rounded-full'
+                    : 'h-[50px] w-[50px] shrink-0 rounded-full border border-[rgba(255,255,255,0.15)] object-cover'
+                }
+              />
               <div className="min-w-0">
                 <div className="truncate text-[16px] font-bold leading-[24px] text-[#e9e0e9]">
                   {profile?.nickname}
@@ -121,10 +130,21 @@ export default function Sidebar() {
                   {profile?.email}
                 </div>
               </div>
-            )}
-          </button>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => navigate('/login')}
+              className={`flex items-center justify-center gap-2 rounded-full bg-brand font-medium text-white transition-colors hover:bg-brand-dark ${
+                collapsed ? 'h-11' : 'h-12 text-[16px]'
+              }`}
+            >
+              <LogIn size={collapsed ? 20 : 18} strokeWidth={2} />
+              {!collapsed && '로그인하기'}
+            </button>
+          )}
 
-          {!collapsed && (
+          {!collapsed && isAuthenticated && (
             <button
               type="button"
               onClick={handleLogout}
