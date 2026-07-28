@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Copy, MoreVertical } from 'lucide-react';
 import {
   ModeTabs,
@@ -11,6 +12,7 @@ import { Button, Chip, Panel, Select } from '@/components/common/ui';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import EmptyState from '@/components/common/EmptyState';
+import { useAuthStore } from '@/hooks/useAuthStore';
 import { useObjectUrls } from '@/hooks/useObjectUrls';
 import { useRevokeObjectUrls } from '@/hooks/useRevokeObjectUrls';
 import {
@@ -18,6 +20,7 @@ import {
   regenerateFromReversePrompt,
   updateReversePrompt,
 } from '@/services/reversePrompt';
+import { confirmLogin } from '@/utils/confirmLogin';
 import { validateImageFile } from '@/utils/validateImageFile';
 import { JobFailedError } from '@/utils/pollJob';
 
@@ -43,6 +46,8 @@ function PromptCard({
   item: ReversePromptItem;
   onUpdate: (id: number, updates: { prompt: string; aspectRatio: string }) => void;
 }) {
+  const navigate = useNavigate();
+  const isAuthenticated = useAuthStore((s) => s.status === 'authenticated');
   const [copied, setCopied] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [mode, setMode] = useState<'view' | 'edit' | 'generate'>('view');
@@ -114,6 +119,12 @@ function PromptCard({
 
   const handleGenerateImage = async () => {
     if (isGenerating) return;
+
+    if (!isAuthenticated) {
+      confirmLogin(navigate);
+      return;
+    }
+
     setIsGenerating(true);
     setGenerateError(null);
 
@@ -287,6 +298,8 @@ function PromptCard({
 }
 
 export default function ReversePromptPage() {
+  const navigate = useNavigate();
+  const isAuthenticated = useAuthStore((s) => s.status === 'authenticated');
   const [aspectRatio, setAspectRatio] = useState(RATIO_OPTIONS[0]);
   const [references, setReferences] = useState<File[]>([]);
   const [results, setResults] = useState<ReversePromptItem[]>([]);
@@ -317,6 +330,11 @@ export default function ReversePromptPage() {
   const handleGenerate = async () => {
     const file = references[0];
     if (!file || isLoading) return;
+
+    if (!isAuthenticated) {
+      confirmLogin(navigate);
+      return;
+    }
 
     setIsLoading(true);
     setError(null);
