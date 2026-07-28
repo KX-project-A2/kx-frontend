@@ -314,7 +314,12 @@ export function CharacterSheetModal({
     >
       <div
         className="glass-1 flex w-full max-w-[792px] flex-col overflow-hidden rounded-card"
-        style={{ maxHeight: '88vh', boxShadow: 'var(--shadow-card)' }}
+        style={{
+          maxHeight: '88vh',
+          boxShadow: 'var(--shadow-card)',
+          // glass-1 기본값(50%)보다 불투명하게 — 자세히보기 모달(MediaDetailPanel)과 동일한 톤
+          background: 'color-mix(in srgb, var(--surface-1) 95%, transparent)',
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         <div
