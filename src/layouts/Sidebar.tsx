@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Home, Image as ImageIcon, Library, LogIn, Video } from 'lucide-react';
+import { Home, Image as ImageIcon, Library, LogIn, PenLine, Video } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import Logo from '@/components/common/Logo';
 import { useAuthStore } from '@/hooks/useAuthStore';
@@ -10,6 +10,7 @@ const NAV = [
   { to: '/home', label: '홈', icon: Home },
   { to: '/image', label: '이미지', icon: ImageIcon },
   { to: '/video', label: '영상', icon: Video },
+  { to: '/reverse-prompt', label: '역프롬프트', icon: PenLine },
   { to: '/library', label: '라이브러리', icon: Library, requiresAuth: true },
 ];
 
