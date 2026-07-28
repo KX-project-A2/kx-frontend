@@ -52,7 +52,7 @@ export default function Sidebar() {
         className={`absolute flex flex-col justify-between rounded-[40px] border border-stroke-soft px-5 py-10 shadow-[0_2px_2px_0_rgba(255,255,255,0.15)_inset,0_2px_10px_0_rgba(0,0,0,0.25)] transition-all ${
           collapsed
             ? 'left-[25px] top-[45px] bottom-[45px] w-[96px] bg-black duration-300 ease-out'
-            : 'left-[31px] top-[43px] bottom-[43px] w-[300px] bg-[rgba(1,1,1,0.30)] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]'
+            : 'left-[31px] top-[43px] bottom-[43px] w-[300px] bg-[rgba(1,1,1,0.5)] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]'
         }`}
       >
         <div className="flex flex-col gap-8">
