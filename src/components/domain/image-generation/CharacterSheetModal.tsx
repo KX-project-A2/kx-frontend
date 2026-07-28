@@ -49,7 +49,13 @@ const BODY_TYPE_OPTIONS = ['슬림', '보통', '근육질', '통통'] as const;
 const HAIR_LENGTH_OPTIONS = ['숏컷', '단발', '중단발', '장발'] as const;
 const HAIR_STYLE_OPTIONS = ['스트레이트', '웨이브', '컬', '포니테일', '트윈테일'] as const;
 const EXPRESSION_OPTIONS = ['무표정', '미소', '활짝 웃음', '진지함', '놀람'] as const;
-const EYE_CHARACTERISTIC_OPTIONS = ['큰 눈', '날카로운 눈매', '처진 눈', '고양이눈', '둥근 눈'] as const;
+const EYE_CHARACTERISTIC_OPTIONS = [
+  '큰 눈',
+  '날카로운 눈매',
+  '처진 눈',
+  '고양이눈',
+  '둥근 눈',
+] as const;
 const STYLE_OPTIONS = ['일러스트', '3D', '애니메이션', '실사', '만화'] as const;
 const WORLD_SETTING_OPTIONS = ['현대도시', '판타지', 'SF', '사이버펑크', '동양풍'] as const;
 const OUTFIT_GENRE_OPTIONS = ['캐주얼', 'SF/사이버펑크', '판타지', '스쿨', '밀리터리'] as const;
@@ -57,37 +63,38 @@ const ACCESSORY_OPTIONS = ['안경', '모자', '귀걸이', '목걸이', '스카
 const ADDITIONAL_PROMPT_MAX_LENGTH = 2000;
 
 export interface CharacterSheetFormData {
-  gender: (typeof GENDER_OPTIONS)[number];
-  ageGroup: (typeof AGE_GROUP_OPTIONS)[number];
-  bodyType: (typeof BODY_TYPE_OPTIONS)[number];
-  style: (typeof STYLE_OPTIONS)[number];
-  worldSetting: (typeof WORLD_SETTING_OPTIONS)[number];
-  hairLength: (typeof HAIR_LENGTH_OPTIONS)[number];
-  hairStyle: (typeof HAIR_STYLE_OPTIONS)[number];
+  gender: (typeof GENDER_OPTIONS)[number] | '';
+  ageGroup: (typeof AGE_GROUP_OPTIONS)[number] | '';
+  bodyType: (typeof BODY_TYPE_OPTIONS)[number] | '';
+  style: (typeof STYLE_OPTIONS)[number] | '';
+  worldSetting: (typeof WORLD_SETTING_OPTIONS)[number] | '';
+  hairLength: (typeof HAIR_LENGTH_OPTIONS)[number] | '';
+  hairStyle: (typeof HAIR_STYLE_OPTIONS)[number] | '';
   hairColor: string;
-  expression: (typeof EXPRESSION_OPTIONS)[number];
+  expression: (typeof EXPRESSION_OPTIONS)[number] | '';
   eyeColor: string;
-  eyeCharacteristic: (typeof EYE_CHARACTERISTIC_OPTIONS)[number];
-  outfitGenre: (typeof OUTFIT_GENRE_OPTIONS)[number];
+  eyeCharacteristic: (typeof EYE_CHARACTERISTIC_OPTIONS)[number] | '';
+  outfitGenre: (typeof OUTFIT_GENRE_OPTIONS)[number] | '';
   outfitColor: string;
   accessories: (typeof ACCESSORY_OPTIONS)[number][];
   additionalPrompt: string;
 }
 
+/** 전 필드 "선택 안 됨" 상태로 시작 — 저장 전에 이미 뭔가 골라져 있는 것처럼 보이지 않도록 함 */
 export const DEFAULT_CHARACTER_SHEET_FORM_DATA: CharacterSheetFormData = {
-  gender: '여성',
-  ageGroup: '20대',
-  bodyType: '슬림',
-  style: '애니메이션',
-  worldSetting: '사이버펑크',
-  hairLength: '장발',
-  hairStyle: '웨이브',
-  hairColor: '#E36EFF',
-  expression: '미소',
-  eyeColor: '#EAFB2F',
-  eyeCharacteristic: '큰 눈',
-  outfitGenre: 'SF/사이버펑크',
-  outfitColor: '#000000',
+  gender: '',
+  ageGroup: '',
+  bodyType: '',
+  style: '',
+  worldSetting: '',
+  hairLength: '',
+  hairStyle: '',
+  hairColor: '',
+  expression: '',
+  eyeColor: '',
+  eyeCharacteristic: '',
+  outfitGenre: '',
+  outfitColor: '',
   accessories: [],
   additionalPrompt: '',
 };
@@ -95,6 +102,32 @@ export const DEFAULT_CHARACTER_SHEET_FORM_DATA: CharacterSheetFormData = {
 /** 사용자가 기본값에서 하나라도 바꿔 "저장하기"를 눌렀는지 판단 — 캐릭터 만들기 버튼의 저장 상태 표시에 사용 */
 export function hasSavedCharacterAttributes(data: CharacterSheetFormData): boolean {
   return JSON.stringify(data) !== JSON.stringify(DEFAULT_CHARACTER_SHEET_FORM_DATA);
+}
+
+/** BE에 보낼 때 "선택 안 됨"(빈 문자열) 필드는 값 자체를 생략(undefined)한다 — 저장 여부와
+ * 무관하게 항상 이 정규화를 거치므로, 일부만 골라 저장한 경우에도 손대지 않은 필드는
+ * 빈 문자열이 아니라 undefined로 나간다. */
+export function toCharacterConceptSheetData(
+  data: CharacterSheetFormData,
+  additionalPrompt: string
+) {
+  return {
+    gender: data.gender || undefined,
+    ageGroup: data.ageGroup || undefined,
+    bodyType: data.bodyType || undefined,
+    style: data.style || undefined,
+    worldSetting: data.worldSetting || undefined,
+    hairLength: data.hairLength || undefined,
+    hairStyle: data.hairStyle || undefined,
+    hairColor: data.hairColor || undefined,
+    expression: data.expression || undefined,
+    eyeColor: data.eyeColor || undefined,
+    eyeCharacteristic: data.eyeCharacteristic || undefined,
+    outfitGenre: data.outfitGenre || undefined,
+    outfitColor: data.outfitColor || undefined,
+    accessories: data.accessories,
+    additionalPrompt,
+  };
 }
 
 /* ------------------------------------------------------------------ */
@@ -117,10 +150,12 @@ function FieldSelect<T extends string>({
   value,
   options,
   onChange,
+  placeholder = '선택 안 함',
 }: {
-  value: T;
+  value: T | '';
   options: readonly T[];
   onChange: (v: T) => void;
+  placeholder?: string;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -142,8 +177,8 @@ function FieldSelect<T extends string>({
         className="flex h-12 w-full items-center justify-between rounded-lg px-3 text-content transition-colors hover:border-selected-border"
         style={{ background: 'var(--surface-3)', border: '1px solid rgba(255,255,255,0.15)' }}
       >
-        <span className="truncate" style={TEXT_VALUE}>
-          {value}
+        <span className={`truncate ${value ? '' : 'text-content-muted'}`} style={TEXT_VALUE}>
+          {value || placeholder}
         </span>
         <ChevronDown size={18} strokeWidth={2} className="shrink-0 text-content-muted" />
       </button>
@@ -194,7 +229,7 @@ function FieldPillGroup<T extends string>({
   options,
   onChange,
 }: {
-  value: T;
+  value: T | '';
   options: readonly T[];
   onChange: (v: T) => void;
 }) {
@@ -206,7 +241,7 @@ function FieldPillGroup<T extends string>({
           type="button"
           onClick={() => onChange(opt)}
           className="rounded-chip px-4 py-2 transition-colors"
-          style={{ ...TEXT_PILL, ...pillStyle(opt === value) }}
+          style={{ ...TEXT_PILL, ...pillStyle(value !== '' && opt === value) }}
         >
           {opt}
         </button>
@@ -244,7 +279,15 @@ function FieldPillGroupMulti<T extends string>({
   );
 }
 
-function ColorField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+function ColorField({
+  value,
+  onChange,
+  placeholder = '#000000',
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+}) {
   return (
     <div
       className="flex w-[320px] items-center gap-2.5 rounded-lg px-3 py-2.5"
@@ -252,11 +295,15 @@ function ColorField({ value, onChange }: { value: string; onChange: (v: string) 
     >
       <div
         className="relative h-5 w-5 shrink-0 overflow-hidden rounded"
-        style={{ background: value, border: '1px solid rgba(255,255,255,0.1)' }}
+        style={
+          value
+            ? { background: value, border: '1px solid rgba(255,255,255,0.1)' }
+            : { background: 'transparent', border: '1px solid rgba(255,255,255,0.3)' }
+        }
       >
         <input
           type="color"
-          value={value}
+          value={value || '#000000'}
           onChange={(e) => onChange(e.target.value)}
           className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
         />
@@ -265,7 +312,8 @@ function ColorField({ value, onChange }: { value: string; onChange: (v: string) 
         value={value}
         onChange={(e) => onChange(e.target.value)}
         spellCheck={false}
-        className="flex-1 bg-transparent text-content outline-none"
+        placeholder={placeholder}
+        className="flex-1 bg-transparent text-content outline-none placeholder:text-content-muted"
         style={TEXT_VALUE}
       />
     </div>
@@ -459,7 +507,11 @@ export function CharacterSheetModal({
                   maxLength={ADDITIONAL_PROMPT_MAX_LENGTH}
                   placeholder="추가로 반영하고 싶은 내용을 자유롭게 입력해주세요"
                   className="w-full resize-none rounded-lg px-3 py-2.5 text-content outline-none placeholder:text-content-muted"
-                  style={{ ...TEXT_VALUE, background: 'var(--surface-3)', border: '1px solid rgba(255,255,255,0.15)' }}
+                  style={{
+                    ...TEXT_VALUE,
+                    background: 'var(--surface-3)',
+                    border: '1px solid rgba(255,255,255,0.15)',
+                  }}
                 />
                 <span className="self-end font-num text-[12px] leading-[16px] text-content-muted">
                   {form.additionalPrompt.length}/{ADDITIONAL_PROMPT_MAX_LENGTH}
