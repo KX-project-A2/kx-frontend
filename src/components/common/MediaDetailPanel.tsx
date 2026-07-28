@@ -22,13 +22,7 @@ import { confirmLogin } from '../../utils/confirmLogin';
 import { buildDownloadFilename, downloadFile } from '../../utils/downloadFile';
 import { formatDate } from '../../utils/formatDate';
 import { formatDuration } from '../../utils/formatDuration';
-
-function formatTime(seconds: number): string {
-  if (!Number.isFinite(seconds) || seconds < 0) return '0:00';
-  const m = Math.floor(seconds / 60);
-  const s = Math.floor(seconds % 60);
-  return `${m}:${s.toString().padStart(2, '0')}`;
-}
+import { formatTime } from '../../utils/formatTime';
 
 interface MediaDetailPanelProps {
   art: Artwork;
