@@ -123,7 +123,7 @@ export default function MediaDetailPanel({
         boxShadow: 'var(--shadow-card)',
         // glass-1 기본값(50%)보다 불투명하게 — 공유 클래스를 바꾸면 사이드바/다른 모달에도
         // 영향을 주므로 이 패널에만 인라인으로 덮어씀.
-        background: 'color-mix(in srgb, var(--surface-1) 80%, transparent)',
+        background: 'color-mix(in srgb, var(--surface-1) 95%, transparent)',
       }}
       onClick={(e) => e.stopPropagation()}
     >

@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ChevronDown, ChevronUp, Plus } from 'lucide-react';
+import { ChevronDown, ChevronUp, Pause, Play, Plus } from 'lucide-react';
 import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Button, Chip, Panel, Tabs } from '@/components/common/ui';
 import { GalleryCard, ResultCard } from '@/components/domain/home/MediaCard';
-import ImageWithFallback from '@/components/common/ImageWithFallback';
+import VideoWithFallback, {
+  type VideoWithFallbackHandle,
+} from '@/components/common/VideoWithFallback';
 import { DetailModal } from '@/components/common/DetailModal';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
@@ -15,8 +17,7 @@ import { useAuthStore } from '@/hooks/useAuthStore';
 import { buildDownloadFilename, downloadFile } from '@/utils/downloadFile';
 import { shuffle } from '@/utils/shuffle';
 
-const INTRO_POSTER =
-  'https://images.unsplash.com/photo-1530318893805-e7e1d466bd40?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1600';
+const TUTORIAL_VIDEO_SRC = '/assets/video/genova_tutorial.mp4';
 
 /** 탐색하기 그리드 — 피그마 스펙: 고정 3컬럼, 4행(12개) 단위로 로드 */
 const EXPLORE_GRID_COLUMNS = 3;
@@ -70,9 +71,11 @@ export default function Home() {
   const [recentWorks, setRecentWorks] = useState<Artwork[]>([]);
   const [recentLoading, setRecentLoading] = useState(true);
   const [recentError, setRecentError] = useState<string | null>(null);
+  const [isTutorialPlaying, setIsTutorialPlaying] = useState(false);
   const heroRef = useRef<HTMLElement>(null);
   const exploreRef = useRef<HTMLElement>(null);
   const tutorialRef = useRef<HTMLElement>(null);
+  const tutorialVideoRef = useRef<VideoWithFallbackHandle>(null);
   const recentRef = useRef<HTMLElement>(null);
   const sectionRefs: Record<SectionId, React.RefObject<HTMLElement | null>> = {
     hero: heroRef,
@@ -376,12 +379,25 @@ export default function Home() {
         <section ref={tutorialRef} className="relative flex flex-col gap-6">
           <h2 className="text-h1-section text-content">AI 튜토리얼</h2>
           <Panel level={1} bordered className="relative overflow-hidden">
-            <ImageWithFallback
-              src={INTRO_POSTER}
+            <VideoWithFallback
+              ref={tutorialVideoRef}
+              src={TUTORIAL_VIDEO_SRC}
               alt="AI 튜토리얼"
               className="w-full object-cover"
               style={{ aspectRatio: '16 / 9' }}
+              onPlayingChange={setIsTutorialPlaying}
             />
+            <span
+              className="absolute left-1/2 top-1/2 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full"
+              style={{ background: 'rgba(11,9,18,0.55)', border: '1px solid var(--stroke-strong)' }}
+              onClick={() => tutorialVideoRef.current?.togglePlay()}
+            >
+              {isTutorialPlaying ? (
+                <Pause size={22} className="text-white" fill="white" />
+              ) : (
+                <Play size={22} className="translate-x-0.5 text-white" fill="white" />
+              )}
+            </span>
           </Panel>
 
           <ScrollArrow
