@@ -74,7 +74,7 @@ export interface CharacterSheetFormData {
   additionalPrompt: string;
 }
 
-const DEFAULT_FORM_DATA: CharacterSheetFormData = {
+export const DEFAULT_CHARACTER_SHEET_FORM_DATA: CharacterSheetFormData = {
   gender: '여성',
   ageGroup: '20대',
   bodyType: '슬림',
@@ -91,6 +91,11 @@ const DEFAULT_FORM_DATA: CharacterSheetFormData = {
   accessories: [],
   additionalPrompt: '',
 };
+
+/** 사용자가 기본값에서 하나라도 바꿔 "저장하기"를 눌렀는지 판단 — 캐릭터 만들기 버튼의 저장 상태 표시에 사용 */
+export function hasSavedCharacterAttributes(data: CharacterSheetFormData): boolean {
+  return JSON.stringify(data) !== JSON.stringify(DEFAULT_CHARACTER_SHEET_FORM_DATA);
+}
 
 /* ------------------------------------------------------------------ */
 function FieldRow({ label, children }: { label: string; children: React.ReactNode }) {
@@ -271,11 +276,26 @@ function ColorField({ value, onChange }: { value: string; onChange: (v: string) 
 export interface CharacterSheetModalProps {
   open: boolean;
   onClose: () => void;
-  onGenerate: (data: CharacterSheetFormData) => void;
+  onSave: (data: CharacterSheetFormData) => void;
+  /** 모달이 열릴 때 폼에 채울 값 (이전에 저장한 속성이 있으면 그 값, 없으면 기본값) */
+  initialData: CharacterSheetFormData;
 }
 
-export function CharacterSheetModal({ open, onClose, onGenerate }: CharacterSheetModalProps) {
-  const [form, setForm] = useState<CharacterSheetFormData>(DEFAULT_FORM_DATA);
+export function CharacterSheetModal({
+  open,
+  onClose,
+  onSave,
+  initialData,
+}: CharacterSheetModalProps) {
+  const [form, setForm] = useState<CharacterSheetFormData>(initialData);
+  const [prevOpen, setPrevOpen] = useState(open);
+
+  // 닫힘→열림으로 바뀌는 순간에만(취소로 닫혔던 이전 편집 내용을 버리고) 마지막으로 저장된
+  // 값으로 다시 채운다. 렌더 중 조정하는 패턴이라 useEffect 없이도 다음 페인트 전에 반영된다.
+  if (open !== prevOpen) {
+    setPrevOpen(open);
+    if (open) setForm(initialData);
+  }
 
   if (!open) return null;
 
@@ -450,7 +470,7 @@ export function CharacterSheetModal({ open, onClose, onGenerate }: CharacterShee
         >
           <button
             type="button"
-            onClick={() => setForm(DEFAULT_FORM_DATA)}
+            onClick={() => setForm(DEFAULT_CHARACTER_SHEET_FORM_DATA)}
             className="w-[135px] rounded-chip px-4 py-3"
             style={{
               border: '1px solid var(--content-muted)',
@@ -462,7 +482,7 @@ export function CharacterSheetModal({ open, onClose, onGenerate }: CharacterShee
           </button>
           <button
             type="button"
-            onClick={() => onGenerate(form)}
+            onClick={() => onSave(form)}
             className="w-[135px] rounded-chip px-6 py-3"
             style={{
               background: 'var(--primary-200)',
@@ -470,7 +490,7 @@ export function CharacterSheetModal({ open, onClose, onGenerate }: CharacterShee
               ...TEXT_BUTTON_STRONG,
             }}
           >
-            생성하기
+            저장하기
           </button>
         </div>
       </div>
