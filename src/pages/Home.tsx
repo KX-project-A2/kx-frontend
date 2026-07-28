@@ -15,6 +15,7 @@ import { EXPLORE_CATEGORY_CHIPS, PRESET_CATALOG, type Artwork } from '@/constant
 import { fetchRecentWorks } from '@/services/library';
 import { useAuthStore } from '@/hooks/useAuthStore';
 import { buildDownloadFilename, downloadFile } from '@/utils/downloadFile';
+import { formatTime } from '@/utils/formatTime';
 import { shuffle } from '@/utils/shuffle';
 
 const TUTORIAL_VIDEO_SRC = '/assets/video/genova_tutorial.mp4';
@@ -72,6 +73,8 @@ export default function Home() {
   const [recentLoading, setRecentLoading] = useState(true);
   const [recentError, setRecentError] = useState<string | null>(null);
   const [isTutorialPlaying, setIsTutorialPlaying] = useState(false);
+  const [tutorialCurrentTime, setTutorialCurrentTime] = useState(0);
+  const [tutorialDuration, setTutorialDuration] = useState(0);
   const heroRef = useRef<HTMLElement>(null);
   const exploreRef = useRef<HTMLElement>(null);
   const tutorialRef = useRef<HTMLElement>(null);
@@ -181,7 +184,7 @@ export default function Home() {
         <div className="fixed inset-0 -z-10">
           <video
             className="absolute inset-0 h-full w-full object-cover"
-            src="/assets/video/home.mp4"
+            src="/assets/video/home_final.mp4"
             autoPlay
             loop
             muted
@@ -385,6 +388,10 @@ export default function Home() {
               alt="AI 튜토리얼"
               className="block w-full h-auto"
               onPlayingChange={setIsTutorialPlaying}
+              onTimeUpdate={(current, duration) => {
+                setTutorialCurrentTime(current);
+                setTutorialDuration(duration);
+              }}
             />
             <span
               className="absolute left-1/2 top-1/2 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full"
@@ -397,6 +404,31 @@ export default function Home() {
                 <Play size={22} className="translate-x-0.5 text-white" fill="white" />
               )}
             </span>
+            <div
+              className="absolute inset-x-0 bottom-0 flex flex-col gap-2 rounded-b-card p-3 pt-8"
+              style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.7), transparent)' }}
+            >
+              <div
+                className="h-1 w-full cursor-pointer rounded-full bg-white/25"
+                onClick={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const ratio = (e.clientX - rect.left) / rect.width;
+                  tutorialVideoRef.current?.seek(ratio * tutorialDuration);
+                }}
+              >
+                <div
+                  className="h-full rounded-full bg-white"
+                  style={{
+                    width: `${tutorialDuration ? (tutorialCurrentTime / tutorialDuration) * 100 : 0}%`,
+                  }}
+                />
+              </div>
+              <div className="flex items-center justify-end">
+                <span className="font-num text-caption text-white">
+                  {formatTime(tutorialCurrentTime)} / {formatTime(tutorialDuration)}
+                </span>
+              </div>
+            </div>
           </Panel>
 
           <ScrollArrow
