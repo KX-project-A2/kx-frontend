@@ -162,6 +162,8 @@ export default function ImageGenerationPage() {
     removeReference(index);
   };
 
+  const hasSavedCharacterInfo = hasSavedCharacterAttributes(characterAttributes);
+
   const handleGenerate = async () => {
     if (!prompt.trim() || isLoading) return;
 
@@ -178,7 +180,25 @@ export default function ImageGenerationPage() {
       const result =
         purpose === '캐릭터시트'
           ? await characterConceptSheet(
-              { ...characterAttributes, additionalPrompt: prompt.trim() },
+              hasSavedCharacterInfo
+                ? { ...characterAttributes, additionalPrompt: prompt.trim() }
+                : {
+                    gender: undefined,
+                    ageGroup: undefined,
+                    bodyType: undefined,
+                    style: undefined,
+                    worldSetting: undefined,
+                    hairLength: undefined,
+                    hairStyle: undefined,
+                    hairColor: undefined,
+                    expression: undefined,
+                    eyeColor: undefined,
+                    eyeCharacteristic: undefined,
+                    outfitGenre: undefined,
+                    outfitColor: undefined,
+                    accessories: undefined,
+                    additionalPrompt: prompt.trim(),
+                  },
               { model, ratio, quality, quantity },
               references
             )
@@ -207,8 +227,6 @@ export default function ImageGenerationPage() {
   const handleOpen = (art: Artwork) => {
     setSelectedArt(art);
   };
-
-  const hasSavedCharacterInfo = hasSavedCharacterAttributes(characterAttributes);
 
   return (
     <div className="flex h-full">
@@ -301,7 +319,7 @@ export default function ImageGenerationPage() {
           <div className="flex flex-col items-center justify-center gap-3 py-4">
             <LoadingSpinner size="md" />
             <p className="text-body text-content-secondary">
-              이미지 생성 중입니다. 최대 10분 정도 걸릴 수 있어요.
+              이미지 생성 중이에요. 시간이 조금 소요될 수 있어요. 조금만 기다려 주세요.
             </p>
           </div>
         )}
