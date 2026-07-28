@@ -27,8 +27,8 @@ export function ModelField({ name }: { name: string }) {
   );
 }
 
-/* Top-of-panel image/video/prompt mode switcher — image/video tabs navigate, prompt is not yet built */
-export function ModeTabs({ variant }: { variant: 'image' | 'video' }) {
+/* Top-of-panel image/video/prompt mode switcher — 역프롬프트는 이미지 전용 기능이라 영상 화면에서는 비활성 */
+export function ModeTabs({ variant }: { variant: 'image' | 'video' | 'prompt' }) {
   const navigate = useNavigate();
   const items = [
     { id: 'image' as const, label: '이미지', icon: ImageIcon, to: '/image' },
@@ -37,7 +37,7 @@ export function ModeTabs({ variant }: { variant: 'image' | 'video' }) {
       id: 'prompt' as const,
       label: '역프롬프트',
       icon: PenLine,
-      to: variant === 'image' ? '/reverse-prompt' : null,
+      to: variant === 'video' ? null : '/reverse-prompt',
     },
   ];
 

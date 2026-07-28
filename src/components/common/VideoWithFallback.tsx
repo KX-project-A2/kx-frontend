@@ -68,6 +68,7 @@ const VideoWithFallback = forwardRef<VideoWithFallbackHandle, VideoWithFallbackP
         onPlay={() => onPlayingChange?.(true)}
         onPause={() => onPlayingChange?.(false)}
         onEnded={() => onPlayingChange?.(false)}
+        onLoadedMetadata={(e) => onTimeUpdate?.(0, e.currentTarget.duration || 0)}
         onTimeUpdate={(e) => {
           const video = e.currentTarget;
           onTimeUpdate?.(video.currentTime, video.duration || 0);

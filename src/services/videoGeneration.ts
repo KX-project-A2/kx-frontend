@@ -33,12 +33,10 @@ interface GenerateVideoJob {
   resultResolution?: string | null;
 }
 
-/** 화면 표시용 mm:ss 변환 (요청 body의 duration과는 별개) */
+/** Artwork.duration에 저장할 초 단위 문자열 — 접미사("초")는 표시 시점에 formatDuration이 붙인다. */
 function toDuration(length: string): string {
   const seconds = parseInt(length, 10) || 0;
-  const minutes = Math.floor(seconds / 60);
-  const remainder = seconds % 60;
-  return `${minutes}:${remainder.toString().padStart(2, '0')}`;
+  return String(seconds);
 }
 
 /** 스토리보드/레퍼런스 원본 파일을 업로드해 mediaFileId를 받아온다. */

@@ -36,7 +36,7 @@ import { JobFailedError } from '@/utils/pollJob';
 import { validateImageFile } from '@/utils/validateImageFile';
 import { IMAGE_QUALITIES, type Artwork } from '@/constants/mockData';
 
-const RATIO_OPTIONS = ['1:1', '3:2', '2:3'];
+const RATIO_OPTIONS = ['1:1', '16:9', '9:16'];
 const REFERENCE_IMAGE_MAX_MB = 50;
 const PURPOSE_TABS = [
   { id: '캐릭터', label: '캐릭터' },

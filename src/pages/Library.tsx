@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Download, Link2, Pencil, Play, Trash2, Video as VideoIcon } from 'lucide-react';
+import { Download, Pencil, Play, Trash2, Video as VideoIcon } from 'lucide-react';
 import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Badge, Button, Select, Tabs } from '@/components/common/ui';
@@ -18,6 +18,7 @@ import { deleteMediaFile, fetchLibraryItems } from '@/services/library';
 import { useLikesStore } from '@/stores/useLikesStore';
 import { buildDownloadFilename, downloadFile } from '@/utils/downloadFile';
 import { formatDate } from '@/utils/formatDate';
+import { formatDuration } from '@/utils/formatDuration';
 import { toGenGroup, toVideoGenGroup } from '@/utils/generationAdapter';
 
 const SORTS = ['최신순', '오래된순'];
@@ -81,7 +82,7 @@ export default function Library() {
           ['품질', selected.quality],
           ['비율', selected.ratio],
           ...(selected.type === 'video' && selected.duration
-            ? ([['길이', selected.duration]] as [string, string][])
+            ? ([['길이', formatDuration(selected.duration)]] as [string, string][])
             : []),
           ['생성 일자', formatDate(selected.createdAt)],
         ] as [string, string][]
@@ -360,15 +361,6 @@ export default function Library() {
             >
               삭제
             </Button>
-          </div>
-
-          {/* share link — not finalized (dashed) */}
-          <div
-            className="mt-4 flex items-center gap-2 rounded-field px-3.5 h-11"
-            style={{ border: '1px dashed var(--stroke-strong)', background: 'transparent' }}
-          >
-            <Link2 size={15} className="text-content-muted" />
-            <span className="text-caption text-content-muted">공유 링크 — 준비 중</span>
           </div>
         </div>
       )}
