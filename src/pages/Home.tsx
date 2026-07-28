@@ -383,8 +383,7 @@ export default function Home() {
               ref={tutorialVideoRef}
               src={TUTORIAL_VIDEO_SRC}
               alt="AI 튜토리얼"
-              className="w-full object-cover"
-              style={{ aspectRatio: '16 / 9' }}
+              className="block w-full h-auto"
               onPlayingChange={setIsTutorialPlaying}
             />
             <span
