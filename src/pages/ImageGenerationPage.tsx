@@ -50,6 +50,10 @@ const PURPOSE_TABS = [
   { id: '배경', label: '배경' },
   { id: '캐릭터시트', label: '캐릭터시트' },
 ];
+const ANGLE_TABS = [
+  { id: 'single', label: '단일' },
+  { id: 'multi', label: '다각도' },
+];
 const MIN_QUANTITY = 1;
 const MAX_QUANTITY = 4;
 const MAX_REFERENCES = 8;
@@ -82,6 +86,7 @@ export default function ImageGenerationPage() {
   const [errorJobId, setErrorJobId] = useState<number | undefined>(undefined);
   const [selectedArt, setSelectedArt] = useState<Artwork | null>(null);
   const [isCharacterModalOpen, setIsCharacterModalOpen] = useState(false);
+  const [multiAngle, setMultiAngle] = useState(false);
   const [characterAttributes, setCharacterAttributes] = useState<CharacterSheetFormData>(
     DEFAULT_CHARACTER_SHEET_FORM_DATA
   );
@@ -205,7 +210,12 @@ export default function ImageGenerationPage() {
           : await generateImage(
               prompt.trim(),
               { model, ratio, quality, quantity },
-              { purpose, promptCorrectionEnabled: correction, references }
+              {
+                purpose,
+                promptCorrectionEnabled: correction,
+                references,
+                multiViewEnabled: purpose === '캐릭터' ? multiAngle : undefined,
+              }
             );
       setResults((prev) => [result, ...prev]);
     } catch (err) {
@@ -244,6 +254,15 @@ export default function ImageGenerationPage() {
         <SettingSection title="유형">
           <PurposeTabs tabs={PURPOSE_TABS} value={purpose} onChange={setPurpose} />
         </SettingSection>
+        {purpose === '캐릭터' && (
+          <SettingSection title="각도">
+            <PurposeTabs
+              tabs={ANGLE_TABS}
+              value={multiAngle ? 'multi' : 'single'}
+              onChange={(id) => setMultiAngle(id === 'multi')}
+            />
+          </SettingSection>
+        )}
         {purpose === '캐릭터시트' && (
           <div className="flex flex-col gap-4">
             <div className="h-px w-full" style={{ background: 'rgba(255,255,255,0.08)' }} />

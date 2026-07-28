@@ -104,7 +104,14 @@ async function pollImageJobToResult(jobId: number, prompt: string): Promise<Gene
 export async function generateImage(
   prompt: string,
   options: GenerationOptions,
-  extra: { purpose: string; promptCorrectionEnabled: boolean; references?: File[] }
+  extra: {
+    purpose: string;
+    promptCorrectionEnabled: boolean;
+    references?: File[];
+    /** BE 필드 multiViewEnabled — null이면 true로 처리됨(기존 기본 동작과 동일). 캐릭터 유형이
+     * 아닌 경우 값을 넘기지 않아 요청 바디에서 필드 자체가 빠지도록 한다. */
+    multiViewEnabled?: boolean;
+  }
 ): Promise<GenerationResult> {
   const requestBody = {
     prompt,
@@ -113,6 +120,7 @@ export async function generateImage(
     size: mapRatioToSize(options.ratio),
     quality: mapQualityToBE(options.quality),
     promptCorrectionEnabled: extra.promptCorrectionEnabled,
+    multiViewEnabled: extra.multiViewEnabled,
   };
 
   const formData = new FormData();
