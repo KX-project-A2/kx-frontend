@@ -13,6 +13,7 @@ import {
 import type { Artwork } from '@/constants/mockData';
 import { Badge, IconButton, cn } from '@/components/common/ui';
 import ImageWithFallback from '@/components/common/ImageWithFallback';
+import { formatDuration } from '@/utils/formatDuration';
 import VideoWithFallback from '@/components/common/VideoWithFallback';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import { useLikesStore } from '@/stores/useLikesStore';
@@ -122,7 +123,7 @@ export function ResultCard({
           <Badge tone="neutral">
             {art.url ? (
               <>
-                <Play size={11} fill="currentColor" /> {art.duration}
+                <Play size={11} fill="currentColor" /> {formatDuration(art.duration)}
               </>
             ) : (
               '준비 중'

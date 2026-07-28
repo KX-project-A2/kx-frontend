@@ -5,6 +5,7 @@ import { Avatar, Badge, IconButton, LikePill, cn } from '@/components/common/ui'
 import ImageWithFallback from '@/components/common/ImageWithFallback';
 import VideoWithFallback from '@/components/common/VideoWithFallback';
 import { useLikesStore } from '@/stores/useLikesStore';
+import { formatDuration } from '@/utils/formatDuration';
 
 /* --- Explore gallery card (author + likes on hover, click opens detail) --- */
 export function GalleryCard({ art, onOpen }: { art: Artwork; onOpen?: () => void }) {
@@ -167,7 +168,7 @@ export function ResultCard({
           <Badge tone="neutral">
             {art.url ? (
               <>
-                <Play size={11} fill="currentColor" /> {art.duration}
+                <Play size={11} fill="currentColor" /> {formatDuration(art.duration)}
               </>
             ) : (
               '준비 중'

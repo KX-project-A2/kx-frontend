@@ -10,7 +10,7 @@ const QUALITY_ID_TO_LABEL: Record<string, string> = {
   high: '고화질',
 };
 
-function toDisplayModel(model: string | null): string {
+export function toDisplayModel(model: string | null): string {
   if (!model) return '';
   if (MODEL_ID_TO_LABEL[model]) return MODEL_ID_TO_LABEL[model];
   // 영상 모델은 "bytedance/seedance-2.0/reference-to-video" 같은 경로 형태로 내려와서
@@ -21,7 +21,7 @@ function toDisplayModel(model: string | null): string {
   return model;
 }
 
-function toDisplayQuality(quality: string | null): string {
+export function toDisplayQuality(quality: string | null): string {
   if (!quality) return '';
   return QUALITY_ID_TO_LABEL[quality] ?? quality;
 }
@@ -38,7 +38,7 @@ const VIDEO_RESOLUTION_TO_QUALITY_NAME: Record<string, string> = {
   '4k': '4K',
 };
 
-function toDisplayVideoQuality(quality: string | null, resolution: string | null): string {
+export function toDisplayVideoQuality(quality: string | null, resolution: string | null): string {
   if (quality) return toDisplayQuality(quality);
   if (resolution && VIDEO_RESOLUTION_TO_QUALITY_NAME[resolution]) {
     return VIDEO_RESOLUTION_TO_QUALITY_NAME[resolution];

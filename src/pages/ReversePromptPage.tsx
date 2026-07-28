@@ -341,7 +341,7 @@ export default function ReversePromptPage() {
         className="flex w-[300px] shrink-0 flex-col gap-8 overflow-y-auto p-6"
         style={{ borderRadius: 0 }}
       >
-        <ModeTabs variant="image" />
+        <ModeTabs variant="prompt" />
         <SettingSection title="모델">
           <ModelField name="Claude Sonnet 5" />
         </SettingSection>

@@ -13,6 +13,7 @@ import SignupEmail from '@/pages/SignupEmail';
 import SignupNickname from '@/pages/SignupNickname';
 import SignupPassword from '@/pages/SignupPassword';
 import OAuthCallback from '@/pages/OAuthCallback';
+import SharedMediaPage from '@/pages/SharedMediaPage';
 import { fetchMe } from '@/services/auth';
 import { useAuthStore } from '@/hooks/useAuthStore';
 
@@ -38,6 +39,7 @@ function App() {
         <Route path="/signup/nickname" element={<SignupNickname />} />
         <Route path="/signup/password" element={<SignupPassword />} />
         <Route path="/oauth/callback" element={<OAuthCallback />} />
+        <Route path="/share/:token" element={<SharedMediaPage />} />
 
         <Route
           element={

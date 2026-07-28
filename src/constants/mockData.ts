@@ -29,6 +29,9 @@ export interface Artwork {
   duration?: string;
   /** BE MediaFile ID - image-to-video 생성 시 startMediaFileId로 사용 */
   mediaFileId?: number;
+  /** 표시용 url과 별도의 다운로드 전용 URL이 있을 때만 설정 (예: 공유 페이지의 downloadUrl).
+   * 없으면 다운로드 버튼은 url을 그대로 사용한다. */
+  downloadUrl?: string;
   /** BE의 favorite(찜) 상태 - 라이브러리 API 전용 */
   favorite?: boolean;
   /**
