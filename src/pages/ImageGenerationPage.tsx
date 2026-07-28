@@ -21,6 +21,7 @@ import {
   CharacterSheetModal,
   DEFAULT_CHARACTER_SHEET_FORM_DATA,
   hasSavedCharacterAttributes,
+  toCharacterConceptSheetData,
   type CharacterSheetFormData,
 } from '@/components/domain/image-generation/CharacterSheetModal';
 import { useAuthStore } from '@/hooks/useAuthStore';
@@ -202,25 +203,7 @@ export default function ImageGenerationPage() {
       const result =
         purpose === '캐릭터시트'
           ? await characterConceptSheet(
-              hasSavedCharacterInfo
-                ? { ...characterAttributes, additionalPrompt: prompt.trim() }
-                : {
-                    gender: undefined,
-                    ageGroup: undefined,
-                    bodyType: undefined,
-                    style: undefined,
-                    worldSetting: undefined,
-                    hairLength: undefined,
-                    hairStyle: undefined,
-                    hairColor: undefined,
-                    expression: undefined,
-                    eyeColor: undefined,
-                    eyeCharacteristic: undefined,
-                    outfitGenre: undefined,
-                    outfitColor: undefined,
-                    accessories: undefined,
-                    additionalPrompt: prompt.trim(),
-                  },
+              toCharacterConceptSheetData(characterAttributes, prompt.trim()),
               { model, ratio, quality, quantity },
               references
             )
