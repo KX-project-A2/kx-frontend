@@ -399,10 +399,14 @@ export default function VideoGenerationPage() {
           value={prompt}
           onChange={setPrompt}
           chips={[
-            model,
-            length,
-            ...(capability.ratioOptions.length > 0 ? [ratio.split(' · ')[0]] : []),
-            ...(capability.qualityOptions.length > 0 ? [quality.split(' ')[0]] : []),
+            { label: model, noArrow: true },
+            { label: length, noArrow: true },
+            ...(capability.ratioOptions.length > 0
+              ? [{ label: ratio.split(' · ')[0], noArrow: true }]
+              : []),
+            ...(capability.qualityOptions.length > 0
+              ? [{ label: quality.split(' ')[0], noArrow: true }]
+              : []),
           ]}
           onGenerate={handleGenerate}
           placeholder="생성하고 싶은 영상을 설명해주세요"
