@@ -17,7 +17,7 @@ export function buildDownloadFilename(art: {
   createdAt: string;
   type: 'image' | 'video';
 }): string {
-  const ext = art.type === 'video' ? 'mp4' : 'jpg';
+  const ext = art.type === 'video' ? 'mp4' : 'png';
   const datePart = art.createdAt.slice(0, 10).replace(/-/g, '');
   const promptPart = sanitizeFilenamePart(art.prompt ?? '');
   const base = [promptPart, datePart].filter(Boolean).join('_');
